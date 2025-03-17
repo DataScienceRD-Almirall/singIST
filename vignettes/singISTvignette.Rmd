@@ -1,0 +1,236 @@
+---
+title: "singIST Vignette"
+author: "Aitor Moruno-Cuenca"
+output: BiocStyle::html_document
+vignette: > 
+  %\VignetteIndexEntry{singIST Vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Introduction
+
+This Vignette demonstrates how to use the singIST package. singIST is a 
+computational method for comparative single-cell transcriptomics between
+organisms and experimental conditions. Its cornerstone use case is comparing
+scRNA-seq profiles between disease models and human diseases. Throughout this 
+vignette we will work with the following data:
+
+\begin{itemize}
+\item "cytokine_counts.rda" Contains Human scRNAseq pseudobulk lognormalized
+count matrix. The pseudobulk is aggregated by sample and cell type and contains
+all genes belonging to the pathway Cytokine-Cytokine receptor interaction [KEGG]
+\item "DC_counts.rda" Contains Human scRNAseq pseudobulk lognormalized
+count matrix. The pseudobulk is aggregated by sample and cell type and contains
+all genes belonging to the pathway Dendritic Cells in regulating Th1/Th2
+Development [BIOCARTA]
+\item "OXA.rda" 
+\end{itemize}
+
+```{r}
+library(singIST)
+# Example code
+utils::sessionInfo()
+```
+
+# Initialize objects for analysis
+## Superpathway input 
+
+### Pathway: Dendritic Cells in Th1/Th2 Development [BIOCARTA]
+
+```{r}
+# Initialize pathway object
+dc_pathway <- methods::new("pathway",
+                            standard_name = "BIOCARTA_DC_PATHWAY",
+                            dbsource = "BIOCARTA",
+                            collection = "c2",
+                            subcollection = "CP")
+
+# We now define the superpathway gene sets object in which we define the 
+# cell types we are interested in modelling
+dc_superpathway <- methods::new("superpathway.gene.sets",
+                                pathway_info = dc_pathway,
+                                celltypes = c("Dendritic Cells", 
+                                                "Langerhan Cells", 
+                                                "T-cell"))
+
+# We choose the same gene sets for all the cell types, hence we use the
+# method setRepeatGeneSets that pulls the gene set associated to the pathway
+# and sets the same gene set for all cell types
+dc_superpathway <- setRepeatGeneSets(dc_superpathway) 
+print(slot(dc_superpathway, "gene_sets_celltype"))
+```
+
+### Pathway: Cytokine-Cytokine receptor interaction [KEGG]
+
+```{r}
+# Initialize pathway object
+cytokine_pathway <- methods::new(
+    "pathway", standard_name = "KEGG_CYTOKINE_CYTOKINE_RECEPTOR_INTERACTION",
+    dbsource = "KEGG", collection = "c2", subcollection = "CP")
+# Superpathway gene sets object
+cytokine_superpathway <- methods::new(
+    "superpathway.gene.sets", pathway_info = cytokine_pathway,
+    celltypes = c("Dendritic Cells", "Keratinocytes", "Langerhan Cells",
+                    "Melanocytes", "T-cell"))
+# Pull Gene Set 
+gene_set <- pullGeneSet(cytokine_pathway)
+# Set different gene sets per cell type randomly. This would exemplify an
+# ad-hoc pathway where we set different gene sets per cell type 
+slot(cytokine_superpathway, "gene_sets_celltype") <- list(
+    sample(gene_set, 50), sample(gene_set, 100), sample(gene_set, 10),
+    sample(gene_set, 60), sample(gene_set, 160))
+```
+
+## Human scRNAseq input 
+
+### Pathway: Dendritic Cells in Th1/Th2 Development [BIOCARTA]
+
+```{r}
+# Load the pseudobulk lognormalized count matrix for the Human Dendritic Cells
+# Th1/Th2 development [BIOCARTA] genes
+counts_dc <- DC_counts
+# Remove the cell types as we are not going to model
+counts_dc <- counts_dc[!(sub("_.*$", "", rownames(counts_dc)) %in% 
+                        c("MastC-other", "Keratinocytes", "Melanocytes")), ]
+
+# Initialize hyperparameter object 
+# Choose the array of quantile combinations that will be tested in the Cross
+# Validation. Ideally one should choose a wide range of quantiles to test,
+# as a narrow selection might not find the globally optimal model. The more
+# quantiles one chooses the more computation time it will take, for the sake
+# of simplicity we choose a small amount of quantiles to test
+quantile_comb_table <- as.matrix(
+    RcppAlgos::permuteGeneral(seq(0.1, 0.95, by = 0.3),
+                                m = length(slot(dc_superpathway, "celltypes")), 
+                                replace = TRUE))
+
+# We choose a "binary" outcome, we will test at maximum 3 PLS components,
+# and we choose a LOOCV (1 fold), since we choose LOOCV the number of
+# repetitions arguments will also be 1 by default
+dc_hyperparameters <- methods::new("hyperparameters",
+                                    quantile_comb_table = quantile_comb_table,
+                                    outcome_type = "binary",
+                                    number_PLS = as.integer(3),
+                                    folds_CV = as.integer(1),
+                                    repetition_CV = as.integer(1))
+
+# Initialize the superpathway input object that will be used to fit the
+# optimal asmbPLSDA
+# Initialize superpathway input object
+# Sample_id contains the identifiers of each sample as shown in
+# the rownames of the pseudobulk lognormalized matrix, the sample class
+# indicates the class each sample belongs to
+dc_superpathway_input <- methods::new(
+    "superpathway.input", superpathway_info = dc_superpathway,
+    hyperparameters_info = dc_hyperparameters, pseudobulk_lognorm = counts_dc,
+    sample_id = c("AD1", "AD13", "AD2", "AD3","AD4", "HC1-2", "HC3", "HC4",
+                    "HC5"),
+    sample_class = c(rep("AD",5), rep("HC", 4)),
+    base_class = "HC",
+    target_class = "AD")
+```
+
+### Pathway: Cytokine-Cytokine receptor interaction [KEGG]
+
+```{r}
+# Load the pseudobulk lognormalized count matrix
+counts_cytokine <- cytokine_counts
+# Remove the cell types as we are not going to model
+counts_cytokine <- counts_cytokine[!(sub("_.*$", "",
+                                    rownames(counts_cytokine)) %in% 
+                                    c("MastC-other")), ]
+
+# Initialize hyperparameter object 
+quantile_comb_table <- as.matrix(
+    RcppAlgos::permuteGeneral(seq(0.05, 0.95, by = 0.2),
+                                m = length(slot(cytokine_superpathway, 
+                                                "celltypes")), 
+                                replace = TRUE))
+
+# We choose a "binary" outcome, we will test at maximum 2 PLS components,
+# and we choose a 5-Fold CV with 5 repetitions each
+cytokine_hyperparameters <- methods::new("hyperparameters",
+                                    quantile_comb_table = quantile_comb_table,
+                                    outcome_type = "binary",
+                                    number_PLS = as.integer(2),
+                                    folds_CV = as.integer(5),
+                                    repetition_CV = as.integer(5))
+
+# Initialize the superpathway input object that will be used to fit the
+# optimal asmbPLSDA
+cytokine_superpathway_input <- methods::new(
+    "superpathway.input", superpathway_info = cytokine_superpathway,
+    hyperparameters_info = cytokine_hyperparameters,
+    pseudobulk_lognorm = counts_cytokine,
+    sample_id = c("AD1", "AD13", "AD2", "AD3","AD4", "HC1-2", "HC3", "HC4",
+                    "HC5"),
+    sample_class = c(rep("AD",5), rep("HC", 4)),
+    base_class = "HC",
+    target_class = "AD")
+```
+
+## Oxazolone scRNAseq input
+
+```{r}
+# Load the disease model Seurat object scRNA-seq
+oxazolone <- OXA
+# Rename the variable containing the class each sample belongs to and the
+# cell type cluster variable into "class" and "celltype_cluster" names as
+# requested by mapping.organism object 
+colnames(slot(oxazolone, "meta.data"))[c(5,11)] <- c("class", 
+                                                        "celltype_cluster")
+# Initialize the mapping.organism object that contains the information on
+# the disease model
+# The target_class is the element of variable "class" that serves as the
+# target class and likewise for base_class. The mapping.organism object
+# should contain the same cell types as the cell types used in the human
+# superpathway
+dc_oxa_org <- new("mapping.organism", organism = "Mus musculus", 
+                target_class = "OXA", base_class = "ETOH",
+                celltype_mapping = list(
+                    "Dendritic Cells" = c("cDC2", "cDC1", "migratory DCs"),
+                    "Langerhan Cells" = c("LC"), 
+                    "T-cell" = c("DETC", "dγdT", "T")),
+                counts = oxazolone
+)
+cytokine_oxa_org <- new("mapping.organism", organism = "Mus musculus", 
+                target_class = "OXA", base_class = "ETOH",
+                celltype_mapping = list(
+                    "Dendritic Cells" = c("cDC2", "cDC1", "migratory DCs"),
+                    "Keratinocytes" = c("Keratinocytes"),
+                    "Langerhan Cells" = c("LC"), 
+                    "Melanocytes" = c(),
+                    "T-cell" = c("DETC", "dγdT", "T")),
+                counts = oxazolone
+)
+```
+
+# Fit Optimal asmbPLS-DA and compute validation metrics for the optimal model
+
+```{r}
+# One can choose to either fit each superpathway individually with fitOptimal or
+# use its wrapper multiple_fitOptimal to fit them all at once. 
+superpathways <- list(dc_superpathway_input, cytokine_superpathway_input)
+superpathways_fit <- multiple_fitOptimal(
+    superpathways, parallel = c(TRUE, FALSE), npermut = c(100),
+    type = c("jackknife","subsampling"), nsubsampling = c(NULL, 5))
+```
+# Compute recapitulation metrics
+
+```{r}
+# singISTrecapitulations computes the recapitulations for the superpathway
+# between the fitted optimal model and the disease model. It automatically
+# computes the biological link function, the singIST treated samples, and
+# derives the scores to compute the recapitulations. By default it assumes
+# the organism for which the asmbPLSDA model was trained is "hsapiens", it 
+# also assumes that the gene annotation for the mapped organism is 
+# "external_gene_name". These parameters are by default but other cases
+# can be considered by specifying the parameters "from_to" and 
+# "object_gene_idetnifiers"
+recapitulations_dc <- singISTrecapitulations(dc_oxa_org,
+                                               superpathways_fit[[1]])
+recapitulations_cytokine <- singISTrecapitulations(cytokine_oxa_org, 
+                                                       superpathways_fit[[2]])
+```
+
