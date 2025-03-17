@@ -229,8 +229,8 @@ superpathways_fit <- multiple_fitOptimal(
 # can be considered by specifying the parameters "from_to" and 
 # "object_gene_idetnifiers"
 recapitulations_dc <- singISTrecapitulations(dc_oxa_org,
-                                               superpathways_fit[[1]])
+                                                superpathways_fit[[1]])
 recapitulations_cytokine <- singISTrecapitulations(cytokine_oxa_org, 
-                                                       superpathways_fit[[2]])
+                                                    superpathways_fit[[2]])
 ```
 
