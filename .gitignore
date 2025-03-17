@@ -1,4 +1,12 @@
+*.Rproj
 .Rproj.user
 /doc/
 /Meta/
 data-raw/OXA_IMQ.rds
+
+# artifacts
+desktop.ini
+man/figures/*
+
+
+
