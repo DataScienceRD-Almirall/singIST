@@ -36,7 +36,9 @@ Imports:
     SeuratObject,
     sp,
     biomaRt,
-    data.table
+    data.table,
+    ExperimentHub,
+    AnnotationHub
 VignetteBuilder: knitr
 Depends: 
     R (>= 4.4.0)

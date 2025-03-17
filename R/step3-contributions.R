@@ -65,7 +65,7 @@ derive_scores <- function(object, data, sample){
     output <- list(
         Delta = Delta, delta = delta_cbind, gamma = gamma, Gamma = Gamma,
         Y_pred_num = Y_fit, Y_weight = fit_asmb$Y_weight[target_class_position,
-                                                         , drop = FALSE])
+                                                            , drop = FALSE])
     return(output)
 }
 
