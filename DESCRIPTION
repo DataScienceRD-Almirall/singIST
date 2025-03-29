@@ -41,7 +41,7 @@ Imports:
     AnnotationHub
 VignetteBuilder: knitr
 Depends: 
-    R (>= 4.4.0)
+    R (>= 4.2.2)
 LazyDataCompression: xz
 LazyData: true
 biocViews: SingleCell, Classification, Transcriptomics
