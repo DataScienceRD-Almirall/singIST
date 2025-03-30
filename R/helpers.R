@@ -309,7 +309,7 @@ execute_parallel_cv <- function(K, cores, results_CV_summary_n,
         n_quantile_comb = nrow(quantile.comb.table), Method = Method,
         measure = measure,expected.measure.increase = expected.measure.increase,
         center = center, scale = scale, maxiter = maxiter, .progress = TRUE,
-        .options = furrr::furrr_options(globals = FALSE, seed = TRUE)
+        .options = furrr::furrr_options(globals = FALSE, seed = TRUE, packages = "singIST")
     )
     future::plan(sequential)  # Reset to sequential execution
     results_CV_summary_n <- output[[1]]$results_CV_summary_n
