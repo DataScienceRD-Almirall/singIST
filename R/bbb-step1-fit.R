@@ -141,7 +141,6 @@ Results_comparison_measure <- function(Y_predict,
 #' @param center A parameter passed from \code{fitOptimal}
 #' @param scale A parameter passed from \code{fitOptimal}
 #' @param maxiter A parameter passed from \code{fitOptimal}
-#' @param global_renv A parameter passed from \code{fitOptimal}
 #' @returns
 #' A list containing the optimal quantiles for each PLS component and the
 #' optimal number of PLS components.
@@ -165,7 +164,7 @@ asmbPLSDA.cv.loo <- function(X.matrix, Y.matrix, PLS_term = 1, X.dim,
                             c("binary", "multiclass"), Method = NULL,
                             measure = "B_accuracy", parallel = FALSE,
                             cores = NULL, expected.measure.increase = 0.005,
-                            center = TRUE,scale = TRUE,maxiter = 100,global_renv){
+                            center = TRUE,scale = TRUE,maxiter = 100){
     n_group <- ncol(Y.matrix)
     measure_selected <- get_measure_index(measure)
     K <- nrow(Y.matrix)
@@ -180,7 +179,7 @@ asmbPLSDA.cv.loo <- function(X.matrix, Y.matrix, PLS_term = 1, X.dim,
                 K, cores, results_CV_summary_n, F_matrix_validation_bind,
                 X.matrix, Y.matrix, i, X.dim, quantile.comb.table, outcome.type,
                 quantile_table_CV, Method, measure, expected.measure.increase,
-                center, scale, maxiter, global_renv)
+                center, scale, maxiter)
             results_CV_summary_n <- results$results_CV_summary_n
             F_matrix_validation_bind <- results$F_matrix_validation_bind
         } else {
@@ -461,10 +460,6 @@ CIP_GIP_test <- function(object, npermut = 100, maxiter = 100,
 #' Passed onto \link{CIP_GIP_test}.
 #' @param nsubsampling Number of subsamples to generate CIP and GIP observed
 #' distributions. By default 100. Passed onto \link{CIP_GIP_test}.
-#' @param global_renv A boolean indicating if the global environment should
-#' be passed to the clusters if `parallel = TRUE`. By default `FALSE`. If you
-#' are in a Cloud environment passing the global environment might be needed
-#' for the clusters. However, generally `FALSE` is recommended.
 #' @import asmbPLS checkmate
 #' @rdname fitOptimal-method
 #'
@@ -490,7 +485,7 @@ fitOptimal.superpathway.input <- function(
         Method = NULL, expected_measure_increase = 0.005, maxiter = 100,
         global_significance_full = FALSE, CIP.GIP_significance_full = FALSE,
         npermut = 100, nbObsPermut = NULL, type = "jackknife",
-        nsubsampling = 100, global_renv = FALSE) {
+        nsubsampling = 100) {
     output <- new("superpathway.fit.model", superpathway_input = object,
                     hyperparameters_fit = object@hyperparameters_info,
                     model_fit = list(), model_validation = list())
@@ -511,8 +506,7 @@ fitOptimal.superpathway.input <- function(
         }
     }
     optimal_hyperparameters <- perform_cv(object, model_block_matrices, nFC,
-        measure, parallel, cores, expected_measure_increase, maxiter, Method,
-        global_renv)
+        measure, parallel, cores, expected_measure_increase, maxiter, Method)
     output@hyperparameters_fit@number_PLS <- as.integer(
         optimal_hyperparameters$optimal_nPLS)
     output@hyperparameters_fit@quantile_comb_table <-
