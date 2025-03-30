@@ -298,9 +298,7 @@ execute_parallel_cv <- function(K, cores, results_CV_summary_n,
                                 scale, maxiter) {
     workers <- ifelse(is.null(cores),
                         parallel::detectCores(logical = FALSE) - 1, cores)
-    future::plan(multisession, workers = workers, .init = function(){
-        library(singIST)
-    })
+    future::plan(multisession, workers = workers)
     j <- data.frame("j" = seq_len(K))
     output <- furrr::future_pmap(
         j, quantile_computation, results_CV_summary_n = results_CV_summary_n,
