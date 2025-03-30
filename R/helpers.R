@@ -265,8 +265,6 @@ evaluate_quantile_combinations <- function(j, results_CV_summary_n,
 #' @param scale Logical; whether to scale data.
 #' @param maxiter Maximum number of iterations.
 #' @param Method Method to predict class
-#' @param global_renv Boolean indicating whether to pass global R 
-#' environment to the parallel clusters or not.
 #' @name helpers
 #' @rdname helpers
 #' @return A list containing updated `results_CV_summary_n` and
@@ -297,7 +295,7 @@ execute_parallel_cv <- function(K, cores, results_CV_summary_n,
                                 PLS_term, X.dim, quantile.comb.table,
                                 outcome.type, quantile_table_CV, Method,
                                 measure, expected.measure.increase, center,
-                                scale, maxiter, global_renv) {
+                                scale, maxiter) {
     workers <- ifelse(is.null(cores),
                         parallel::detectCores(logical = FALSE) - 1, cores)
     future::plan(multisession, workers = workers)
@@ -311,7 +309,8 @@ execute_parallel_cv <- function(K, cores, results_CV_summary_n,
         n_quantile_comb = nrow(quantile.comb.table), Method = Method,
         measure = measure,expected.measure.increase = expected.measure.increase,
         center = center, scale = scale, maxiter = maxiter, .progress = TRUE,
-        .options = furrr::furrr_options(globals = global_renv, seed = TRUE)
+        .options = furrr::furrr_options(globals = FALSE, seed = TRUE,
+        packages = "package:singIST")
     )
     future::plan(sequential)  # Reset to sequential execution
     results_CV_summary_n <- output[[1]]$results_CV_summary_n
@@ -932,10 +931,6 @@ calculate_pvalues <- function(variability, null_dist, test_func) {
 #' is 100.
 #' @param Method The decision rule for prediction (e.g., "fixed_cutoff",
 #' "Euclidean_distance_X", etc.). Default is `NULL`.
-#' @param global_renv A boolean indicating if the global environment should
-#' be passed to the clusters if `parallel = TRUE`. By default `FALSE`. If you
-#' are in a Cloud environment passing the global environment might be needed
-#' for the clusters. However, generally `FALSE` is recommended.
 #' @name helpers
 #' @rdname helpers
 #' @import asmbPLS
@@ -943,8 +938,7 @@ calculate_pvalues <- function(variability, null_dist, test_func) {
 #' @returns A list containing the optimal hyperparameters and associated
 #' quantile table.
 perform_cv <- function(object, model_block_matrices, nFC, measure, parallel,
-                        cores, expected_measure_increase, maxiter, Method,
-                        global_renv) {
+                        cores, expected_measure_increase, maxiter, Method) {
     nSamples <- as.vector(base::table(object@sample_class))
     if (nFC == 1) {
         message("Running LOOCV")
@@ -962,8 +956,7 @@ perform_cv <- function(object, model_block_matrices, nFC, measure, parallel,
             parallel = parallel,
             cores = cores,
             expected.measure.increase = expected_measure_increase,
-            maxiter = maxiter,
-            global_renv))
+            maxiter = maxiter))
     } else {
         message("Running KCV")
         return(asmbPLS::asmbPLSDA.cv(
