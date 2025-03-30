@@ -301,7 +301,10 @@ execute_parallel_cv <- function(K, cores, results_CV_summary_n,
     future::plan(multisession, workers = workers)
     j <- data.frame("j" = seq_len(K))
     output <- furrr::future_pmap(
-        j, quantile_computation, results_CV_summary_n = results_CV_summary_n,
+        j, function(...){
+            library(singIST)
+            quantile_computation(...)
+        }, results_CV_summary_n = results_CV_summary_n,
         F_matrix_validation_bind = F_matrix_validation_bind,X.matrix = X.matrix,
         Y.matrix = Y.matrix, PLS_term = PLS_term, X.dim = X.dim,
         quantile.comb.table = quantile.comb.table, outcome.type = outcome.type,
@@ -309,7 +312,7 @@ execute_parallel_cv <- function(K, cores, results_CV_summary_n,
         n_quantile_comb = nrow(quantile.comb.table), Method = Method,
         measure = measure,expected.measure.increase = expected.measure.increase,
         center = center, scale = scale, maxiter = maxiter, .progress = TRUE,
-        .options = furrr::furrr_options(globals = FALSE, seed = TRUE, packages = "singIST")
+        .options = furrr::furrr_options(globals = FALSE, seed = TRUE)
     )
     future::plan(sequential)  # Reset to sequential execution
     results_CV_summary_n <- output[[1]]$results_CV_summary_n
