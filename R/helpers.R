@@ -301,7 +301,7 @@ execute_parallel_cv <- function(K, cores, results_CV_summary_n,
     future::plan(multisession, workers = workers)
     j <- data.frame("j" = seq_len(K))
     output <- furrr::future_pmap(
-        j, quantile_computation(...), results_CV_summary_n = results_CV_summary_n,
+        j, quantile_computation, results_CV_summary_n = results_CV_summary_n,
         F_matrix_validation_bind = F_matrix_validation_bind,X.matrix = X.matrix,
         Y.matrix = Y.matrix, PLS_term = PLS_term, X.dim = X.dim,
         quantile.comb.table = quantile.comb.table, outcome.type = outcome.type,
