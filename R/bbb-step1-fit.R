@@ -136,7 +136,6 @@ Results_comparison_measure <- function(Y_predict,
 #' @param Method A parameter passed from \code{fitOptimal}
 #' @param measure A parameter passed from \code{fitOptimal}
 #' @param parallel A parameter passed from \code{fitOptimal}
-#' @param cores A parameter passed from \code{fitOptimal}
 #' @param expected.measure.increase A parameter passed from \code{fitOptimal}
 #' @param center A parameter passed from \code{fitOptimal}
 #' @param scale A parameter passed from \code{fitOptimal}
@@ -156,14 +155,14 @@ Results_comparison_measure <- function(Y_predict,
 #' "quantile_comb_table")
 #' outcome.type <- slot(slot(data, "hyperparameters_info"), "outcome_type")
 #' asmbPLSDA.cv.loo(X.matrix, Y.matrix, PLS_term = 1, X.dim,quantile.comb.table,
-#' Method = NULL, measure = "B_accuracy", parallel = TRUE, cores = NULL,
+#' Method = NULL, measure = "B_accuracy", parallel = TRUE,
 #' outcome.type = outcome.type, expected.measure.increase = 0.005,
 #' center = TRUE, scale = TRUE,maxiter = 100, FALSE)
 asmbPLSDA.cv.loo <- function(X.matrix, Y.matrix, PLS_term = 1, X.dim,
                             quantile.comb.table, outcome.type =
                             c("binary", "multiclass"), Method = NULL,
                             measure = "B_accuracy", parallel = FALSE,
-                            cores = NULL, expected.measure.increase = 0.005,
+                            expected.measure.increase = 0.005,
                             center = TRUE,scale = TRUE,maxiter = 100){
     n_group <- ncol(Y.matrix)
     measure_selected <- get_measure_index(measure)
@@ -176,7 +175,7 @@ asmbPLSDA.cv.loo <- function(X.matrix, Y.matrix, PLS_term = 1, X.dim,
         F_matrix_validation_bind <- matrix(0, nrow = n_quantile_comb, ncol = K)
         if (parallel) {
             results <- execute_parallel_cv(
-                K, cores, results_CV_summary_n, F_matrix_validation_bind,
+                K, results_CV_summary_n, F_matrix_validation_bind,
                 X.matrix, Y.matrix, i, X.dim, quantile.comb.table, outcome.type,
                 quantile_table_CV, Method, measure, expected.measure.increase,
                 center, scale, maxiter)
