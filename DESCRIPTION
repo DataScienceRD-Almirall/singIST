@@ -34,12 +34,10 @@ Imports:
     SeuratObject,
     sp,
     biomaRt,
-    data.table,
-    ExperimentHub,
-    AnnotationHub
+    data.table
 VignetteBuilder: knitr
 Depends: 
-    R (>= 4.2.2)
+    R (>= 4.2)
 LazyDataCompression: xz
 LazyData: true
 biocViews: SingleCell, Classification, Transcriptomics

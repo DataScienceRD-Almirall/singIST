@@ -220,7 +220,7 @@ superpathways <- list(dc_superpathway_input, cytokine_superpathway_input)
 superpathways_fit <- multiple_fitOptimal(
     superpathways, parallel = c(TRUE, FALSE), npermut = c(100),
     type = c("jackknife","subsampling"), nsubsampling = c(NULL, 5))
-# disable parallellization
+# disable parallelization
 BiocParallel::register(BiocParallel::SerialParam(), default = TRUE) 
 ```
 # Compute recapitulation metrics
