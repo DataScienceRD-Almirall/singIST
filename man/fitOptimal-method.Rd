@@ -9,7 +9,6 @@
 fitOptimal.superpathway.input(
   object,
   parallel = FALSE,
-  cores = NULL,
   measure = "B_accuracy",
   Method = NULL,
   expected_measure_increase = 0.005,
@@ -27,7 +26,6 @@ fitOptimal(object, ...)
 \S4method{fitOptimal}{superpathway.input}(
   object,
   parallel = FALSE,
-  cores = NULL,
   measure = "B_accuracy",
   Method = NULL,
   expected_measure_increase = 0.005,
@@ -46,10 +44,6 @@ fitOptimal(object, ...)
 \item{parallel}{A boolean indicating whether to parallelize (\code{TRUE})
 for LOOCV on quantile combination or not (\code{FALSE}). Note this option is only
 available for LOOCV and not KCV. Default is \code{FALSE}.}
-
-\item{cores}{Integer number of cores to use if parallize is \code{TRUE}. By
-default if \code{NULL} cores are assigned to
-\code{parallel::detectCores(logical=FALSE)-1}.}
 
 \item{measure}{Accuracy measure to be used to select optimal asmbPLSDA model.
 Default is F1 measure. Options are: F1, accuracy, B_accuracy, precision

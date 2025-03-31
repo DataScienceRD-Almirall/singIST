@@ -14,7 +14,6 @@ asmbPLSDA.cv.loo(
   Method = NULL,
   measure = "B_accuracy",
   parallel = FALSE,
-  cores = NULL,
   expected.measure.increase = 0.005,
   center = TRUE,
   scale = TRUE,
@@ -44,8 +43,6 @@ from \link{hyperparameters-class} object}
 
 \item{parallel}{A parameter passed from \code{fitOptimal}}
 
-\item{cores}{A parameter passed from \code{fitOptimal}}
-
 \item{expected.measure.increase}{A parameter passed from \code{fitOptimal}}
 
 \item{center}{A parameter passed from \code{fitOptimal}}
@@ -71,7 +68,7 @@ quantile.comb.table <- slot(slot(data, "hyperparameters_info"),
 "quantile_comb_table")
 outcome.type <- slot(slot(data, "hyperparameters_info"), "outcome_type")
 asmbPLSDA.cv.loo(X.matrix, Y.matrix, PLS_term = 1, X.dim,quantile.comb.table,
-Method = NULL, measure = "B_accuracy", parallel = TRUE, cores = NULL,
+Method = NULL, measure = "B_accuracy", parallel = TRUE,
 outcome.type = outcome.type, expected.measure.increase = 0.005,
-center = TRUE, scale = TRUE,maxiter = 100)
+center = TRUE, scale = TRUE,maxiter = 100, FALSE)
 }

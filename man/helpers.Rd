@@ -89,7 +89,6 @@ evaluate_quantile_combinations(
 
 execute_parallel_cv(
   K,
-  cores,
   results_CV_summary_n,
   F_matrix_validation_bind,
   X.matrix,
@@ -104,7 +103,8 @@ execute_parallel_cv(
   expected.measure.increase,
   center,
   scale,
-  maxiter
+  maxiter,
+  BPPARAM = BiocParallel::bpparam()
 )
 
 performance_measures(
@@ -218,7 +218,6 @@ perform_cv(
   nFC,
   measure,
   parallel,
-  cores,
   expected_measure_increase,
   maxiter,
   Method
@@ -318,8 +317,7 @@ Default is 100.}
 
 \item{i}{Passed from \link{asmbPLSDA.cv.loo}}
 
-\item{cores}{The number of cores to use if parallel computation is enabled.
-Default is \code{NULL}.}
+\item{BPPARAM}{A \code{BiocParallel::bpparam()} with parallelization options}
 
 \item{measure_selected}{Passed from \link{asmbPLSDA.cv.loo}}
 
@@ -618,7 +616,11 @@ Y <- matrix(sample(0:1, 5, replace = TRUE), ncol = 1)
 quantile_comb_table <- matrix(runif(10), nrow = 2, ncol = 10)
 results_CV_summary_n <- matrix(0, nrow = 2, ncol = K)
 F_matrix_validation_bind <- matrix(0, nrow = 2, ncol = K)
-output <- execute_parallel_cv(K, cores = 2, results_CV_summary_n,
+# Parallelization options
+library(BiocParallel)
+register(SnowParam(workers = 2, exportglobals = FALSE, progressbar = TRUE),
+default = TRUE)
+output <- execute_parallel_cv(K, results_CV_summary_n,
                               F_matrix_validation_bind, X, Y, PLS_term = 1,
                               X.dim = c(5,5),
                               quantile.comb.table = quantile_comb_table,
@@ -628,6 +630,7 @@ output <- execute_parallel_cv(K, cores = 2, results_CV_summary_n,
                               expected.measure.increase = 0.005,
                               center = TRUE, scale = TRUE, maxiter = 100,
                               Method = NULL)
+register(SerialParam(), default = TRUE) # disable parallelization
 str(output)
 initialize_results(100, 3)
 permute_Y_matrix(matrix(rnorm(100), 10, 10), nr = 10, nbObsPermut = 3, j = 2)
