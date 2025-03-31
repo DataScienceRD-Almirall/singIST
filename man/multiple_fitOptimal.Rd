@@ -7,7 +7,6 @@
 multiple_fitOptimal(
   object = list(),
   parallel = c(FALSE),
-  cores = c(NULL),
   measure = c("B_accuracy"),
   expected_measure_increase = c(0.005),
   maxiter = c(100),
@@ -25,9 +24,6 @@ multiple_fitOptimal(
 objects to use \link{fitOptimal} to}
 
 \item{parallel}{A vector whose elements are \code{parallel} parameters for each
-object as requested by \link{fitOptimal}}
-
-\item{cores}{A vector whose elements are \code{cores} parameters for each
 object as requested by \link{fitOptimal}}
 
 \item{measure}{A vector whose elements are \code{measure} parameters for each
