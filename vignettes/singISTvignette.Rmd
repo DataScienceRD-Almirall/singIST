@@ -211,10 +211,14 @@ cytokine_oxa_org <- new("mapping.organism", organism = "Mus musculus",
 ```{r}
 # One can choose to either fit each superpathway individually with fitOptimal or
 # use its wrapper multiple_fitOptimal to fit them all at once. 
+# enable parallellization with 2 workers
+register(SnowParam(workers = 2, exportglobals = FALSE), default = TRUE)  
 superpathways <- list(dc_superpathway_input, cytokine_superpathway_input)
 superpathways_fit <- multiple_fitOptimal(
     superpathways, parallel = c(TRUE, FALSE), npermut = c(100),
     type = c("jackknife","subsampling"), nsubsampling = c(NULL, 5))
+# disable parallellization
+register(SerialParam(), default = TRUE) 
 ```
 # Compute recapitulation metrics
 
