@@ -72,8 +72,6 @@ multiple_check <- function(parameter, objectLength){
 #' objects to use \link{fitOptimal} to
 #' @param parallel A vector whose elements are `parallel` parameters for each
 #' object as requested by \link{fitOptimal}
-#' @param cores A vector whose elements are `cores` parameters for each
-#' object as requested by \link{fitOptimal}
 #' @param measure A vector whose elements are `measure` parameters for each
 #' object as requested by \link{fitOptimal}
 #' @param expected_measure_increase A vector whose elements are
@@ -108,7 +106,7 @@ multiple_check <- function(parameter, objectLength){
 #' multiple_model <- multiple_fitOptimal(models, type = c("jackknife",
 #' "subsampling"), nsubsampling = c(NULL, 10), npermut = c(10,15))
 multiple_fitOptimal <- function(
-        object = list(), parallel = c(FALSE), cores = c(NULL),
+        object = list(), parallel = c(FALSE),
         measure = c("B_accuracy"), expected_measure_increase = c(0.005),
         maxiter = c(100), global_significance_full= c(FALSE),
         CIP.GIP_significance_full = c(FALSE), npermut = c(100),
@@ -124,7 +122,6 @@ multiple_fitOptimal <- function(
     }
     # If parameter provided is NULL then the rest is NULL otherwise provide all
     parallel <- multiple_check(parallel, nobjects)
-    cores <- multiple_check(cores, nobjects)
     measure <- multiple_check(measure, nobjects)
     expected_measure_increase <- multiple_check(
         expected_measure_increase, nobjects)
@@ -144,7 +141,7 @@ multiple_fitOptimal <- function(
         names(model)[[l]] <- pathway
         message("Object ", pathway)
         model[[l]] <- fitOptimal(
-            object = object[[l]], parallel = parallel[[l]], cores = cores[[l]],
+            object = object[[l]], parallel = parallel[[l]],
             measure = measure[[l]], expected_measure_increase =
             expected_measure_increase[[l]], maxiter = maxiter[[l]],
             global_significance_full= global_significance_full[[l]],
