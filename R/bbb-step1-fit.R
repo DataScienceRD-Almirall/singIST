@@ -157,7 +157,7 @@ Results_comparison_measure <- function(Y_predict,
 #' asmbPLSDA.cv.loo(X.matrix, Y.matrix, PLS_term = 1, X.dim,quantile.comb.table,
 #' Method = NULL, measure = "B_accuracy", parallel = TRUE,
 #' outcome.type = outcome.type, expected.measure.increase = 0.005,
-#' center = TRUE, scale = TRUE,maxiter = 100, FALSE)
+#' center = TRUE, scale = TRUE,maxiter = 100)
 asmbPLSDA.cv.loo <- function(X.matrix, Y.matrix, PLS_term = 1, X.dim,
                             quantile.comb.table, outcome.type =
                             c("binary", "multiclass"), Method = NULL,
