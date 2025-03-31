@@ -414,9 +414,6 @@ CIP_GIP_test <- function(object, npermut = 100, maxiter = 100,
 #' @param parallel A boolean indicating whether to parallelize (`TRUE`)
 #' for LOOCV on quantile combination or not (`FALSE`). Note this option is only
 #' available for LOOCV and not KCV. Default is `FALSE`.
-#' @param cores Integer number of cores to use if parallize is `TRUE`. By
-#' default if `NULL` cores are assigned to
-#' `parallel::detectCores(logical=FALSE)-1`.
 #' @param measure Accuracy measure to be used to select optimal asmbPLSDA model.
 #' Default is F1 measure. Options are: F1, accuracy, B_accuracy, precision
 #' and recall.
@@ -480,8 +477,8 @@ CIP_GIP_test <- function(object, npermut = 100, maxiter = 100,
 #' fitOptimal(example_superpathway_input, npermut = 50, type = "subsampling",
 #' nsubsampling = 10)
 fitOptimal.superpathway.input <- function(
-        object, parallel = FALSE, cores = NULL, measure = "B_accuracy",
-        Method = NULL, expected_measure_increase = 0.005, maxiter = 100,
+        object, parallel = FALSE, measure = "B_accuracy", Method = NULL,
+        expected_measure_increase = 0.005, maxiter = 100,
         global_significance_full = FALSE, CIP.GIP_significance_full = FALSE,
         npermut = 100, nbObsPermut = NULL, type = "jackknife",
         nsubsampling = 100) {
@@ -505,7 +502,7 @@ fitOptimal.superpathway.input <- function(
         }
     }
     optimal_hyperparameters <- perform_cv(object, model_block_matrices, nFC,
-        measure, parallel, cores, expected_measure_increase, maxiter, Method)
+        measure, parallel, expected_measure_increase, maxiter, Method)
     output@hyperparameters_fit@number_PLS <- as.integer(
         optimal_hyperparameters$optimal_nPLS)
     output@hyperparameters_fit@quantile_comb_table <-
