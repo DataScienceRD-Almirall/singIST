@@ -264,11 +264,12 @@ evaluate_quantile_combinations <- function(j, results_CV_summary_n,
 #' @param scale Logical; whether to scale data.
 #' @param maxiter Maximum number of iterations.
 #' @param Method Method to predict class
+#' @param BPPARAM A `BiocParallel::bpparam()` with parallelization options
 #' @name helpers
 #' @rdname helpers
 #' @return A list containing updated `results_CV_summary_n` and
 #' `F_matrix_validation_bind` matrices.
-#' @import future furrr parallel
+#' @import BiocParallel
 #' @export
 #' @examples
 #' set.seed(123)
@@ -278,6 +279,10 @@ evaluate_quantile_combinations <- function(j, results_CV_summary_n,
 #' quantile_comb_table <- matrix(runif(10), nrow = 2, ncol = 10)
 #' results_CV_summary_n <- matrix(0, nrow = 2, ncol = K)
 #' F_matrix_validation_bind <- matrix(0, nrow = 2, ncol = K)
+#' # Parallelization options
+#' library(BiocParallel)
+#' register(SnowParam(workers = 2, exportglobals = FALSE, progressbar = TRUE),
+#' default = TRUE)
 #' output <- execute_parallel_cv(K, results_CV_summary_n,
 #'                               F_matrix_validation_bind, X, Y, PLS_term = 1,
 #'                               X.dim = c(5,5),
@@ -287,20 +292,19 @@ evaluate_quantile_combinations <- function(j, results_CV_summary_n,
 #'                               measure = "B_accuracy",
 #'                               expected.measure.increase = 0.005,
 #'                               center = TRUE, scale = TRUE, maxiter = 100,
-#'                               Method = NULL, FALSE)
+#'                               Method = NULL)
+#'register(SerialParam(), default = TRUE) # disable parallelization
 #' str(output)
 execute_parallel_cv <- function(K, results_CV_summary_n,
                                 F_matrix_validation_bind, X.matrix, Y.matrix,
                                 PLS_term, X.dim, quantile.comb.table,
                                 outcome.type, quantile_table_CV, Method,
                                 measure, expected.measure.increase, center,
-                                scale, maxiter, BPPARAM = BiocParallel::bpparam()) {
-    #workers <- ifelse(is.null(cores),
-    #                   parallel::detectCores(logical = FALSE) - 1, cores)
-    #future::plan(multisession, workers = workers)
-    #j <- data.frame("j" = seq_len(K))
+                                scale, maxiter,
+                                BPPARAM = BiocParallel::bpparam()) {
     output <- BiocParallel::bplapply(
-        seq_len(K), quantile_computation, results_CV_summary_n = results_CV_summary_n,
+        seq_len(K), quantile_computation,
+        results_CV_summary_n = results_CV_summary_n,
         F_matrix_validation_bind = F_matrix_validation_bind,X.matrix = X.matrix,
         Y.matrix = Y.matrix, PLS_term = PLS_term, X.dim = X.dim,
         quantile.comb.table = quantile.comb.table, outcome.type = outcome.type,
