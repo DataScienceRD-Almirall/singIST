@@ -314,7 +314,6 @@ execute_parallel_cv <- function(K, results_CV_summary_n,
         center = center, scale = scale, maxiter = maxiter,
         BPPARAM = BPPARAM
     )
-    #future::plan(sequential)  # Reset to sequential execution
     results_CV_summary_n <- output[[1]]$results_CV_summary_n
     F_matrix_validation_bind <- output[[1]]$F_matrix_validation_bind
     for (ncol in 2:K) {
