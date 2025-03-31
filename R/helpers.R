@@ -248,7 +248,6 @@ evaluate_quantile_combinations <- function(j, results_CV_summary_n,
 #' @description Performs leave-one-out cross-validation (LOO-CV) in parallel.
 #'
 #' @param K Number of samples.
-#' @param cores Number of CPU cores to use.
 #' @param results_CV_summary_n Matrix to store CV results.
 #' @param F_matrix_validation_bind Matrix to store validation responses.
 #' @param X.matrix Predictor matrix.
@@ -279,7 +278,7 @@ evaluate_quantile_combinations <- function(j, results_CV_summary_n,
 #' quantile_comb_table <- matrix(runif(10), nrow = 2, ncol = 10)
 #' results_CV_summary_n <- matrix(0, nrow = 2, ncol = K)
 #' F_matrix_validation_bind <- matrix(0, nrow = 2, ncol = K)
-#' output <- execute_parallel_cv(K, cores = 2, results_CV_summary_n,
+#' output <- execute_parallel_cv(K, results_CV_summary_n,
 #'                               F_matrix_validation_bind, X, Y, PLS_term = 1,
 #'                               X.dim = c(5,5),
 #'                               quantile.comb.table = quantile_comb_table,
@@ -290,28 +289,28 @@ evaluate_quantile_combinations <- function(j, results_CV_summary_n,
 #'                               center = TRUE, scale = TRUE, maxiter = 100,
 #'                               Method = NULL, FALSE)
 #' str(output)
-execute_parallel_cv <- function(K, cores, results_CV_summary_n,
+execute_parallel_cv <- function(K, results_CV_summary_n,
                                 F_matrix_validation_bind, X.matrix, Y.matrix,
                                 PLS_term, X.dim, quantile.comb.table,
                                 outcome.type, quantile_table_CV, Method,
                                 measure, expected.measure.increase, center,
-                                scale, maxiter) {
-    workers <- ifelse(is.null(cores),
-                        parallel::detectCores(logical = FALSE) - 1, cores)
-    future::plan(multisession, workers = workers)
-    j <- data.frame("j" = seq_len(K))
-    output <- furrr::future_pmap(
-        j, quantile_computation, results_CV_summary_n = results_CV_summary_n,
+                                scale, maxiter, BPPARAM = BiocParallel::bpparam()) {
+    #workers <- ifelse(is.null(cores),
+    #                   parallel::detectCores(logical = FALSE) - 1, cores)
+    #future::plan(multisession, workers = workers)
+    #j <- data.frame("j" = seq_len(K))
+    output <- BiocParallel::bplapply(
+        seq_len(K), quantile_computation, results_CV_summary_n = results_CV_summary_n,
         F_matrix_validation_bind = F_matrix_validation_bind,X.matrix = X.matrix,
         Y.matrix = Y.matrix, PLS_term = PLS_term, X.dim = X.dim,
         quantile.comb.table = quantile.comb.table, outcome.type = outcome.type,
         quantile_table_CV = quantile_table_CV, K = K,
         n_quantile_comb = nrow(quantile.comb.table), Method = Method,
         measure = measure,expected.measure.increase = expected.measure.increase,
-        center = center, scale = scale, maxiter = maxiter, .progress = TRUE,
-        .options = furrr::furrr_options(globals = FALSE, seed = TRUE)
+        center = center, scale = scale, maxiter = maxiter,
+        BPPARAM = BPPARAM
     )
-    future::plan(sequential)  # Reset to sequential execution
+    #future::plan(sequential)  # Reset to sequential execution
     results_CV_summary_n <- output[[1]]$results_CV_summary_n
     F_matrix_validation_bind <- output[[1]]$F_matrix_validation_bind
     for (ncol in 2:K) {
@@ -922,8 +921,6 @@ calculate_pvalues <- function(variability, null_dist, test_func) {
 #' Default is "F1".
 #' @param parallel A logical value indicating whether parallel computation
 #' should be used.
-#' @param cores The number of cores to use if parallel computation is enabled.
-#' Default is `NULL`.
 #' @param expected_measure_increase Expected decrease in measure per additional
 #' PLS component. Default is 0.005.
 #' @param maxiter The maximum number of iterations for cross-validation. Default
@@ -937,7 +934,7 @@ calculate_pvalues <- function(variability, null_dist, test_func) {
 #' @returns A list containing the optimal hyperparameters and associated
 #' quantile table.
 perform_cv <- function(object, model_block_matrices, nFC, measure, parallel,
-                        cores, expected_measure_increase, maxiter, Method) {
+                        expected_measure_increase, maxiter, Method) {
     nSamples <- as.vector(base::table(object@sample_class))
     if (nFC == 1) {
         message("Running LOOCV")
@@ -953,7 +950,6 @@ perform_cv <- function(object, model_block_matrices, nFC, measure, parallel,
             scale = TRUE,
             measure = measure,
             parallel = parallel,
-            cores = cores,
             expected.measure.increase = expected_measure_increase,
             maxiter = maxiter))
     } else {
