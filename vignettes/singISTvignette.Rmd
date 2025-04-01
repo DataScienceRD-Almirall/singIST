@@ -103,7 +103,7 @@ counts_dc <- counts_dc[!(sub("_.*$", "", rownames(counts_dc)) %in%
 quantile_comb_table <- as.matrix(
     RcppAlgos::permuteGeneral(seq(0.1, 0.95, by = 0.3),
                                 m = length(slot(dc_superpathway, "celltypes")), 
-                                replace = TRUE))
+                                TRUE))
 
 # We choose a "binary" outcome, we will test at maximum 3 PLS components,
 # and we choose a LOOCV (1 fold), since we choose LOOCV the number of
@@ -146,7 +146,7 @@ quantile_comb_table <- as.matrix(
     RcppAlgos::permuteGeneral(seq(0.05, 0.95, by = 0.2),
                                 m = length(slot(cytokine_superpathway, 
                                                 "celltypes")), 
-                                replace = TRUE))
+                                TRUE))
 
 # We choose a "binary" outcome, we will test at maximum 2 PLS components,
 # and we choose a 5-Fold CV with 5 repetitions each
