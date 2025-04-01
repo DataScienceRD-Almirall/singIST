@@ -226,6 +226,16 @@ gene_contrib <- function(model_object, data_original,
 singISTrecapitulations <- function(object, model_object, ...){
     checkmate::assert_class(object, "mapping.organism")
     checkmate::assert_class(model_object, "superpathway.fit.model")
+    nopick <- which(!(names(object@celltype_mapping) %in%
+                model_object@superpathway_input@superpathway_info@celltypes))
+    # Check cell types modelled in model_object have the same order in object
+    check <- setdiff(nopick, seq(1, length(names(object@celltype_mapping))))
+    if(!all(model_object@superpathway_input@superpathway_info@celltypes ==
+            names(object@celltype_mapping)[check])){
+        stop("Object and model_object cell types are not in same order")
+    }
+    # If cell type mapped is not in `model_object` set to void
+    object@celltype_mapping[nopick] <- NULL
     # Derive singIST treated samples
     linkFunction <- biological_link_function(object, model_object, ...)
     C <- model_object@model_fit$predictor_block

@@ -348,7 +348,9 @@ methods::setClass("superpathway.fit.model",
 #' exactly the cell type used in \link{superpathway.gene.sets-class}, each
 #' vector contains the values of `slot(SeuratObject, meta.data$class)` that are
 #' equivalent to its respective \link{superpathway.gene.sets-class} cell type.
-#' If no mapping exists for a given cell type its vector should void.
+#' If no mapping exists for a given cell type its vector should void. If you
+#' are assessing multiple \link{superpathway.gene.sets-class} objects, you
+#' should include the mapping of all cell types used in these objects.
 #' @slot counts A Seurat object with the scRNA-seq counts. This object should
 #' contain variables in `slot(SeuratObject, meta.data)` slot; `class`
 #' indicating the class the sample belongs to; `celltype_cluster` indicating
