@@ -205,7 +205,7 @@ oxa_org <- new("mapping.organism", organism = "Mus musculus",
 # enable parallellization with 2 workers
 library(BiocParallel)
 # SnowParam works with Windows, if you work with Linux MulticoreParam is better
-BiocParallel::register(BiocParallel::SnowParam(workers = 9,
+BiocParallel::register(BiocParallel::SnowParam(workers = 2,
                         exportglobals = FALSE, progressbar = TRUE),
                         default = TRUE)  
 superpathways <- list(dc_superpathway_input, cytokine_superpathway_input)

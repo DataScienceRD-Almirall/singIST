@@ -24,7 +24,9 @@ has been trained. Note that the name of each element of the list should be
 exactly the cell type used in \link{superpathway.gene.sets-class}, each
 vector contains the values of \code{slot(SeuratObject, meta.data$class)} that are
 equivalent to its respective \link{superpathway.gene.sets-class} cell type.
-If no mapping exists for a given cell type its vector should void.}
+If no mapping exists for a given cell type its vector should void. If you
+are assessing multiple \link{superpathway.gene.sets-class} objects, you
+should include the mapping of all cell types used in these objects.}
 
 \item{\code{counts}}{A Seurat object with the scRNA-seq counts. This object should
 contain variables in \code{slot(SeuratObject, meta.data)} slot; \code{class}
