@@ -184,17 +184,8 @@ colnames(slot(oxazolone, "meta.data"))[c(5,11)] <- c("class",
 # the disease model
 # The target_class is the element of variable "class" that serves as the
 # target class and likewise for base_class. The mapping.organism object
-# should contain the same cell types as the cell types used in the human
-# superpathway
-dc_oxa_org <- new("mapping.organism", organism = "Mus musculus", 
-                target_class = "OXA", base_class = "ETOH",
-                celltype_mapping = list(
-                    "Dendritic Cells" = c("cDC2", "cDC1", "migratory DCs"),
-                    "Langerhan Cells" = c("LC"), 
-                    "T-cell" = c("DETC", "dγdT", "T")),
-                counts = oxazolone
-)
-cytokine_oxa_org <- new("mapping.organism", organism = "Mus musculus", 
+# should contain the cell types used in all human superpathways under study
+oxa_org <- new("mapping.organism", organism = "Mus musculus", 
                 target_class = "OXA", base_class = "ETOH",
                 celltype_mapping = list(
                     "Dendritic Cells" = c("cDC2", "cDC1", "migratory DCs"),
@@ -213,7 +204,8 @@ cytokine_oxa_org <- new("mapping.organism", organism = "Mus musculus",
 # use its wrapper multiple_fitOptimal to fit them all at once. 
 # enable parallellization with 2 workers
 library(BiocParallel)
-BiocParallel::register(BiocParallel::SnowParam(workers = 2,
+# SnowParam works with Windows, if you work with Linux MulticoreParam is better
+BiocParallel::register(BiocParallel::SnowParam(workers = 9,
                         exportglobals = FALSE, progressbar = TRUE),
                         default = TRUE)  
 superpathways <- list(dc_superpathway_input, cytokine_superpathway_input)
@@ -234,10 +226,17 @@ BiocParallel::register(BiocParallel::SerialParam(), default = TRUE)
 # also assumes that the gene annotation for the mapped organism is 
 # "external_gene_name". These parameters are by default but other cases
 # can be considered by specifying the parameters "from_to" and 
-# "object_gene_idetnifiers"
-recapitulations_dc <- singISTrecapitulations(dc_oxa_org,
-                                                superpathways_fit[[1]])
-recapitulations_cytokine <- singISTrecapitulations(cytokine_oxa_org, 
-                                                    superpathways_fit[[2]])
+# "object_gene_identifiers"
+recapitulations_dc <- singISTrecapitulations(oxa_org, superpathways_fit[[1]])
+recapitulations_cytokine <- singISTrecapitulations(oxa_org, superpathways_fit[[2]])
 ```
+
+```{r}
+# One can also compute multiple singIST recapitulations for the same disease
+# model across multiple superpathways of interest by using 
+# multiple_singISTrecapitulations
+recapitulations_multiple <- multiple_singISTrecapitulations(oxa_org,
+                                                            superpathways_fit)
+```
+
 

@@ -251,10 +251,6 @@ singIST_treat <- function(object, model_object, orthologs, logFC){
 biological_link_function <- function(
         object, model_object, object_gene_identifiers = "external_gene_name",
         ...){
-    checkmate::assert_class(object, "mapping.organism")
-    checkmate::assert_class(model_object, "superpathway.fit.model")
-    checkmate::assert_true(all(names(object@celltype_mapping) ==
-                model_object@superpathway_input@superpathway_info@celltypes))
     # Cell type and orthology mapping
     message("Cell type mapping...")
     object <- celltype_mapping(object)
