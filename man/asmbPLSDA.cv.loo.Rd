@@ -70,5 +70,5 @@ outcome.type <- slot(slot(data, "hyperparameters_info"), "outcome_type")
 asmbPLSDA.cv.loo(X.matrix, Y.matrix, PLS_term = 1, X.dim,quantile.comb.table,
 Method = NULL, measure = "B_accuracy", parallel = TRUE,
 outcome.type = outcome.type, expected.measure.increase = 0.005,
-center = TRUE, scale = TRUE,maxiter = 100, FALSE)
+center = TRUE, scale = TRUE,maxiter = 100)
 }
