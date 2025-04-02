@@ -187,7 +187,7 @@ multiple_fitOptimal <- function(
 multiple_singISTrecapitulations <- function(
         object, model_object = list(), from_species = list("hsapiens"), ...){
     # Check that multiple objects are provided in the proper format
-    nmodels<- length(model_object)
+    nmodels <- length(model_object)
     checkmate::assert_list(model_object, any.missing = FALSE,
                             all.missing = FALSE)
     checkmate::assert_true(nmodels > 1)
@@ -201,7 +201,7 @@ multiple_singISTrecapitulations <- function(
     aux_gene <- vector("list", length = nmodels)
     aux_FC <- vector("list", length = nmodels)
     for(i in seq(1, nmodels)){
-        pathway <-model_object[[i]]@superpathway_input@superpathway_info
+        pathway <- model_object[[i]]@superpathway_input@superpathway_info
         message("Executing superpathway ", pathway@pathway_info@standard_name)
         aux <- singISTrecapitulations(
             object, model_object[[i]], from_species = from_species[[i]], ...)
