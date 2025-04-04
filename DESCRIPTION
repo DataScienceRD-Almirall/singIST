@@ -39,7 +39,7 @@ VignetteBuilder: knitr
 Depends: 
     R (>= 4.2)
 LazyDataCompression: xz
-LazyData: true
+LazyData: false
 biocViews: SingleCell, Classification, Transcriptomics
 URL: https://github.com/amoruno/singIST
 BugReports: https://github.com/amoruno/singIST/issues

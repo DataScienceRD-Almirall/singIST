@@ -56,7 +56,8 @@ dc_superpathway <- methods::new("superpathway.gene.sets",
 
 # Load a Gene Set Collection (gse) object from MsigDB for homo sapiens and 
 # HGNC gene symbols 
-gse <- msigdb::getMsigdb(org = "hs", id = "SYM", version = msigdb::getMsigdbVersions()[1])
+gse <- msigdb::getMsigdb(org = "hs", id = "SYM",
+                            version = msigdb::getMsigdbVersions()[1])
 # We choose the same gene sets for all the cell types, hence we use the
 # method setRepeatGeneSets that pulls the gene set associated to the pathway
 # and sets the same gene set for all cell types
