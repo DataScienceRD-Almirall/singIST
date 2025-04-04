@@ -93,7 +93,8 @@ slot(cytokine_superpathway, "gene_sets_celltype") <- list(
 ```{r}
 # Load the pseudobulk lognormalized count matrix for the Human Dendritic Cells
 # Th1/Th2 development [BIOCARTA] genes
-counts_dc <- data(DC_counts)
+data("DC_counts")
+counts_dc <- DC_counts
 # Remove the cell types as we are not going to model
 counts_dc <- counts_dc[!(sub("_.*$", "", rownames(counts_dc)) %in% 
                         c("MastC-other", "Keratinocytes", "Melanocytes")), ]
@@ -139,7 +140,8 @@ dc_superpathway_input <- methods::new(
 
 ```{r}
 # Load the pseudobulk lognormalized count matrix
-counts_cytokine <- data(cytokine_counts)
+data("cytokine_counts")
+counts_cytokine <- cytokine_counts
 # Remove the cell types as we are not going to model
 counts_cytokine <- counts_cytokine[!(sub("_.*$", "",
                                     rownames(counts_cytokine)) %in% 
@@ -178,7 +180,8 @@ cytokine_superpathway_input <- methods::new(
 
 ```{r}
 # Load the disease model Seurat object scRNA-seq
-oxazolone <- data(OXA)
+data("OXA")
+oxazolone <- OXA
 # Rename the variable containing the class each sample belongs to and the
 # cell type cluster variable into "class" and "celltype_cluster" names as
 # requested by mapping.organism object 
