@@ -15,7 +15,9 @@
 #' `model_object`, `recapitulation` with the superpathway recapitulation
 #' @export
 #' @examples
+#' data(example_superpathway_fit_model)
 #' model <- example_superpathway_fit_model
+#' data(example_mapping_organism)
 #' mapped <- example_mapping_organism
 #' singIST_samples <- biological_link_function(mapped, model)$singIST_samples
 #' original <- derive_contributions(model, singIST_samples)
@@ -70,7 +72,9 @@ superpathway_recap <- function(model_object, data_original, data_singIST){
 #' `reference` with the cell type reference recapitulation
 #' @export
 #' @examples
+#' data(example_superpathway_fit_model)
 #' model <- example_superpathway_fit_model
+#' data(example_mapping_organism)
 #' mapped <- example_mapping_organism
 #' singIST_samples <- biological_link_function(mapped, model)$singIST_samples
 #' original <- derive_contributions(model, singIST_samples)
@@ -138,7 +142,9 @@ celltype_recap <- function(model_object, data_original, data_singIST){
 #' `gene` name, `contribution` gene contribution to cell type recapitulation
 #' @export
 #' @examples
+#' data(example_superpathway_fit_model)
 #' model <- example_superpathway_fit_model
+#' data(example_mapping_organism)
 #' mapped <- example_mapping_organism
 #' singIST_samples <- biological_link_function(mapped, model)$singIST_samples
 #' original <- derive_contributions(model, singIST_samples)
@@ -221,8 +227,11 @@ gene_contrib <- function(model_object, data_original,
 #' recapitulation, and `target_organism`.
 #' @export
 #' @examples
-#' singISTrecapitulations(example_mapping_organism,
-#' example_superpathway_fit_model)
+#' data(example_mapping_organism)
+#' data_organism <- example_mapping_organism
+#' data(example_superpathway_fit_model)
+#' data_model <- example_superpathway_fit_model
+#' singISTrecapitulations(data_organism, data_model)
 singISTrecapitulations <- function(object, model_object, ...){
     checkmate::assert_class(object, "mapping.organism")
     checkmate::assert_class(model_object, "superpathway.fit.model")
