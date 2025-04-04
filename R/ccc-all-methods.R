@@ -9,7 +9,9 @@
 #' \link{superpathway.gene.sets-class}. The object containing pathway
 #' information to fetch gene sets.
 #' @param gse  A Gene Set Collection (gse) from MsigDB. If `NULL` then gse
-#' assigns homo sapiens organism with ENTREZ and HGNC IDs.
+#' assigns homo sapiens organism with ENTREZ and HGNC IDs. It is recommended
+#' to provide a gse object if multiple pathways are to be assessed, this will
+#' reduce execution time.
 #' @param ... Additional parameters passed to `msigdb::subsetCollection´ or
 #' other related functions.
 #'
@@ -55,7 +57,9 @@ methods::setMethod("pullGeneSet",
                     "pathway",
                     function(object, gse = NULL, ...){
                         if(is.null(gse)){
-                            gse <- gse_hs
+                            gse <- msigdb::getMsigdb(
+                                org = c("hs"), id = c("SYM", "EZID"), 
+                                version = msigdb::getMsigdbVersions()[1])
                             }
                         # Database to grab gene set from
                         database <- paste0(
@@ -109,7 +113,9 @@ methods::setMethod("pullGeneSet",
                     "superpathway.gene.sets",
                     function(object, gse = NULL, ...){
                         if(is.null(gse)){
-                            gse <- gse_hs
+                            gse <- msigdb::getMsigdb(
+                                org = c("hs"), id = c("SYM", "EZID"), 
+                                version = msigdb::getMsigdbVersions()[1])
                             }
                         # Database to grab gene set from
                         database <- paste0(
@@ -197,7 +203,6 @@ methods::setMethod("setGeneSetsCelltype<-",
                         }
 )
 
-
 #' @title Repeat gene sets per cell type
 #'
 #' @description
@@ -212,7 +217,7 @@ methods::setMethod("setGeneSetsCelltype<-",
 #' @return A \link{superpathway.gene.sets-class} object with updated
 #' gene_sets_celltype slot with the repeated gene sets.
 methods::setGeneric("setRepeatGeneSets",
-                    function(object) standardGeneric("setRepeatGeneSets"))
+                    function(object, ...) standardGeneric("setRepeatGeneSets"))
 
 #' @rdname setRepeatGeneSets-method
 #' @exportMethod setRepeatGeneSets
@@ -229,9 +234,9 @@ methods::setGeneric("setRepeatGeneSets",
 #' print(my_superpathway)
 methods::setMethod("setRepeatGeneSets",
                     "superpathway.gene.sets",
-                    function(object){
+                    function(object, ...){
                         # Pull Gene Set
-                        pulled_gene_set <- pullGeneSet(object)
+                        pulled_gene_set <- pullGeneSet(object, ...)
                         repeated_gene_set <- rep(list(pulled_gene_set),
                                             length(object@celltypes))
                         # Update superpathway.gene.sets object
