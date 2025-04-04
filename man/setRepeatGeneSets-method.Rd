@@ -13,7 +13,7 @@ setRepeatGeneSets(object, ...)
 \item{object}{An object of class \link{superpathway.gene.sets-class} to
 assign the repeated gene sets per cell type.}
 
-\item{...}{Other parameters to pass onto \link{pullGeneSet-method}}
+\item{...}{Other parameters to pass onto \link{pullGeneSet}}
 }
 \value{
 A \link{superpathway.gene.sets-class} object with updated
