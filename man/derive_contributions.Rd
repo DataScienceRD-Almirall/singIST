@@ -24,8 +24,10 @@ contribution for a block of predictor matrices for its later use to compute
 recapitulations
 }
 \examples{
+data(example_mapping_organism)
 mapped <- example_mapping_organism
+data(example_superpathway_fit_model)
 model <- example_superpathway_fit_model
 singIST_samples <- biological_link_function(mapped, model)$singIST_samples
-derive_contributions(example_superpathway_fit_model, singIST_samples)
+derive_contributions(model, singIST_samples)
 }

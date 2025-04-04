@@ -31,15 +31,17 @@ Derive singIST treated samples
 }
 \examples{
 # Orthology mapping
-orthologs <- orthology_mapping(example_mapping_organism,
-example_superpathway_fit_model)
+data(example_mapping_organism)
+data_organism <- example_mapping_organism
+data(example_superpathway_fit_model)
+data_model <- example_superpathway_fit_model
+orthologs <- orthology_mapping(data_organism, data_model)
 # Set the identities
 # Cell type mapping
-data <- celltype_mapping(example_mapping_organism)
+data <- celltype_mapping(data_organism)
 slot(data, "counts")$test <- paste0(slot(data, "counts")$celltype_cluster,
 "_", slot(data, "counts")$class)
 SeuratObject::Idents(slot(data, "counts")) <- "test"
 logFC <- diff_expressed(data)
-singIST_treat(example_mapping_organism, example_superpathway_fit_model,
-orthologs, logFC)
+singIST_treat(data_organism, data_model, orthologs, logFC)
 }

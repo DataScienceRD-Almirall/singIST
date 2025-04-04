@@ -21,6 +21,8 @@ to the mapped cell types as indicated in
 \code{names(slot(object, "celltype_mapping"))}.
 }
 \examples{
-new_object <- celltype_mapping(example_mapping_organism)
+data(example_mapping_organism)
+data <- example_mapping_organism
+new_object <- celltype_mapping(data)
 slot(new_object, "counts")$celltype_cluster
 }

@@ -19,5 +19,7 @@ Computes CIP and GIP metrics from a \link{superpathway.fit.model-class}
 object for the target class
 }
 \examples{
-CIP_GIP(example_superpathway_fit_model)
+data(example_superpathway_fit_model)
+data <- example_superpathway_fit_model
+CIP_GIP(data)
 }

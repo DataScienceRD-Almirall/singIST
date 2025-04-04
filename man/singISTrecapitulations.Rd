@@ -40,6 +40,9 @@ biological link function, the derivation of the predictor scores
 the predicted recapitulations as a fraction of the reference recapitulation.
 }
 \examples{
-singISTrecapitulations(example_mapping_organism,
-example_superpathway_fit_model)
+data(example_mapping_organism)
+data_organism <- example_mapping_organism
+data(example_superpathway_fit_model)
+data_model <- example_superpathway_fit_model
+singISTrecapitulations(data_organism, data_model)
 }

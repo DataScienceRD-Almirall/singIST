@@ -23,9 +23,11 @@ Computes scores from the predictor to later derive the superpathway's score,
 cell type contribution and gene contributions, for the target class
 }
 \examples{
+data(example_mapping_organism)
 mapped <- example_mapping_organism
+data(example_superpathway_fit_model)
 model <- example_superpathway_fit_model
 singIST_samples <- biological_link_function(mapped, model)$singIST_samples
 # Derive the scores for sample 2
-derive_scores(example_superpathway_fit_model, singIST_samples, 2)
+derive_scores(model, singIST_samples, 2)
 }

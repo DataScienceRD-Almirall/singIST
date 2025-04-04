@@ -32,6 +32,7 @@ the dimensions of each block, with the information provided in a
 superpathway.input object.
 }
 \examples{
+data(example_superpathway_input)
 data <- example_superpathway_input
 matrixToBlock(data)
 }

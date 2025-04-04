@@ -44,5 +44,7 @@ block of predictor matrices. Returns a pvalue of the Mann-Whitney Wilcoxon
 between the observed and null distribution for each CIP and GIP.
 }
 \examples{
-CIP_GIP_test(example_superpathway_fit_model, npermut = 3, type = "jackknife")
+data(example_superpathway_fit_model)
+data <- example_superpathway_fit_model
+CIP_GIP_test(data, npermut = 3, type = "jackknife")
 }

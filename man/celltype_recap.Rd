@@ -27,7 +27,9 @@ the cell type name, \code{recapitulation} with the cell type recapitulation, and
 Derive cell type recapitulation
 }
 \examples{
+data(example_superpathway_fit_model)
 model <- example_superpathway_fit_model
+data(example_mapping_organism)
 mapped <- example_mapping_organism
 singIST_samples <- biological_link_function(mapped, model)$singIST_samples
 original <- derive_contributions(model, singIST_samples)
