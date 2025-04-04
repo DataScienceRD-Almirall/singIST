@@ -13,6 +13,7 @@
 #' @import checkmate stats
 #' @export
 #' @examples
+#' data(example_superpathway_input)
 #' data <- example_superpathway_input
 #' matrixToBlock(data)
 matrixToBlock.superpathway.input <- function(object){
@@ -146,6 +147,7 @@ Results_comparison_measure <- function(Y_predict,
 #' @export
 #'
 #' @examples
+#' data(example_superpathway_input)
 #' data <- example_superpathway_input
 #' matrices <- matrixToBlock(data)
 #' X.matrix <- matrices$block_predictor
@@ -222,7 +224,9 @@ asmbPLSDA.cv.loo <- function(X.matrix, Y.matrix, PLS_term = 1, X.dim,
 #' @import checkmate stringr
 #' @export
 #' @examples
-#' CIP_GIP(example_superpathway_fit_model)
+#' data(example_superpathway_fit_model)
+#' data <- example_superpathway_fit_model
+#' CIP_GIP(data)
 CIP_GIP <- function(object){
     checkmate::assert_class(object, "superpathway.fit.model")
     # Identify target class position
@@ -290,7 +294,9 @@ wilcox_CIP_GIP <- function(ref_distr, null_distr){
 #' intervals.
 #' @export
 #' @examples
-#' permut_asmbplsda(example_superpathway_fit_model, npermut = 5, Nc = 1,
+#' data(example_superpathway_fit_model)
+#' data <- example_superpathway_fit_model
+#' permut_asmbplsda(data, npermut = 5, Nc = 1,
 #' CV_error = 1)
 permut_asmbplsda <- function(object, npermut = 100, nbObsPermut = NULL,
                                 Nc = 1, CV_error, measure = "B_accuracy",
@@ -355,7 +361,9 @@ permut_asmbplsda <- function(object, npermut = 100, nbObsPermut = NULL,
 #' (CIP_pvalue); and for GIP distribution (GIP_pvalue).
 #' @export
 #' @examples
-#' CIP_GIP_test(example_superpathway_fit_model, npermut = 3, type = "jackknife")
+#' data(example_superpathway_fit_model)
+#' data <- example_superpathway_fit_model
+#' CIP_GIP_test(data, npermut = 3, type = "jackknife")
 CIP_GIP_test <- function(object, npermut = 100, maxiter = 100,
                         type = c("jackknife", "subsampling"),
                         nsubsampling = 100) {
@@ -470,11 +478,13 @@ CIP_GIP_test <- function(object, npermut = 100, maxiter = 100,
 #' @examples
 #' # fitOptimal with jackknife for CIP/GIP statistics and 10 permutations
 #' # for the global significance test of the optimal model
-#' fitOptimal(example_superpathway_input, npermut = 10, type = "jackknife")
+#' data(example_superpathway_input)
+#' data <- example_superpathway_input
+#' fitOptimal(data, npermut = 10, type = "jackknife")
 #' # fitOptimal with subsampling for CIP/GIP statistics with
 #' # 10 subsamples and 50 permutations for the global significance test of the
 #' # optimal model
-#' fitOptimal(example_superpathway_input, npermut = 50, type = "subsampling",
+#' fitOptimal(data, npermut = 50, type = "subsampling",
 #' nsubsampling = 10)
 fitOptimal.superpathway.input <- function(
         object, parallel = FALSE, measure = "B_accuracy", Method = NULL,

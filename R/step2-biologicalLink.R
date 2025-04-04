@@ -14,7 +14,9 @@
 #' according to the mapping defined in `slot(object, "celltype_mapping")`.
 #' @export
 #' @examples
-#' new_object <- celltype_mapping(example_mapping_organism)
+#' data(example_mapping_organism)
+#' data <- example_mapping_organism
+#' new_object <- celltype_mapping(data)
 #' slot(new_object, "counts")$celltype_cluster
 celltype_mapping <- function(object){
     checkmate::assert_class(object, "mapping.organism")
@@ -63,7 +65,9 @@ celltype_mapping <- function(object){
 #' @export
 #' @examples
 #' # Set the identities
-#' data <- celltype_mapping(example_mapping_organism)
+#' data(example_mapping_organism)
+#' data_organism <- example_mapping_organism
+#' data <- celltype_mapping(data_organism)
 #' slot(data, "counts")$test <- paste0(slot(data, "counts")$celltype_cluster,
 #' "_", slot(data, "counts")$class)
 #' SeuratObject::Idents(slot(data, "counts")) <- "test"
@@ -115,11 +119,14 @@ diff_expressed <- function(object, condition_1 = c(), condition_2 = c(),
 #' @examples
 #' # Case without stating the gene annotation of the mapping.organisms object
 #' # note this will take longer to execute
-#' orthology_mapping(example_mapping_organism, example_superpathway_fit_model,
-#' annotation_to_species = NULL)
+#' data(example_mapping_organism)
+#' data_organism <- example_mapping_organism
+#' data(example_superpathway_fit_model)
+#' data_model <- example_superpathway_fit_model
+#' orthology_mapping(data_organism, data_model, annotation_to_species = NULL)
 #' # Case assuming the gene annotation of the mapping.organism object is
 #' # by default "external_gene_name" this is faster
-#' orthology_mapping(example_mapping_organism, example_superpathway_fit_model)
+#' orthology_mapping(data_organism, data_model)
 orthology_mapping <- function(object, model_object, from_species = "hsapiens",
                                 to_species = "mmusculus",
                                 annotation_to_species = "external_gene_name"){
@@ -177,17 +184,19 @@ orthology_mapping <- function(object, model_object, from_species = "hsapiens",
 #' @export
 #' @examples
 #' # Orthology mapping
-#' orthologs <- orthology_mapping(example_mapping_organism,
-#' example_superpathway_fit_model)
+#' data(example_mapping_organism)
+#' data_organism <- example_mapping_organism
+#' data(example_superpathway_fit_model)
+#' data_model <- example_superpathway_fit_model
+#' orthologs <- orthology_mapping(data_organism, data_model)
 #' # Set the identities
 #' # Cell type mapping
-#' data <- celltype_mapping(example_mapping_organism)
+#' data <- celltype_mapping(data_organism)
 #' slot(data, "counts")$test <- paste0(slot(data, "counts")$celltype_cluster,
 #' "_", slot(data, "counts")$class)
 #' SeuratObject::Idents(slot(data, "counts")) <- "test"
 #' logFC <- diff_expressed(data)
-#' singIST_treat(example_mapping_organism, example_superpathway_fit_model,
-#' orthologs, logFC)
+#' singIST_treat(data_organism, data_model, orthologs, logFC)
 singIST_treat <- function(object, model_object, orthologs, logFC){
     # Identify samples belonging to base class
     samples <- which(model_object@superpathway_input@sample_class ==
@@ -247,8 +256,11 @@ singIST_treat <- function(object, model_object, orthologs, logFC){
 #' \link{singIST_treat}
 #' @export
 #' @examples
-#' biological_link_function(example_mapping_organism,
-#' example_superpathway_fit_model)
+#' data(example_mapping_organism)
+#' data_organism <- example_mapping_organism
+#' data(example_superpathway_fit_model)
+#' data_model <- example_superpathway_fit_model
+#' biological_link_function(data_organism, data_model)
 biological_link_function <- function(
         object, model_object, object_gene_identifiers = "external_gene_name",
         ...){

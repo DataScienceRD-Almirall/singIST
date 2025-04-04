@@ -13,11 +13,13 @@
 #' cell type contributions and needed scores to compute gene contributions
 #' @export
 #' @examples
+#' data(example_mapping_organism)
 #' mapped <- example_mapping_organism
+#' data(example_superpathway_fit_model)
 #' model <- example_superpathway_fit_model
 #' singIST_samples <- biological_link_function(mapped, model)$singIST_samples
 #' # Derive the scores for sample 2
-#' derive_scores(example_superpathway_fit_model, singIST_samples, 2)
+#' derive_scores(model, singIST_samples, 2)
 derive_scores <- function(object, data, sample){
     fit_asmb <- object@model_fit$`asmbPLS-DA`
     delta_cbind <- Delta <- gamma <- Gamma <- c()
@@ -85,10 +87,12 @@ derive_scores <- function(object, data, sample){
 #' contributions to the former
 #' @export
 #' @examples
+#' data(example_mapping_organism)
 #' mapped <- example_mapping_organism
+#' data(example_superpathway_fit_model)
 #' model <- example_superpathway_fit_model
 #' singIST_samples <- biological_link_function(mapped, model)$singIST_samples
-#' derive_contributions(example_superpathway_fit_model, singIST_samples)
+#' derive_contributions(model, singIST_samples)
 derive_contributions <- function(model_object, data){
     checkmate::assert_class(model_object, "superpathway.fit.model")
     superpathway_score <- celltype_contribution <- gene_contribution <- c()
