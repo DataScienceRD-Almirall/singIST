@@ -236,24 +236,20 @@ singISTrecapitulations <- function(object, model_object, ...){
     }
     # If cell type mapped is not in `model_object` set to void
     object@celltype_mapping[nopick] <- NULL
-    # Derive singIST treated samples
     linkFunction <- biological_link_function(object, model_object, ...)
     C <- model_object@model_fit$predictor_block
     C_prime <- linkFunction$singIST_samples
     # Derive contributions
     contributions_ref <- derive_contributions(model_object, C)
     contributions_singIST <- derive_contributions(model_object, C_prime)
-    # Derive superpathway recapitulation
     superpathway <- superpathway_recap(
         model_object, contributions_ref$superpathway_score,
         contributions_singIST$superpathway_score
         )
-    # Derive cell type recapitulation
     celltype <- celltype_recap(
         model_object, contributions_ref$celltype_contribution,
         contributions_singIST$celltype_contribution
     )
-    # Derive gene contribution to cell type recapitulation
     gene <- gene_contrib(
         model_object, contributions_ref$gene_contribution,
         contributions_singIST$gene_contribution, celltype)
@@ -269,7 +265,6 @@ singISTrecapitulations <- function(object, model_object, ...){
     # Add p value of global significance test
     pval <- model_object@model_validation$pvalue_global_significance
     superpathway[, "p_val"] <- pval
-    # Add mapped organism target class to outputs
     superpathway[, "target_organism"] <- object@target_class
     celltype[, "target_organism"] <- object@target_class
     gene[, "target_organism"] <- object@target_class

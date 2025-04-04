@@ -54,10 +54,13 @@ dc_superpathway <- methods::new("superpathway.gene.sets",
                                                 "Langerhan Cells", 
                                                 "T-cell"))
 
+# Load a Gene Set Collection (gse) object from MsigDB for homo sapiens and 
+# HGNC gene symbols 
+gse <- msigdb::getMsigdb(org = "hs", id = "SYM", version = msigdb::getMsigdbVersions()[1])
 # We choose the same gene sets for all the cell types, hence we use the
 # method setRepeatGeneSets that pulls the gene set associated to the pathway
 # and sets the same gene set for all cell types
-dc_superpathway <- setRepeatGeneSets(dc_superpathway) 
+dc_superpathway <- setRepeatGeneSets(dc_superpathway, gse = gse) 
 print(slot(dc_superpathway, "gene_sets_celltype"))
 ```
 
@@ -74,7 +77,7 @@ cytokine_superpathway <- methods::new(
     celltypes = c("Dendritic Cells", "Keratinocytes", "Langerhan Cells",
                     "Melanocytes", "T-cell"))
 # Pull Gene Set 
-gene_set <- pullGeneSet(cytokine_pathway)
+gene_set <- pullGeneSet(cytokine_pathway, gse = gse)
 # Set different gene sets per cell type randomly. This would exemplify an
 # ad-hoc pathway where we set different gene sets per cell type 
 slot(cytokine_superpathway, "gene_sets_celltype") <- list(
@@ -228,7 +231,8 @@ BiocParallel::register(BiocParallel::SerialParam(), default = TRUE)
 # can be considered by specifying the parameters "from_to" and 
 # "object_gene_identifiers"
 recapitulations_dc <- singISTrecapitulations(oxa_org, superpathways_fit[[1]])
-recapitulations_cytokine <- singISTrecapitulations(oxa_org, superpathways_fit[[2]])
+recapitulations_cytokine <- singISTrecapitulations(oxa_org,
+                                                    superpathways_fit[[2]])
 ```
 
 ```{r}
