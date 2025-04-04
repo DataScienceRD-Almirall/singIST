@@ -206,6 +206,7 @@ singIST_treat <- function(object, model_object, orthologs, logFC){
         if(length(genes) == 0){next}
         FC_aux <- logFC[[c]][rownames(logFC[[c]]) %in% genes, , drop = FALSE]
         significant_genes <- FC_aux[ , "p_val_adj"] <= 0.05
+        if(length(significant_genes) == 0){next}
         FC_aux[significant_genes, "avg_log2FC"] <-
             sign(as.numeric(FC_aux[significant_genes, "avg_log2FC"]))*
             2^FC_aux[significant_genes, "avg_log2FC"]
