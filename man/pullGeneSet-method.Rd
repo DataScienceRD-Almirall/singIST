@@ -18,7 +18,9 @@ pullGeneSet(object, gse = NULL, ...)
 information to fetch gene sets.}
 
 \item{gse}{A Gene Set Collection (gse) from MsigDB. If \code{NULL} then gse
-assigns homo sapiens organism with ENTREZ and HGNC IDs.}
+assigns homo sapiens organism with ENTREZ and HGNC IDs. It is recommended
+to provide a gse object if multiple pathways are to be assessed, this will
+reduce execution time.}
 
 \item{...}{Additional parameters passed to `msigdb::subsetCollection´ or
 other related functions.}
