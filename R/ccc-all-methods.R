@@ -211,7 +211,7 @@ methods::setMethod("setGeneSetsCelltype<-",
 #'  useful when all cell types have the same gene set.
 #' @param object An object of class \link{superpathway.gene.sets-class} to
 #' assign the repeated gene sets per cell type.
-#' @param ... Other parameters to pass onto \link{pullGeneSet-method}
+#' @param ... Other parameters to pass onto \link{pullGeneSet}
 #' 
 #' @rdname setRepeatGeneSets-method
 #'

@@ -44,7 +44,9 @@ indicated.
 }
 \examples{
 # Set the identities
-data <- celltype_mapping(example_mapping_organism)
+data(example_mapping_organism)
+data_organism <- example_mapping_organism
+data <- celltype_mapping(data_organism)
 slot(data, "counts")$test <- paste0(slot(data, "counts")$celltype_cluster,
 "_", slot(data, "counts")$class)
 SeuratObject::Idents(slot(data, "counts")) <- "test"

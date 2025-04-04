@@ -37,6 +37,9 @@ with the simulated human. The biological link function involves the
 cell type mapping, orthology mapping and fold change computation.
 }
 \examples{
-biological_link_function(example_mapping_organism,
-example_superpathway_fit_model)
+data(example_mapping_organism)
+data_organism <- example_mapping_organism
+data(example_superpathway_fit_model)
+data_model <- example_superpathway_fit_model
+biological_link_function(data_organism, data_model)
 }

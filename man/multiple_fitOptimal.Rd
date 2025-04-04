@@ -68,7 +68,9 @@ objects. This wrapper is useful if one wants to assess multiple superpathways
 for analyses and needs to train its respective optimal models.
 }
 \examples{
-models <- list(example_superpathway_input, example_superpathway_input)
+data(example_superpathway_input)
+data <- example_superpathway_input
+models <- list(data, data)
 # Example with different options
 multiple_model <- multiple_fitOptimal(models, type = c("jackknife",
 "subsampling"), nsubsampling = c(NULL, 10), npermut = c(10,15))

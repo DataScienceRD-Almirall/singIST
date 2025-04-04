@@ -40,9 +40,12 @@ of the \link{superpathway.fit.model-class} object.
 \examples{
 # Case without stating the gene annotation of the mapping.organisms object
 # note this will take longer to execute
-orthology_mapping(example_mapping_organism, example_superpathway_fit_model,
-annotation_to_species = NULL)
+data(example_mapping_organism)
+data_organism <- example_mapping_organism
+data(example_superpathway_fit_model)
+data_model <- example_superpathway_fit_model
+orthology_mapping(data_organism, data_model, annotation_to_species = NULL)
 # Case assuming the gene annotation of the mapping.organism object is
 # by default "external_gene_name" this is faster
-orthology_mapping(example_mapping_organism, example_superpathway_fit_model)
+orthology_mapping(data_organism, data_model)
 }

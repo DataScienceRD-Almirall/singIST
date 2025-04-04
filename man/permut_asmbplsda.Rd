@@ -42,6 +42,8 @@ intervals.
 Performs permutation testing for asmbPLS-DA to evaluate model validity.
 }
 \examples{
-permut_asmbplsda(example_superpathway_fit_model, npermut = 5, Nc = 1,
+data(example_superpathway_fit_model)
+data <- example_superpathway_fit_model
+permut_asmbplsda(data, npermut = 5, Nc = 1,
 CV_error = 1)
 }
