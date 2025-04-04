@@ -5,9 +5,9 @@
 \alias{setRepeatGeneSets,superpathway.gene.sets-method}
 \title{Repeat gene sets per cell type}
 \usage{
-setRepeatGeneSets(object)
+setRepeatGeneSets(object, ...)
 
-\S4method{setRepeatGeneSets}{superpathway.gene.sets}(object)
+\S4method{setRepeatGeneSets}{superpathway.gene.sets}(object, ...)
 }
 \arguments{
 \item{object}{An object of class \link{superpathway.gene.sets-class} to
