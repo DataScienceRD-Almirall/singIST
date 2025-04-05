@@ -271,7 +271,7 @@ CIP_GIP <- function(object){
 #' wilcox_CIP_GIP(ref_distr, null_distr)
 wilcox_CIP_GIP <- function(ref_distr, null_distr){
     return(stats::wilcox.test(
-        ref_distr, null_distr, alternative = "greater", exact = FALSE)$p.value)
+        ref_distr, null_distr, alternative = "greater")$p.value)
 }
 
 #' @title Permutation test for asmbPLSDA global significance
