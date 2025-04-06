@@ -226,9 +226,9 @@ singIST_treat <- function(object, model_object, orthologs, logFC){
         # If not significant assign FC to 0
         FC_aux[!significant_genes, "avg_log2FC"] <-
             rep(0, sum(!significant_genes))
-        rownames(FC_aux) <-
-            paste0(c, "*", orthologs[[b]][orthologs[[b]]$output_gene
-                            %in% rownames(FC_aux), ]$input_gene)
+        indices_match <- match(rownames(FC_aux), orthologs[[b]]$output_gene)
+        rownames(FC_aux) <- paste0(c, "*",
+                                orthologs[[b]][indices_match, ]$input_gene)
         predictor_block <- FCtoExpression(model_object, b, samples,
                                             predictor_block, FC_aux)
         FC_aux <- FC_aux[, c("avg_log2FC", "pct.1", "pct.2", "p_val_adj")]
