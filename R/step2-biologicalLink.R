@@ -212,10 +212,19 @@ singIST_treat <- function(object, model_object, orthologs, logFC){
         genes <- base::intersect(
             orthologs[[b]]$output_gene, rownames(object@counts))
         c <- names(object@celltype_mapping)[b]
-        if(length(genes) == 0){next}
+        if(length(genes) == 0){
+            FC[[c]] <- FC_aux
+            next
+            }
         FC_aux <- logFC[[c]][rownames(logFC[[c]]) %in% genes, , drop = FALSE]
         significant_genes <- FC_aux[ , "p_val_adj"] <= 0.05
         if(sum(significant_genes) == 0){
+            indices_match <- match(rownames(FC_aux), orthologs[[b]]$output_gene)
+            FC_aux[!significant_genes, "avg_log2FC"] <-
+                rep(0, sum(!significant_genes))
+            rownames(FC_aux) <- paste0(
+                c, "*", orthologs[[b]][indices_match, ]$input_gene)
+            FC_aux <- FC_aux[, c("avg_log2FC", "pct.1", "pct.2", "p_val_adj")]
             colnames(FC_aux)[1] <- "r_g^b"
             FC[[c]] <- FC_aux
             next
@@ -228,7 +237,7 @@ singIST_treat <- function(object, model_object, orthologs, logFC){
             rep(0, sum(!significant_genes))
         indices_match <- match(rownames(FC_aux), orthologs[[b]]$output_gene)
         rownames(FC_aux) <- paste0(c, "*",
-                                orthologs[[b]][indices_match, ]$input_gene)
+                                   orthologs[[b]][indices_match, ]$input_gene)
         predictor_block <- FCtoExpression(model_object, b, samples,
                                             predictor_block, FC_aux)
         FC_aux <- FC_aux[, c("avg_log2FC", "pct.1", "pct.2", "p_val_adj")]
