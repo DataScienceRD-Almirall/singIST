@@ -224,7 +224,8 @@ gene_contrib <- function(model_object, data_original,
 #' `target_organism`; a `data.frame` object with the gene contributions to
 #' cell type recapitulation, containing variables `pathway`, `celltype`,
 #' `gene` name, `contribution` indicating the gene contribution to cell type
-#' recapitulation, and `target_organism`.
+#' recapitulation, and `target_organism`; `orthologs` a `data.frame` with
+#' the one-to-one orthology mapping for each cell type gene set.
 #' @export
 #' @examples
 #' data(example_mapping_organism)
@@ -280,5 +281,6 @@ singISTrecapitulations <- function(object, model_object, ...){
     celltype[, "reference"] <- NULL
     rownames(gene) <- NULL
     return(list("superpathway" = superpathway, "celltype" = celltype,
-                "gene" = gene, "FC" = linkFunction$FC))
+                "gene" = gene, "FC" = linkFunction$FC, 
+                "orthologs" = linkFunction$orthologs))
 }
