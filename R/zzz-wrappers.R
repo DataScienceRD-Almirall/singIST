@@ -218,7 +218,7 @@ multiple_singISTrecapitulations <- function(
         names(aux_FC)[i] <- pathway@pathway_info@standard_name
         aux_orthologs[[i]] <- aux$orthologs
     }
-    output <- vector("list", length = 4)
+    output <- vector("list", length = 5)
     names(output) <- c("superpathway", "celltype", "gene", "FC", "orthologs")
     # Aggregate output in a single data.frame
     output$superpathway <- base::do.call(rbind, aux_superpathway)
