@@ -232,3 +232,56 @@ multiple_singISTrecapitulations <- function(
     }
     return(output)
 }
+
+#' @title Render multiple singISTrecapitulation outputs
+#'
+#' @description
+#' Render output of \link{multiple_singISTrecapitulations} for multiple
+#' disease models and superpathways, the output is friendly for visualizing
+#' the results
+#' @param objects A list as retuned by \link{multiple_singISTrecapitulations}
+#' @import checkmate
+#' @returns
+#' A list with the row binded `data.frame` for each superpathway assessed for
+#' the superpathway and cell type recapitulations, gene contributions
+#' to the former, and fold changes. These row binds are performed for all
+#' disease models and superpathways.
+#' @export
+render_multiple_outputs <- function(objects = list()){
+    checkmate::assert_true(length(objects) >= 2)
+    superpathways <- do.call(rbind, lapply(seq_along(objects), function(i){
+        objects[[i]]$superpathway
+        })
+        )
+    celltypes <- do.call(rbind, lapply(seq_along(objects), function(i){
+        objects[[i]]$celltype
+        })
+        )
+    genes <- do.call(rbind, lapply(seq_along(objects), function(i){
+        objects[[i]]$gene
+        })
+        )
+    fc <- do.call(rbind, lapply(seq_along(objects), function(i){# For each model
+        all <- do.call(
+            rbind,
+            lapply(seq_along(objects[[i]]$FC),function(j,data =objects[[i]]$FC){
+                combined <- do.call(rbind, data[[j]])
+                clean_name <- sub("^[^.]+\\.", "", rownames(combined))
+                celltype_name <- sub("\\*.*$", "", clean_name)
+                gene_name <- sub("^.*\\*", "", clean_name)
+                pathway_name_col <- data.frame("pathway" = rep(names(data)[j],
+                                                                nrow(combined)))
+                result <- cbind(pathway_name_col, "celltype" = celltype_name,
+                                "gene" = gene_name, combined)
+                rownames(result) <- NULL
+                return(result)
+            }))
+        all <- cbind(all, "target_organism" =
+                        rep(unique(objects[[i]]$superpathway$target_organism),
+                            nrow(all)))
+        all
+    }))
+    output <- list("superpathway" = superpathways, "celltype" = celltypes,
+                    "gene" = genes, "FC" = fc)
+    return(output)
+}
