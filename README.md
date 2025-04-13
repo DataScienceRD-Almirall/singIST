@@ -6,45 +6,37 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of singIST is to …
 
-## Installation
+![gabst_01dic](https://github.com/user-attachments/assets/0d36443d-007f-423b-ae75-64bb1a3e23c2)
 
-You can install the development version of singIST like so:
+This repository includes an R library to perform an end-to-end singIST analysis for multiple superpathways and disease models of interest. singIST is a method for comparative single-cell transcriptomics between disease models and humans, which provides explainable and quantitative insights into single-cell transcriptomics alignment. 
+
+## Table of Contents
+
+1. [Library structure](#Library-structure)
+2. [Installation](#Installation)
+3. [Vignette](#Vignette)
+
+# Library structure
+
+The R library code, R folder, is structured in the following manner:
+1. aaa-all-classes.R: contains all classes defined in singIST.
+2. ccc-all-methods.R: contains all methods defined in singIST.
+3. bbb-step1-fit.R: contains all functions to perform step 1 from singIST, which includes: fit and cross validation of optimal model asmbPLS-DA, and validation metrics of the optimal model. The main function of this code is fitOptimal(), which performs all the aforementioned processes.
+4. step2-biologicalLink.R: contains all functions to perform step 2 from singIST, which includes: cell type mapping, orthology mapping and translating the fold changes of the disease models to the human single-cell expression. The main function of this code is biological_link_function() this performs all the aforementioned processes. 
+5. step3-contributions.R: it contains the functions to derive the superpathway score, cell type contributions to superpathway score, and gene contributions to superpathway score. These functions are necessary to compute the reference and predicted recapitulations. The main function of this code is derive_contributions().
+6. step4-recapitulations.R: it contains the functions to compute the recapitulations at superpathway and cell type levels, including also the computation of the gene contributions to the cell type recapitulation. The main function is singISTrecapitulations().
+7. zzz-wrappers.R: defines two wrappers, for the functions that are mainly going to be used for the user, one is multiple_fitOptimal() which performs fitOptimal() for multiple superpathways of interest, and multiple_singISTrecapitulations() which computes recapitulations for a disease model across multiple superpathways of interest.
+8. helpers.R: secondary and auxiliary functions used in all the former.
+
+The main functions to be used as a user are fitOptimal(), or its wrapper multiple_fitOptimal(), and singISTrecapitulations(), or its wrapper multiple_singISTrecapitulations(). 
+
+# Installation
 
 ``` r
-# FILL THIS IN! HOW CAN PEOPLE INSTALL YOUR DEV PACKAGE?
+remotes::install_github("DataScienceRD-Almirall/singIST")
 ```
 
-## Example
+# Vignette
 
-This is a basic example which shows you how to solve a common problem:
-
-``` r
-# library(singIST)
-## basic example code
-```
-
-What is special about using `README.Rmd` instead of just `README.md`?
-You can include R chunks like so:
-
-``` r
-summary(cars)
-#>      speed           dist       
-#>  Min.   : 4.0   Min.   :  2.00  
-#>  1st Qu.:12.0   1st Qu.: 26.00  
-#>  Median :15.0   Median : 36.00  
-#>  Mean   :15.4   Mean   : 42.98  
-#>  3rd Qu.:19.0   3rd Qu.: 56.00  
-#>  Max.   :25.0   Max.   :120.00
-```
-
-You’ll still need to render `README.Rmd` regularly, to keep `README.md`
-up-to-date. `devtools::build_readme()` is handy for this.
-
-You can also embed plots, for example:
-
-<img src="man/figures/README-pressure-1.png" width="100%" />
-
-In that case, don’t forget to commit and push the resulting figure
-files, so they display on GitHub and CRAN.
+Find the vignette here https://github.com/DataScienceRD-Almirall/singIST/tree/master/vignettes
