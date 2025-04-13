@@ -1051,7 +1051,7 @@ compute_validation_metrics <- function(
             1, floor(prod_lambdas *
                         lengths(output@model_fit$observed_gene_sets)))
         pval <- output_CIP_GIP_significance$`GIP_pvalue`[[j]][, 1]
-        adj_pval <- ifelse(pval * m_0[j] < 1, pval*m_0, 1) 
+        adj_pval <- ifelse(pval * m_0[j] < 1, pval*m_0[j], 1) 
         output_adjpval <- data.frame("adj_p_val" = adj_pval)
         rownames(output_adjpval) <- rownames(
             output_CIP_GIP_significance$`GIP_pvalue`[[j]])

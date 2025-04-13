@@ -28,7 +28,8 @@ containing variables \code{pathway} name, \code{celltype}, \code{recapitulation}
 \code{target_organism}; a \code{data.frame} object with the gene contributions to
 cell type recapitulation, containing variables \code{pathway}, \code{celltype},
 \code{gene} name, \code{contribution} indicating the gene contribution to cell type
-recapitulation, and \code{target_organism}.
+recapitulation, and \code{target_organism}; \code{orthologs} a \code{data.frame} with
+the one-to-one orthology mapping for each cell type gene set.
 }
 }
 \description{

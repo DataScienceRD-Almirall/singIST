@@ -198,17 +198,14 @@ orthology_mapping <- function(object, model_object, from_species = "hsapiens",
 #' logFC <- diff_expressed(data)
 #' singIST_treat(data_organism, data_model, orthologs, logFC)
 singIST_treat <- function(object, model_object, orthologs, logFC){
-    # Identify samples belonging to base class
     samples <- which(model_object@superpathway_input@sample_class ==
                         model_object@superpathway_input@base_class)
     predictor_block <- model_object@model_fit$predictor_block
     cells <- as.vector(which(lengths(object@celltype_mapping) > 0))
     # Update logFC names to remove slashes
     names(logFC) <- gsub("_", " ", names(logFC))
-    # Initialize FC list
     FC <- vector("list", length(cells))
     for(b in cells){
-        # Pick one-to-one ortholog gene set
         genes <- base::intersect(
             orthologs[[b]]$output_gene, rownames(object@counts))
         c <- names(object@celltype_mapping)[b]
@@ -218,6 +215,10 @@ singIST_treat <- function(object, model_object, orthologs, logFC){
             }
         FC_aux <- logFC[[c]][rownames(logFC[[c]]) %in% genes, , drop = FALSE]
         significant_genes <- FC_aux[ , "p_val_adj"] <= 0.05
+        if(nrow(FC_aux) == 0){
+            FC[[c]] <- data.frame()
+            next
+            }
         if(sum(significant_genes) == 0){
             indices_match <- match(rownames(FC_aux), orthologs[[b]]$output_gene)
             FC_aux[!significant_genes, "avg_log2FC"] <-
@@ -232,7 +233,6 @@ singIST_treat <- function(object, model_object, orthologs, logFC){
         FC_aux[significant_genes, "avg_log2FC"] <-
             sign(as.numeric(FC_aux[significant_genes, "avg_log2FC"]))*
             2^FC_aux[significant_genes, "avg_log2FC"]
-        # If not significant assign FC to 0
         FC_aux[!significant_genes, "avg_log2FC"] <-
             rep(0, sum(!significant_genes))
         indices_match <- match(rownames(FC_aux), orthologs[[b]]$output_gene)
