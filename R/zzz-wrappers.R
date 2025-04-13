@@ -206,6 +206,7 @@ multiple_singISTrecapitulations <- function(
     aux_celltype <- vector("list", length = nmodels)
     aux_gene <- vector("list", length = nmodels)
     aux_FC <- vector("list", length = nmodels)
+    aux_orthologs <- vector("list", length = nmodels)
     for(i in seq(1, nmodels)){
         pathway <- model_object[[i]]@superpathway_input@superpathway_info
         message("Executing superpathway ", pathway@pathway_info@standard_name)
