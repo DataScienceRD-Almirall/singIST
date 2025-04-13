@@ -34,7 +34,8 @@ Imports:
     SeuratObject,
     sp,
     biomaRt,
-    data.table
+    data.table,
+    purrr
 VignetteBuilder: knitr
 Depends: 
     R (>= 4.2)

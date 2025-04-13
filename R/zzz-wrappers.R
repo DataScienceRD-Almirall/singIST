@@ -240,7 +240,7 @@ multiple_singISTrecapitulations <- function(
 #' disease models and superpathways, the output is friendly for visualizing
 #' the results
 #' @param objects A list as retuned by \link{multiple_singISTrecapitulations}
-#' @import checkmate
+#' @import checkmate purrr
 #' @returns
 #' A list with the row binded `data.frame` for each superpathway assessed for
 #' the superpathway and cell type recapitulations, gene contributions
@@ -258,6 +258,16 @@ render_multiple_outputs <- function(objects = list()){
         })
         )
     genes <- do.call(rbind, lapply(seq_along(objects), function(i){
+        orthologs <- purrr::pmap_int(
+            objects[[i]]$gene[, c("gene", "pathway", "celltype")],
+            function(gene, pathway, celltype){
+                names(objects[[i]]$orthologs) <- names(objects[[i]]$FC)
+                genes_in_pathway <- 
+                    objects[[i]]$orthologs[[pathway]][[celltype]]$input_gene
+                if(gene %in% genes_in_pathway) return(1)
+                return(0)
+            })
+        objects[[i]]$gene$orthology <- orthologs
         objects[[i]]$gene
         })
         )
