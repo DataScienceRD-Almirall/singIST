@@ -2,7 +2,7 @@
 #' @description
 #' For a given \link{mapping.organism-class} it updates the variable
 #' `celltype_cluster` so that each element of it is updated accordingly
-#' to the mapped cell types as indicated in
+#' to the mapped cell types as indicated in 
 #' `names(slot(object, "celltype_mapping"))`.
 #'
 #' @param object A \link{mapping.organism-class} object
@@ -260,7 +260,7 @@ singIST_treat <- function(object, model_object, orthologs, logFC){
 #' @param object_gene_identifiers Annotation of gene identifiers used in
 #' `object`. By default `external_gene_name`. If `NULL` \link{orthology_mapping}
 #' infers the gene identifiers of `object`, note this may add execution time.
-#' @param ... Other parameters to pass onto \link{diff_expressed} or
+#' @param ... Other parameters to pass onto \link{diff_expressed} or function
 #' \link{orthology_mapping}
 #' @import checkmate SeuratObject
 #' @returns
