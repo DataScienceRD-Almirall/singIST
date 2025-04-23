@@ -42,10 +42,10 @@ methods::setClass("pathway",
                                     choices = c("KEGG", "PID", "REACTOME",
                                                 "BIOCARTA", "WIKIPATHWAYS"))
                     # Currently only Curated Gene sets (C2) from Canonical
-                    # Pathways (CP) are possible
+                    # Pathways (CP) are possible, or (M2)
                     checkmate::assert_choice(
                         object@collection,
-                        choices = c("c2"))
+                        choices = c("c2", "m2"))
                     checkmate::assert_choice(
                         object@subcollection,
                         choices = c("CP"))
