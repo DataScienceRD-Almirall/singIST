@@ -51,9 +51,15 @@ methods::setClass("pathway",
                         choices = c("CP"))
                     # Check that standard name is consistent with the provided
                     # dbsource
-                    checkmate::assert_character(
-                        object@standard_name,
-                        pattern = paste0("^", object@dbsource, "_"))
+                    if(object@dbsource != "WIKIPATHWAYS"){
+                        checkmate::assert_character(
+                            object@standard_name,
+                            pattern = paste0("^", object@dbsource, "_"))
+                    }else{
+                        checkmate::assert_character(
+                            object@standard_name,
+                            pattern = paste0("^", "WP", "_"))
+                    }
                     return(TRUE)
                     }
 )
