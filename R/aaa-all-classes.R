@@ -45,7 +45,7 @@ methods::setClass("pathway",
                     # Pathways (CP) are possible, or (M2)
                     checkmate::assert_choice(
                         object@collection,
-                        choices = c("c2", "m2"))
+                        choices %in% c("c2", "m2"))
                     checkmate::assert_choice(
                         object@subcollection,
                         choices = c("CP"))
