@@ -291,9 +291,20 @@ biological_link_function <- function(
     # Remove "_" from cell type name once diff_expressed is executed
     names(object@celltype_mapping) <- gsub("_", " ",
                                             names(object@celltype_mapping))
-    orthologs <- orthology_mapping(
-        object, model_object, to_species = to_species,
-        annotation_to_species = object_gene_identifiers, ...)
+    if(to_species != from_species){
+        orthologs <- orthology_mapping(
+            object, model_object, to_species = to_species,
+            annotation_to_species = object_gene_identifiers, ...)
+    }else{ # Case where no orthology mapping should be applied 
+        n <- length(model_object@model_fit$observed_gene_sets)
+        aux <- vector("list", length = n)
+        orthologs <-lapply(seq_along(model_object@model_fit$observed_gene_sets),
+                      function(i, update = orthologs){
+                          sets <- model_object@model_fit$observed_gene_sets[[i]]
+                          orthologs[[i]] <- data.table("input_gene" = sets,
+                                                       "output_gene" = sets)
+                      })
+    }
     # singIST treated samples
     message("Deriving singIST treated samples...")
     singIST_samples <- singIST_treat(object, model_object, orthologs, logFC)
