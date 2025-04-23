@@ -9,7 +9,7 @@
 #' from. Currently available options are: KEGG, PID, REACTOME, BIOCARTA,
 #' WP (WikiPathways).
 #' @slot collection A character with MsigDB collection to grab information from
-#' (currently only holds c2).
+#' (currently holds for c2 and m2).
 #' @slot subcollection A character with MsigDB subcollection to grab information
 #' from (currently only holds CP).
 #'
@@ -42,10 +42,10 @@ methods::setClass("pathway",
                                     choices = c("KEGG", "PID", "REACTOME",
                                                 "BIOCARTA", "WIKIPATHWAYS"))
                     # Currently only Curated Gene sets (C2) from Canonical
-                    # Pathways (CP) are possible, or (M2)
+                    # Pathways (CP) are possible
                     checkmate::assert_choice(
                         object@collection,
-                        choices %in% c("c2", "m2"))
+                        choices = c("c2", "m2"))
                     checkmate::assert_choice(
                         object@subcollection,
                         choices = c("CP"))
