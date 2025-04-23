@@ -299,13 +299,12 @@ biological_link_function <- function(
             annotation_to_species = object_gene_identifiers, 
             from_species = model_species, ...)
     }else{ # Case where no orthology mapping should be applied 
-        n <- length(model_object@model_fit$observed_gene_sets)
-        aux <- vector("list", length = n)
         orthologs <-lapply(seq_along(model_object@model_fit$observed_gene_sets),
-                        function(i, update = orthologs){
+                        function(i){
                         sets <- model_object@model_fit$observed_gene_sets[[i]]
-                        orthologs[[i]] <- data.table("input_gene" = sets,
-                                                        "output_gene" = sets)
+                        aux <- data.table("input_gene" = sets,
+                                            "output_gene" = sets)
+                        aux
                       })
     }
     # singIST treated samples
