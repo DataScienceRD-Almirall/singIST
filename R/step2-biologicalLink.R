@@ -180,7 +180,7 @@ orthology_mapping <- function(object, model_object, from_species = "hsapiens",
 #' @returns
 #' A list object with the singIST treated samples predictor block matrix and
 #' a list of Fold Changes for each cell type used to compute the singIST
-#' treated samples
+#' treated samples.
 #' @export
 #' @examples
 #' # Orthology mapping
