@@ -260,6 +260,8 @@ singIST_treat <- function(object, model_object, orthologs, logFC){
 #' @param object_gene_identifiers Annotation of gene identifiers used in
 #' `object`. By default `external_gene_name`. If `NULL` \link{orthology_mapping}
 #' infers the gene identifiers of `object`, note this may add execution time.
+#' @param model_species Organism for which `model_object` has been trained. By
+#' `default` `hsapiens`.
 #' @param ... Other parameters to pass onto \link{diff_expressed} or function
 #' \link{orthology_mapping}
 #' @import checkmate SeuratObject
@@ -276,6 +278,7 @@ singIST_treat <- function(object, model_object, orthologs, logFC){
 #' biological_link_function(data_organism, data_model)
 biological_link_function <- function(
         object, model_object, object_gene_identifiers = "external_gene_name",
+        model_species = "hsapiens",
         ...){
     # Cell type and orthology mapping
     message("Cell type mapping...")
@@ -291,10 +294,11 @@ biological_link_function <- function(
     # Remove "_" from cell type name once diff_expressed is executed
     names(object@celltype_mapping) <- gsub("_", " ",
                                             names(object@celltype_mapping))
-    if(to_species != from_species){
+    if(to_species != model_species){
         orthologs <- orthology_mapping(
             object, model_object, to_species = to_species,
-            annotation_to_species = object_gene_identifiers, ...)
+            annotation_to_species = object_gene_identifiers, 
+            from_species = model_species, ...)
     }else{ # Case where no orthology mapping should be applied 
         n <- length(model_object@model_fit$observed_gene_sets)
         aux <- vector("list", length = n)
