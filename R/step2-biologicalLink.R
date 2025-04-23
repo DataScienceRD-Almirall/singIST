@@ -293,7 +293,7 @@ biological_link_function <- function(
                                             names(object@celltype_mapping))
     orthologs <- orthology_mapping(
         object, model_object, to_species = to_species,
-        annotation_to_species = object_gene_identifiers)
+        annotation_to_species = object_gene_identifiers, ...)
     # singIST treated samples
     message("Deriving singIST treated samples...")
     singIST_samples <- singIST_treat(object, model_object, orthologs, logFC)
