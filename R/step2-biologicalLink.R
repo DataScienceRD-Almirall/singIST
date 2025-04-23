@@ -104,7 +104,7 @@ diff_expressed <- function(object, condition_1 = c(), condition_2 = c(),
 #' @param object A \link{mapping.organism-class} object
 #' @param model_object A \link{superpathway.fit.model-class} object
 #' @param from_species A character indicating the reference organism for which
-#' the parameter `model_fit` has information from. By default `hsapiens`.
+#' the parameter `model_fit` has information from.
 #' @param to_species A character indicating the mapped organism for which the
 #' parameter `object` has information from. By default `mmusculus`.
 #' @param annotation_to_species A character indicating the gene identifier
@@ -126,8 +126,8 @@ diff_expressed <- function(object, condition_1 = c(), condition_2 = c(),
 #' orthology_mapping(data_organism, data_model, annotation_to_species = NULL)
 #' # Case assuming the gene annotation of the mapping.organism object is
 #' # by default "external_gene_name" this is faster
-#' orthology_mapping(data_organism, data_model)
-orthology_mapping <- function(object, model_object, from_species = "hsapiens",
+#' orthology_mapping(data_organism, data_model, from_species = "hsapiens")
+orthology_mapping <- function(object, model_object, from_species,
                                 to_species = "mmusculus",
                                 annotation_to_species = "external_gene_name"){
     # Connect to Ensembl
@@ -278,8 +278,7 @@ singIST_treat <- function(object, model_object, orthologs, logFC){
 #' biological_link_function(data_organism, data_model)
 biological_link_function <- function(
         object, model_object, object_gene_identifiers = "external_gene_name",
-        model_species = "hsapiens",
-        ...){
+        model_species = "hsapiens", ...){
     # Cell type and orthology mapping
     message("Cell type mapping...")
     object <- celltype_mapping(object)
@@ -303,10 +302,10 @@ biological_link_function <- function(
         n <- length(model_object@model_fit$observed_gene_sets)
         aux <- vector("list", length = n)
         orthologs <-lapply(seq_along(model_object@model_fit$observed_gene_sets),
-                      function(i, update = orthologs){
-                          sets <- model_object@model_fit$observed_gene_sets[[i]]
-                          orthologs[[i]] <- data.table("input_gene" = sets,
-                                                       "output_gene" = sets)
+                        function(i, update = orthologs){
+                        sets <- model_object@model_fit$observed_gene_sets[[i]]
+                        orthologs[[i]] <- data.table("input_gene" = sets,
+                                                        "output_gene" = sets)
                       })
     }
     # singIST treated samples

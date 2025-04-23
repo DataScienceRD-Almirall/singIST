@@ -8,6 +8,7 @@ biological_link_function(
   object,
   model_object,
   object_gene_identifiers = "external_gene_name",
+  model_species = "hsapiens",
   ...
 )
 }
@@ -22,7 +23,10 @@ model}
 \code{object}. By default \code{external_gene_name}. If \code{NULL} \link{orthology_mapping}
 infers the gene identifiers of \code{object}, note this may add execution time.}
 
-\item{...}{Other parameters to pass onto \link{diff_expressed} or
+\item{model_species}{Organism for which \code{model_object} has been trained. By
+\code{default} \code{hsapiens}.}
+
+\item{...}{Other parameters to pass onto \link{diff_expressed} or function
 \link{orthology_mapping}}
 }
 \value{

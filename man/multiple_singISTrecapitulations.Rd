@@ -7,7 +7,7 @@
 multiple_singISTrecapitulations(
   object,
   model_object = list(),
-  from_species = list("hsapiens"),
+  model_species = list("hsapiens"),
   ...
 )
 }
@@ -17,7 +17,7 @@ multiple_singISTrecapitulations(
 \item{model_object}{A list whose elements
 are \link{superpathway.fit.model-class}}
 
-\item{from_species}{A list of characters indicating the organism of each
+\item{model_species}{A list of characters indicating the organism of each
 \code{model_object} element. By default \code{list("hsapiens")} which assumes the same
 organism across all elements of \code{model_object} parameter}
 
@@ -45,5 +45,5 @@ multiple_model <- multiple_fitOptimal(models, type = c("jackknife",
 data(example_mapping_organism)
 data_organism <- example_mapping_organism
 multiple_singISTrecapitulations(data_organism, multiple_model,
-from_species = list("hsapiens", "hsapiens"))
+model_species = list("hsapiens", "hsapiens"))
 }

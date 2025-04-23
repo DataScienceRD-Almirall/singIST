@@ -18,7 +18,7 @@ from. Currently available options are: KEGG, PID, REACTOME, BIOCARTA,
 WP (WikiPathways).}
 
 \item{\code{collection}}{A character with MsigDB collection to grab information from
-(currently only holds c2).}
+(currently holds for c2 and m2).}
 
 \item{\code{subcollection}}{A character with MsigDB subcollection to grab information
 from (currently only holds CP).}

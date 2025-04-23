@@ -168,7 +168,7 @@ multiple_fitOptimal <- function(
 #' @param object A \link{mapping.organism-class} object
 #' @param model_object A list whose elements
 #' are \link{superpathway.fit.model-class}
-#' @param from_species A list of characters indicating the organism of each
+#' @param model_species A list of characters indicating the organism of each
 #' `model_object` element. By default `list("hsapiens")` which assumes the same
 #' organism across all elements of `model_object` parameter
 #' @param ...  Other parameters to pass onto \link{biological_link_function}
@@ -189,9 +189,9 @@ multiple_fitOptimal <- function(
 #' data(example_mapping_organism)
 #' data_organism <- example_mapping_organism
 #' multiple_singISTrecapitulations(data_organism, multiple_model,
-#' from_species = list("hsapiens", "hsapiens"))
+#' model_species = list("hsapiens", "hsapiens"))
 multiple_singISTrecapitulations <- function(
-        object, model_object = list(), from_species = list("hsapiens"), ...){
+        object, model_object = list(), model_species = list("hsapiens"), ...){
     # Check that multiple objects are provided in the proper format
     nmodels <- length(model_object)
     checkmate::assert_list(model_object, any.missing = FALSE,
@@ -200,7 +200,7 @@ multiple_singISTrecapitulations <- function(
     for(element in model_object){
         checkmate::assert_class(element, "superpathway.fit.model")
     }
-    from_species <- multiple_check(from_species, nmodels)
+    model_species <- multiple_check(model_species, nmodels)
     # Initialize output
     aux_superpathway <- vector("list", length = nmodels)
     aux_celltype <- vector("list", length = nmodels)
@@ -211,7 +211,7 @@ multiple_singISTrecapitulations <- function(
         pathway <- model_object[[i]]@superpathway_input@superpathway_info
         message("Executing superpathway ", pathway@pathway_info@standard_name)
         aux <- singISTrecapitulations(
-            object, model_object[[i]], from_species = from_species[[i]], ...)
+            object, model_object[[i]], model_species = model_species[[i]], ...)
         aux_superpathway[[i]] <- aux$superpathway
         aux_celltype[[i]] <- aux$celltype
         aux_gene[[i]] <- aux$gene
