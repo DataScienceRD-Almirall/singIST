@@ -47,5 +47,5 @@ data_model <- example_superpathway_fit_model
 orthology_mapping(data_organism, data_model, annotation_to_species = NULL)
 # Case assuming the gene annotation of the mapping.organism object is
 # by default "external_gene_name" this is faster
-orthology_mapping(data_organism, data_model)
+orthology_mapping(data_organism, data_model, from_species = "hsapiens")
 }
