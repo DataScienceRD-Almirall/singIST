@@ -248,7 +248,7 @@ multiple_singISTrecapitulations <- function(
 #' disease models and superpathways.
 #' @export
 render_multiple_outputs <- function(objects = list()){
-    checkmate::assert_true(length(objects) >= 2)
+    checkmate::assert_true(length(objects) >= 1)
     superpathways <- do.call(rbind, lapply(seq_along(objects), function(i){
         objects[[i]]$superpathway
         })
