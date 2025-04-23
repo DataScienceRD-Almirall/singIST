@@ -24,7 +24,7 @@ for each gene set per cell type}
 \value{
 A list object with the singIST treated samples predictor block matrix and
 a list of Fold Changes for each cell type used to compute the singIST
-treated samples
+treated samples.
 }
 \description{
 Derive singIST treated samples

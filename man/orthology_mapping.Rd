@@ -7,7 +7,7 @@
 orthology_mapping(
   object,
   model_object,
-  from_species = "hsapiens",
+  from_species,
   to_species = "mmusculus",
   annotation_to_species = "external_gene_name"
 )
@@ -18,7 +18,7 @@ orthology_mapping(
 \item{model_object}{A \link{superpathway.fit.model-class} object}
 
 \item{from_species}{A character indicating the reference organism for which
-the parameter \code{model_fit} has information from. By default \code{hsapiens}.}
+the parameter \code{model_fit} has information from.}
 
 \item{to_species}{A character indicating the mapped organism for which the
 parameter \code{object} has information from. By default \code{mmusculus}.}
