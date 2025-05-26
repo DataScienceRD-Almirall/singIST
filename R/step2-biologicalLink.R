@@ -126,7 +126,7 @@ diff_expressed <- function(object, condition_1 = c(), condition_2 = c(),
 #' orthology_mapping(data_organism, data_model, annotation_to_species = NULL)
 #' # Case assuming the gene annotation of the mapping.organism object is
 #' # by default "external_gene_name" this is faster
-#' orthology_mapping(data_organism, data_model, from_species = "hsapiens")
+#' orthology_mapping(data_organism, data_model, "hsapiens")
 orthology_mapping <- function(object, model_object, from_species,
                                 to_species = "mmusculus",
                                 annotation_to_species = "external_gene_name"){
