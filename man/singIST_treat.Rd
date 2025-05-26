@@ -35,7 +35,7 @@ data(example_mapping_organism)
 data_organism <- example_mapping_organism
 data(example_superpathway_fit_model)
 data_model <- example_superpathway_fit_model
-orthologs <- orthology_mapping(data_organism, data_model)
+orthologs <- orthology_mapping(data_organism, data_model, "hsapiens")
 # Set the identities
 # Cell type mapping
 data <- celltype_mapping(data_organism)

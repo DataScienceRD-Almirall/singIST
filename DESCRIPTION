@@ -41,5 +41,5 @@ Depends:
     R (>= 4.2)
 LazyData: false
 biocViews: SingleCell, Classification, Transcriptomics
-URL: https://github.com/amoruno/singIST
-BugReports: https://github.com/amoruno/singIST/issues
+URL: https://github.com/DataScienceRD-Almirall/singIST
+BugReports: https://github.com/DataScienceRD-Almirall/singIST/issues
