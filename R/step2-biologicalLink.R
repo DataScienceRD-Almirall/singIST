@@ -238,7 +238,7 @@ singIST_treat <- function(object, model_object, orthologs, logFC){
             rep(0, sum(!significant_genes))
         indices_match <- match(rownames(FC_aux), orthologs[[b]]$output_gene)
         rownames(FC_aux) <- paste0(c, "*",
-                                   orthologs[[b]][indices_match, ]$input_gene)
+                                    orthologs[[b]][indices_match, ]$input_gene)
         predictor_block <- FCtoExpression(model_object, b, samples,
                                             predictor_block, FC_aux)
         FC_aux <- FC_aux[, c("avg_log2FC", "pct.1", "pct.2", "p_val_adj")]
@@ -300,7 +300,7 @@ biological_link_function <- function(
                         aux <- data.table("input_gene" = sets,
                                             "output_gene" = sets)
                         aux
-                      })
+                        })
     }
     # singIST treated samples
     message("Deriving singIST treated samples...")

@@ -272,7 +272,6 @@ singISTrecapitulations <- function(object, model_object, ...){
         # Add observed orthology coverage
         celltype[b, "orthology"] <- 100*coverage
     }
-    # Add p value of global significance test
     pval <- model_object@model_validation$pvalue_global_significance
     superpathway[, "p_val"] <- pval
     superpathway[, "target_organism"] <- object@target_class
