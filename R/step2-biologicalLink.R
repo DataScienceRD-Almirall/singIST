@@ -270,12 +270,6 @@ singIST_treat <- function(object, model_object, orthologs, logFC){
 #' a list with the Fold Changes used; singIST treated samples as returned by
 #' \link{singIST_treat}
 #' @export
-#' @examples
-#' data(example_mapping_organism)
-#' data_organism <- example_mapping_organism
-#' data(example_superpathway_fit_model)
-#' data_model <- example_superpathway_fit_model
-#' biological_link_function(data_organism, data_model)
 biological_link_function <- function(
         object, model_object, object_gene_identifiers = "external_gene_name",
         model_species = "hsapiens", ...){
