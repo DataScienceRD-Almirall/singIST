@@ -9,25 +9,25 @@ vignette: >
 ---
 
 # Abstract of singIST as a Bioconductor library
-Comparative transcriptomics aims to identify common and differing patterns (organisms,
-experimental conditions, tissues, and so on) between a set of conditions by using
-transcriptomics data The methodology to tackle the problem will vary greatly
-depending on which patterns we aim to compare, the amount and biological nature
-of them and which omics resolution. **singIST** is a comparative transcriptomics
-method that aims to compare a disease model against a human disease of interest.
-In drug discovery and pharmaceutical early development choosing a disease model
-becomes a fundamental endavour. For this reason, we present **singIST** as a
-method that compares the single-cell transcriptomics profile of a disease model,
-either In Vivo or In Vitro models, against a human disease that such model should
-mimick.
+Comparative transcriptomics aims to identify common and differing patterns
+(organisms, experimental conditions, tissues, and so on) between a set of
+conditions by using transcriptomics data The methodology to tackle the problem
+will vary greatly depending on which patterns we aim to compare, the amount and
+biological nature of them and which omics resolution. **singIST** is a
+comparative transcriptomics method that aims to compare a disease model against
+a human disease of interest. In drug discovery and pharmaceutical early
+development choosing a disease model becomes a fundamental endavour. For this
+reason, we present **singIST** as a method that compares the single-cell
+transcriptomics profile of a disease model, either In Vivo or In Vitro models,
+against a human disease that such model should mimick.
 
 Other Bioconductor packages for comparative transcriptomics are available.
 One of such is **HybridExpress** which aims to compare the bulk transcriptomics
 (RNA-seq) profile for hybrids relative to their progenitor species. **CoSIA**
 is a Bioconductor package that enables organism-to-organism comparative bulk
-transcriptomics (RNAseq) across tissues. However, none of these packages are direct
-comparators to **singIST* since they are not conceived for single-cell comparative
-transcriptomics but for bulk transcriptomics instead.
+transcriptomics (RNAseq) across tissues. However, none of these packages are
+direct comparators to **singIST* since they are not conceived for single-cell
+comparative transcriptomics but for bulk transcriptomics instead.
 
 
 # Introduction
