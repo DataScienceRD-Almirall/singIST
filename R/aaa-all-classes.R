@@ -190,10 +190,10 @@ methods::setClass("hyperparameters",
 #'
 #' @slot superpathway_info A \link{superpathway.gene.sets-class} object
 #' @slot hyperparameters_info A \link{hyperparameters-class} object
-#' @slot pseudobulk_lognorm A matrix from Seurat::AggregateExpression() where
-#' columns are genes and rows are combinations of sample id and cell type in
-#' the form "Celltype_Sampleid". Rownames should be of the form
-#' "Celltype_Sampleid" and columns of the form of "HGNC".
+#' @slot pseudobulk_lognorm A matrix from Seurat::AggregateExpression() or
+#' glmGamPoi::pseudobulk() where columns are genes and rows are combinations of
+#' sample id and cell type in the form "Celltype_Sampleid". Rownames should be
+#' of the form "Celltype_Sampleid" and columns of the form of "HGNC".
 #' @slot sample_id A vector of characters with the sample id
 #' @slot sample_class A vector of characters with the class of each sample
 #' @slot base_class A character indicating the base class
@@ -357,10 +357,11 @@ methods::setClass("superpathway.fit.model",
 #' If no mapping exists for a given cell type its vector should void. If you
 #' are assessing multiple \link{superpathway.gene.sets-class} objects, you
 #' should include the mapping of all cell types used in these objects.
-#' @slot counts A Seurat object with the scRNA-seq counts. This object should
-#' contain variables in `slot(SeuratObject, meta.data)` slot; `class`
-#' indicating the class the sample belongs to; `celltype_cluster` indicating
-#' the cell type cluster (either character or numeric)
+#' @slot counts A Seurat or SingleCellExperiment object with the scRNA-seq
+#' counts. This object should contain variables in
+#' `slot(SeuratObject, meta.data)` slot; `class` indicating the class the sample
+#' belongs to; `celltype_cluster` indicating the cell type cluster (either
+#' character or numeric)
 #'
 #' @name mapping.organism-class
 #' @rdname mapping.organism-class

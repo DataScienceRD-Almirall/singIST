@@ -14,10 +14,10 @@ Superpathway input for asmbPLS-DA
 
 \item{\code{hyperparameters_info}}{A \link{hyperparameters-class} object}
 
-\item{\code{pseudobulk_lognorm}}{A matrix from Seurat::AggregateExpression() where
-columns are genes and rows are combinations of sample id and cell type in
-the form "Celltype_Sampleid". Rownames should be of the form
-"Celltype_Sampleid" and columns of the form of "HGNC".}
+\item{\code{pseudobulk_lognorm}}{A matrix from Seurat::AggregateExpression() or
+glmGamPoi::pseudobulk() where columns are genes and rows are combinations of
+sample id and cell type in the form "Celltype_Sampleid". Rownames should be
+of the form "Celltype_Sampleid" and columns of the form of "HGNC".}
 
 \item{\code{sample_id}}{A vector of characters with the sample id}
 

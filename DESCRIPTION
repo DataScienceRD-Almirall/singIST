@@ -14,7 +14,6 @@ RoxygenNote: 7.3.2
 Suggests: 
     testthat (>= 3.0.0),
     BiocStyle,
-    interactiveDisplayBase,
     knitr,
     qpdf,
     utils
@@ -35,7 +34,11 @@ Imports:
     sp,
     biomaRt,
     data.table,
-    purrr
+    purrr,
+    SingleCellExperiment,
+    SummarizedExperiment,
+    scran,
+    scuttle
 VignetteBuilder: knitr
 Depends: 
     R (>= 4.2)

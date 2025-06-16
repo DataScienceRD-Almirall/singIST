@@ -28,10 +28,11 @@ If no mapping exists for a given cell type its vector should void. If you
 are assessing multiple \link{superpathway.gene.sets-class} objects, you
 should include the mapping of all cell types used in these objects.}
 
-\item{\code{counts}}{A Seurat object with the scRNA-seq counts. This object should
-contain variables in \code{slot(SeuratObject, meta.data)} slot; \code{class}
-indicating the class the sample belongs to; \code{celltype_cluster} indicating
-the cell type cluster (either character or numeric)}
+\item{\code{counts}}{A Seurat or SingleCellExperiment object with the scRNA-seq
+counts. This object should contain variables in
+\code{slot(SeuratObject, meta.data)} slot; \code{class} indicating the class the sample
+belongs to; \code{celltype_cluster} indicating the cell type cluster (either
+character or numeric)}
 }}
 
 \examples{
