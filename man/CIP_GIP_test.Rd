@@ -9,7 +9,8 @@ CIP_GIP_test(
   npermut = 100,
   maxiter = 100,
   type = c("jackknife", "subsampling"),
-  nsubsampling = 100
+  nsubsampling = 100,
+  ...
 )
 }
 \arguments{
@@ -30,6 +31,8 @@ otherwise select \code{subsampling}.}
 
 \item{nsubsampling}{Number of subsamples to generate CIP and GIP observed
 distributions. By default 100.}
+
+\item{...}{Other parameters to be passed onto \link{wilcox_CIP_GIP}}
 }
 \value{
 A list containing; observed distributions of CIP and GIP (variability_param);
@@ -44,7 +47,8 @@ block of predictor matrices. Returns a pvalue of the Mann-Whitney Wilcoxon
 between the observed and null distribution for each CIP and GIP.
 }
 \examples{
-data(example_superpathway_fit_model)
+file <- system.file("extdata", "example_superpathway_fit_model.rda", package = "singIST")
+load(file)
 data <- example_superpathway_fit_model
 CIP_GIP_test(data, npermut = 3, type = "jackknife")
 }

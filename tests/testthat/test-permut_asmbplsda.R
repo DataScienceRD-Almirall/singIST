@@ -1,5 +1,6 @@
 test_that("permut_asmbplsda runs correctly", {
-    data("example_superpathway_fit_model", package = "singIST")
+    file <- system.file("extdata", "example_superpathway_fit_model.rda", package = "singIST")
+    load(file)
     # Set up necessary parameters
     CV_error <- 0.05
     npermut <- 5

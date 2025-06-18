@@ -18,8 +18,7 @@ singIST_treat(object, model_object, orthologs, logFC)
 cell type}
 
 \item{logFC}{A list of \code{data.frame} objects, as returned by
-\link{diff_expressed}, with the log Fold Changes computed by FindMarkers
-for each gene set per cell type}
+\link{diff_expressed} with the logFC for each gene and cell type}
 }
 \value{
 A list object with the singIST treated samples predictor block matrix and
@@ -31,9 +30,11 @@ Derive singIST treated samples
 }
 \examples{
 # Orthology mapping
-data(example_mapping_organism)
+file <- system.file("extdata", "example_mapping_organism.rda", package = "singIST")
+load(file)
 data_organism <- example_mapping_organism
-data(example_superpathway_fit_model)
+file <- system.file("extdata", "example_superpathway_fit_model.rda", package = "singIST")
+load(file)
 data_model <- example_superpathway_fit_model
 orthologs <- orthology_mapping(data_organism, data_model, "hsapiens")
 # Set the identities

@@ -888,16 +888,17 @@ permute_X_matrix <- function(X.matrix, K, X.dim) {
 #' @param variability A list of CIP or GIP values for observed distributions.
 #' @param null_dist A list of CIP or GIP values for null distributions.
 #' @param test_func The test function to use (typically Wilcoxon).
+#' @param ... Other parameters of `test_func`
 #' @name helpers
 #' @rdname helpers
 #' @export
 #' @returns A data frame of p-values.
-calculate_pvalues <- function(variability, null_dist, test_func) {
-    lapply(seq_along(variability), function(i) {
+calculate_pvalues <- function(variability, null_dist, test_func, ...) {
+    lapply(seq_along(variability), function(i, ...) {
         variability_cell <- variability[[i]]
         null_cell <- null_dist[[i]]
-        tests <- mapply(function(variability_row, null_row) {
-            test_func(variability_row, null_row)
+        tests <- mapply(function(variability_row, null_row, ...) {
+            test_func(variability_row, null_row, ...)
         }, split(variability_cell, row(variability_cell)),
         split(null_cell, row(null_cell)),
         SIMPLIFY = TRUE)

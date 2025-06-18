@@ -1,6 +1,9 @@
 test_that("derive_contributions computes contributions correctly", {
-    data("example_superpathway_fit_model", package = "singIST")
+    file <- system.file("extdata", "example_superpathway_fit_model.rda", package = "singIST")
+    load(file)
     model_object <- example_superpathway_fit_model
+    file <- system.file("extdata", "example_mapping_organism.rda", package = "singIST")
+    load(file)
     data <- biological_link_function(
         example_mapping_organism,example_superpathway_fit_model,
         exact = FALSE)$singIST_samples
@@ -24,7 +27,8 @@ test_that("derive_contributions computes contributions correctly", {
 })
 
 test_that("derive_contributions handles edge cases", {
-    data("example_superpathway_fit_model", package = "singIST")
+    file <- system.file("extdata", "example_superpathway_fit_model.rda", package = "singIST")
+    load(file)
     # Test with an empty data frame or NA values in the data
     empty_data <- data.frame(matrix(ncol = 0, nrow = 0))
     expect_error(derive_contributions(example_superpathway_fit_model,

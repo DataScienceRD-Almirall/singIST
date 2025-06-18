@@ -1,5 +1,6 @@
 test_that("matrixToBlock processes superpathway.input correctly", {
-    data("example_superpathway_input", package = "singIST")
+    file <- system.file("extdata", "example_superpathway_input.rda", package = "singIST")
+    load(file)
     result <- matrixToBlock(example_superpathway_input)
     # Test that the function returns a list
     expect_type(result, "list")

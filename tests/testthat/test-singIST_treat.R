@@ -1,8 +1,11 @@
 test_that("singIST_treat computes treated samples correctly", {
-    data("example_mapping_organism", package = "singIST")
+    file <- system.file("extdata", "example_mapping_organism.rda", package = "singIST")
+    load(file)
+    file <- system.file("extdata", "example_superpathway_fit_model.rda", package = "singIST")
+    load(file)
     object <- example_mapping_organism
     model_object <- example_superpathway_fit_model
-    orthologs <- orthology_mapping(object, model_object)
+    orthologs <- orthology_mapping(object, model_object, from_species = "hsapiens")
     data <- celltype_mapping(object)
     slot(data, "counts")$test <- paste0(slot(data, "counts")$celltype_cluster,
                                         "_", slot(data, "counts")$class)

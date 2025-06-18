@@ -9,4 +9,4 @@
 library(testthat)
 library(singIST)
 
-#test_check("singIST")
+test_check("singIST")

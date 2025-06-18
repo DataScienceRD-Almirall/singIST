@@ -4,12 +4,14 @@
 \alias{wilcox_CIP_GIP}
 \title{Mann-Whitney Wilcoxon test p-value}
 \usage{
-wilcox_CIP_GIP(ref_distr, null_distr)
+wilcox_CIP_GIP(ref_distr, null_distr, ...)
 }
 \arguments{
 \item{ref_distr}{A vector with the reference distribution}
 
 \item{null_distr}{A vector with the null distribution}
+
+\item{...}{Other parameters to be passed onto wilcox.test}
 }
 \value{
 A pvalue with the Mann-Whitney Wilcoxon test with the "greater" as the

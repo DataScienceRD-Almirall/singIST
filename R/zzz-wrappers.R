@@ -95,13 +95,15 @@ multiple_check <- function(parameter, objectLength){
 #' each object as requested by \link{fitOptimal}
 #' @param Method A vector whose elements are `Method` parameters for
 #' each object as requested by \link{fitOptimal}
-#'
+#' @param ... Other parameters to be passed onto \link{fitOptimal}
 #' @import checkmate
 #' @returns
 #' A list of \link{superpathway.fit.model-class} objects
 #' @export
 #' @examples
-#' data(example_superpathway_input)
+#' file <- system.file("extdata", "example_superpathway_input.rda",
+#' package = "singIST")
+#' load(file)
 #' data <- example_superpathway_input
 #' models <- list(data, data)
 #' # Example with different options
@@ -113,7 +115,7 @@ multiple_fitOptimal <- function(
         maxiter = c(100), global_significance_full= c(FALSE),
         CIP.GIP_significance_full = c(FALSE), npermut = c(100),
         nbObsPermut = c(NULL), type = c("jackknife"),
-        nsubsampling = c(100), Method = c(NULL)
+        nsubsampling = c(100), Method = c(NULL), ...
         ){
     # Check that multiple objects are provided in the proper format
     nobjects <- length(object)
@@ -150,7 +152,7 @@ multiple_fitOptimal <- function(
             CIP.GIP_significance_full = CIP.GIP_significance_full[[l]],
             npermut = npermut[[l]], nbObsPermut = nbObsPermut[[l]],
             type = type[[l]], nsubsampling = nsubsampling[[l]],
-            Method = Method[[l]]
+            Method = Method[[l]], ...
             )
     }
     return(model)
@@ -180,13 +182,17 @@ multiple_fitOptimal <- function(
 #' to the former.
 #' @export
 #' @examples
-#' data(example_superpathway_input)
+#' file <- system.file("extdata", "example_superpathway_input.rda",
+#' package = "singIST")
+#' load(file)
 #' data_model <- example_superpathway_input
 #' models <- list(data_model, data_model)
 #' # Example with different options
 #' multiple_model <- multiple_fitOptimal(models, type = c("jackknife",
 #' "subsampling"), nsubsampling = c(NULL, 10), npermut = c(10,15))
-#' data(example_mapping_organism)
+#' file <- system.file("extdata", "example_mapping_organism.rda",
+#' package = "singIST")
+#' load(file)
 #' data_organism <- example_mapping_organism
 #' multiple_singISTrecapitulations(data_organism, multiple_model,
 #' model_species = list("hsapiens", "hsapiens"))

@@ -3,6 +3,8 @@ library(readr)
 library(Seurat)
 librar(dplyr)
 # Load Seurat object with the disease model data
+file <- system.file("extdata", "example_mapping_organism.rda", package = "singIST")
+load(file)
 raw_OXA_IMQ <- readRDS("data-raw/OXA_IMQ.rds")
 raw_OXA_IMQ <- Seurat::UpdateSeuratObject(raw_OXA_IMQ)
 # Filter for Oxazolone model and cell types to model

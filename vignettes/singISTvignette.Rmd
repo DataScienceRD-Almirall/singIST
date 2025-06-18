@@ -39,10 +39,10 @@ scRNA-seq profiles between disease models and human diseases. Throughout this
 vignette we will work with the following data:
 
 \begin{itemize}
-\item "cytokine_counts.rda" Contains Human scRNAseq pseudobulk lognormalized
+\item "cytokine_counts.rda" Contains Human scRNAseq pseudobulk LogNormalized
 count matrix. The pseudobulk is aggregated by sample and cell type and contains
 all genes belonging to the pathway Cytokine-Cytokine receptor interaction [KEGG]
-\item "DC_counts.rda" Contains Human scRNAseq pseudobulk lognormalized
+\item "DC_counts.rda" Contains Human scRNAseq pseudobulk LogNormalized
 count matrix. The pseudobulk is aggregated by sample and cell type and contains
 all genes belonging to the pathway Dendritic Cells in regulating Th1/Th2
 Development [BIOCARTA]
@@ -113,9 +113,10 @@ slot(cytokine_superpathway, "gene_sets_celltype") <- list(
 ### Pathway: Dendritic Cells in Th1/Th2 Development [BIOCARTA]
 
 ```{r}
-# Load the pseudobulk lognormalized count matrix for the Human Dendritic Cells
+# Load the pseudobulk LogNormalized count matrix for the Human Dendritic Cells
 # Th1/Th2 development [BIOCARTA] genes
-data("DC_counts")
+file <- system.file("extdata", "DC_counts.rda", package = "singIST")
+load(file)
 counts_dc <- DC_counts
 # Remove the cell types as we are not going to model
 counts_dc <- counts_dc[!(sub("_.*$", "", rownames(counts_dc)) %in% 
@@ -146,7 +147,7 @@ dc_hyperparameters <- methods::new("hyperparameters",
 # optimal asmbPLSDA
 # Initialize superpathway input object
 # Sample_id contains the identifiers of each sample as shown in
-# the rownames of the pseudobulk lognormalized matrix, the sample class
+# the rownames of the pseudobulk LogNormalized matrix, the sample class
 # indicates the class each sample belongs to
 dc_superpathway_input <- methods::new(
     "superpathway.input", superpathway_info = dc_superpathway,
@@ -161,8 +162,9 @@ dc_superpathway_input <- methods::new(
 ### Pathway: Cytokine-Cytokine receptor interaction [KEGG]
 
 ```{r}
-# Load the pseudobulk lognormalized count matrix
-data("cytokine_counts")
+# Load the pseudobulk LogNormalized count matrix
+file <- system.file("extdata", "cytokine_counts.rda", package = "singIST")
+load(file)
 counts_cytokine <- cytokine_counts
 # Remove the cell types as we are not going to model
 counts_cytokine <- counts_cytokine[!(sub("_.*$", "",
@@ -201,8 +203,9 @@ cytokine_superpathway_input <- methods::new(
 ## Oxazolone scRNAseq input
 
 ```{r}
-# Load the disease model Seurat object scRNA-seq
-data("OXA")
+# Load the disease model Seurat/SingleCellExperiment object scRNA-seq
+file <- system.file("extdata", "OXA.rda", package = "singIST")
+load(file)
 oxazolone <- OXA
 # Rename the variable containing the class each sample belongs to and the
 # cell type cluster variable into "class" and "celltype_cluster" names as
@@ -269,4 +272,10 @@ recapitulations_multiple <- multiple_singISTrecapitulations(oxa_org,
                                                             superpathways_fit)
 ```
 
+```{r}
+# To render the output in a plotting-friendly manner, render_multiple_outputs
+# can accommodate a single or multiple disease model outputs to have a 
+# plotting-friendly data structure 
+final_output <- render_multiple_outputs(objects= list(recapitulations_multiple))
+```
 

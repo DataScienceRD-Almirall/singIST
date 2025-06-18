@@ -190,14 +190,16 @@ methods::setClass("hyperparameters",
 #'
 #' @slot superpathway_info A \link{superpathway.gene.sets-class} object
 #' @slot hyperparameters_info A \link{hyperparameters-class} object
-#' @slot pseudobulk_lognorm A matrix from Seurat::AggregateExpression() or
-#' glmGamPoi::pseudobulk() where columns are genes and rows are combinations of
-#' sample id and cell type in the form "Celltype_Sampleid". Rownames should be
-#' of the form "Celltype_Sampleid" and columns of the form of "HGNC".
-#' @slot sample_id A vector of characters with the sample id
-#' @slot sample_class A vector of characters with the class of each sample
-#' @slot base_class A character indicating the base class
-#' @slot target_class A character indicating the target class
+#' @slot pseudobulk_lognorm A pseudobulk matrix either returned by 
+#' Seurat::AgreggateExpression(), for Seurat objects, or pseudobulk_sce() method
+#' \link{pseudobulk_sce} for SingleCellExperiment objects where columns are
+#' genes and rows are combinations of sample id and cell type in the form
+#' "Celltype_Sampleid". Rownames should be of the form "Celltype_Sampleid" and
+#' columns of the form of "HGNC".
+#' @slot sample_id A vector of characters with the sample id.
+#' @slot sample_class A vector of characters with the class of each sample.
+#' @slot base_class A character indicating the base class.
+#' @slot target_class A character indicating the target class.
 #'
 #' @name superpathway.input-class
 #' @rdname superpathway.input-class
@@ -352,16 +354,19 @@ methods::setClass("superpathway.fit.model",
 #' between the mapping organism and the reference organism for which asmbPLSDA
 #' has been trained. Note that the name of each element of the list should be
 #' exactly the cell type used in \link{superpathway.gene.sets-class}, each
-#' vector contains the values of `slot(SeuratObject, meta.data$class)` that are
-#' equivalent to its respective \link{superpathway.gene.sets-class} cell type.
-#' If no mapping exists for a given cell type its vector should void. If you
-#' are assessing multiple \link{superpathway.gene.sets-class} objects, you
-#' should include the mapping of all cell types used in these objects.
-#' @slot counts A Seurat or SingleCellExperiment object with the scRNA-seq
-#' counts. This object should contain variables in
-#' `slot(SeuratObject, meta.data)` slot; `class` indicating the class the sample
-#' belongs to; `celltype_cluster` indicating the cell type cluster (either
-#' character or numeric)
+#' vector contains the values of `slot(SeuratObject, meta.data$class)`, 
+#' for `Seurat` object, or `slot(SingleCellExperimentObject, metadata$class)`
+#' for `SingleCellExperiment` objects, that are equivalent to its respective
+#' \link{superpathway.gene.sets-class} cell type. If no mapping exists for a
+#' given cell type its vector should void. If you are assessing multiple
+#' \link{superpathway.gene.sets-class} objects, you should include the mapping
+#' of all cell types used in these objects.
+#' @slot counts A `Seurat` or `SingleCellExperiment` object with the scRNA-seq
+#' LogNormalized counts. This object should contain variables in 
+#' `slot(SeuratObject, meta.data)` slot or
+#' `slot(SingleCellExperimentObject, metadata)`; `class` indicating the class
+#' the sample belongs to; `celltype_cluster` indicating the cell type cluster
+#' (either character or numeric)
 #'
 #' @name mapping.organism-class
 #' @rdname mapping.organism-class
@@ -395,24 +400,43 @@ methods::setClass("mapping.organism",
                         target_class = "character",
                         base_class = "character",
                         celltype_mapping = "list",
-                        counts = "Seurat"
+                        counts = c("ANY")
                     ),
                     validity = function(object){
-                        checkmate::assert_class(object@counts, "Seurat")
                         checkmate::assert_character(object@organism)
                         checkmate::assert_list(object@celltype_mapping)
-                        # Check that class and celltype_cluster columns exist
-                        checkmate::assert_true(
-                            all(c("class", "celltype_cluster") %in%
-                                    colnames(object@counts@meta.data)))
-                        # Check that target and base classes exists in the
-                        # variable class
-                        checkmate::assert_true(
-                            all(c(object@target_class, object@base_class) %in%
-                                    object@counts@meta.data$class))
-                        # Check that target class is different from base class
+                        # Check that target class is different from base
+                        # class
                         checkmate::assert_true(
                             object@target_class != object@base_class)
+                        
+                        # Check object is either Seurat or SingleCellExperiment
+                        if(is(object@counts,"SingleCellExperiment")){
+                            # Check that class and celltype_cluster columns
+                            # exist
+                            checkmate::assert_true(
+                                all(c("class", "celltype_cluster") %in%
+                                        colnames(object@counts@metadata)))
+                            # Check that target and base classes exists in the
+                            # variable class
+                            checkmate::assert_true(
+                                all(c(object@target_class, object@base_class)
+                                    %in% object@counts@metadata$class))
+                        }else if(is(object@counts, "Seurat")){
+                            # Check that class and celltype_cluster columns
+                            # exist
+                            checkmate::assert_true(
+                                all(c("class", "celltype_cluster") %in%
+                                        colnames(object@counts@meta.data)))
+                            # Check that target and base classes exists in the
+                            # variable class
+                            checkmate::assert_true(
+                                all(c(object@target_class, object@base_class)
+                                    %in% object@counts@meta.data$class))
+                        }else{
+                            stop("Object should be either of class Seurat
+                                    or SingleCellExperiment")
+                        }
                         return(TRUE)
                     }
 )

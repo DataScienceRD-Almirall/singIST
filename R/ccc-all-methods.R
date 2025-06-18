@@ -1,3 +1,43 @@
+#' @title Pseudobulk on SingleCellExperiment object
+#' 
+#' @description
+#' This method generates a pseudobulk expression matrix for a 
+#' SingleCellExperiment object as required by
+#' \link{superpathway.gene.sets-class}
+#' 
+#' @param object A `SingleCellExperiment` object
+#' @param celltype_var Character indicating the name of cell type variable
+#' @param sampleid_var Character indicating the name of the sample ID variable
+#'
+#' @rdname pseudobulk_sce-method
+#' @import glmGamPoi scuttle checkmate
+#' @importFrom SummarizedExperiment assay
+#' @exportMethod pseudobulk_sce
+#' 
+#' @return A matrix with the appropiate formating as expected in
+#' \link{superpathway.gene.sets-class}
+#' 
+#' @examples
+#' sce_mock <- scuttle::mockSCE()
+#' pseudobulk_sce(sce_mock, "Cell_Cycle", "Treatment")
+methods::setGeneric("pseudobulk_sce",
+                    function(object, celltype_var, sampleid_var){
+                        # Check whether object is null
+                        checkmate::checkClass(object, "SingleCellExperiment")
+                        # Check that introduced variables are character type 
+                        checkmate::assert_character(celltype_var)
+                        checkmate::assert_character(sampleid_var)
+                        psdblk <- glmGamPoi::pseudobulk(
+                            object,
+                            group_by = glmGamPoi::vars(celltype_var,
+                                                        sampleid_var)
+                        )
+                        psdblk_t <- t(SummarizedExperiment::assay(psdblk))
+                        rownames(psdblk_t) <- gsub('\\.', '_',
+                                                    rownames(psdblk_t))
+                        return(psdblk_t)
+                    })
+
 #' @title Pull Gene Set from MsigDB
 #'
 #' @description
@@ -157,7 +197,7 @@ methods::setMethod("pullGeneSet",
 #' @description
 #' A setter for gene_sets_celltype slot of superpathway.gene.sets Class that
 #' checks for its validity when updating. Number of gene sets should be equal to
-#'  the number of cell types, the updated slot cannot have NULL value
+#' the number of cell types, the updated slot cannot have NULL value
 #'
 #'
 #' @param x A \link{superpathway.gene.sets-class} object to update

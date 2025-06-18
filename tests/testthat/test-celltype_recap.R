@@ -1,6 +1,8 @@
 test_that("celltype_recap works as expected", {
-    data("example_superpathway_fit_model", package = "singIST")
-    data("example_mapping_organism", package = "singIST")
+    file <- system.file("extdata", "example_superpathway_fit_model.rda", package = "singIST")
+    load(file)
+    file <- system.file("extdata", "example_mapping_organism.rda", package = "singIST")
+    load(file)
     model <- example_superpathway_fit_model
     mapped <- example_mapping_organism
     singIST_samples <- biological_link_function(mapped, model,

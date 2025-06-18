@@ -22,17 +22,20 @@ organism}
 between the mapping organism and the reference organism for which asmbPLSDA
 has been trained. Note that the name of each element of the list should be
 exactly the cell type used in \link{superpathway.gene.sets-class}, each
-vector contains the values of \code{slot(SeuratObject, meta.data$class)} that are
-equivalent to its respective \link{superpathway.gene.sets-class} cell type.
-If no mapping exists for a given cell type its vector should void. If you
-are assessing multiple \link{superpathway.gene.sets-class} objects, you
-should include the mapping of all cell types used in these objects.}
+vector contains the values of \code{slot(SeuratObject, meta.data$class)},
+for \code{Seurat} object, or \code{slot(SingleCellExperimentObject, metadata$class)}
+for \code{SingleCellExperiment} objects, that are equivalent to its respective
+\link{superpathway.gene.sets-class} cell type. If no mapping exists for a
+given cell type its vector should void. If you are assessing multiple
+\link{superpathway.gene.sets-class} objects, you should include the mapping
+of all cell types used in these objects.}
 
-\item{\code{counts}}{A Seurat or SingleCellExperiment object with the scRNA-seq
-counts. This object should contain variables in
-\code{slot(SeuratObject, meta.data)} slot; \code{class} indicating the class the sample
-belongs to; \code{celltype_cluster} indicating the cell type cluster (either
-character or numeric)}
+\item{\code{counts}}{A \code{Seurat} or \code{SingleCellExperiment} object with the scRNA-seq
+LogNormalized counts. This object should contain variables in
+\code{slot(SeuratObject, meta.data)} slot or
+\code{slot(SingleCellExperimentObject, metadata)}; \code{class} indicating the class
+the sample belongs to; \code{celltype_cluster} indicating the cell type cluster
+(either character or numeric)}
 }}
 
 \examples{

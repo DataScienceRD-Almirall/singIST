@@ -1,5 +1,8 @@
 test_that("derive_scores computes scores correctly", {
-    data("example_superpathway_fit_model", package = "singIST")
+    file <- system.file("extdata", "example_superpathway_fit_model.rda", package = "singIST")
+    load(file)
+    file <- system.file("extdata", "example_mapping_organism.rda", package = "singIST")
+    load(file)
     object <- example_superpathway_fit_model
     data <- biological_link_function(
         example_mapping_organism, example_superpathway_fit_model,

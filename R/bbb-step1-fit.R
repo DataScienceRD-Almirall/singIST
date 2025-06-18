@@ -13,7 +13,9 @@
 #' @import checkmate stats
 #' @export
 #' @examples
-#' data(example_superpathway_input)
+#' file <- system.file("extdata", "example_superpathway_input.rda",
+#' package = "singIST")
+#' load(file)
 #' data <- example_superpathway_input
 #' matrixToBlock(data)
 matrixToBlock.superpathway.input <- function(object){
@@ -147,7 +149,9 @@ Results_comparison_measure <- function(Y_predict,
 #' @export
 #'
 #' @examples
-#' data(example_superpathway_input)
+#' file <- system.file("extdata", "example_superpathway_input.rda",
+#' package = "singIST")
+#' load(file)
 #' data <- example_superpathway_input
 #' matrices <- matrixToBlock(data)
 #' X.matrix <- matrices$block_predictor
@@ -224,7 +228,9 @@ asmbPLSDA.cv.loo <- function(X.matrix, Y.matrix, PLS_term = 1, X.dim,
 #' @import checkmate stringr
 #' @export
 #' @examples
-#' data(example_superpathway_fit_model)
+#' file <- system.file("extdata", "example_superpathway_fit_model.rda",
+#' package = "singIST")
+#' load(file)
 #' data <- example_superpathway_fit_model
 #' CIP_GIP(data)
 CIP_GIP <- function(object){
@@ -258,7 +264,7 @@ CIP_GIP <- function(object){
 #'
 #' @param ref_distr A vector with the reference distribution
 #' @param null_distr A vector with the null distribution
-#'
+#' @param ... Other parameters to be passed onto wilcox.test
 #' @returns
 #' A pvalue with the Mann-Whitney Wilcoxon test with the "greater" as the
 #' alternative hypothesis
@@ -269,9 +275,9 @@ CIP_GIP <- function(object){
 #' ref_distr <- rnorm(100, mean = 30, sd = 2)
 #' null_distr <- rnorm(100, mean = 0, sd = 1)
 #' wilcox_CIP_GIP(ref_distr, null_distr)
-wilcox_CIP_GIP <- function(ref_distr, null_distr){
+wilcox_CIP_GIP <- function(ref_distr, null_distr, ...){
     return(stats::wilcox.test(
-        ref_distr, null_distr, alternative = "greater")$p.value)
+        ref_distr, null_distr, alternative = "greater", ...)$p.value)
 }
 
 #' @title Permutation test for asmbPLSDA global significance
@@ -294,7 +300,9 @@ wilcox_CIP_GIP <- function(ref_distr, null_distr){
 #' intervals.
 #' @export
 #' @examples
-#' data(example_superpathway_fit_model)
+#' file <- system.file("extdata", "example_superpathway_fit_model.rda",
+#' package = "singIST")
+#' load(file)
 #' data <- example_superpathway_fit_model
 #' permut_asmbplsda(data, npermut = 5, Nc = 1,
 #' CV_error = 1)
@@ -352,7 +360,7 @@ permut_asmbplsda <- function(object, npermut = 100, nbObsPermut = NULL,
 #' otherwise select `subsampling`.
 #' @param nsubsampling Number of subsamples to generate CIP and GIP observed
 #' distributions. By default 100.
-#'
+#' @param ... Other parameters to be passed onto \link{wilcox_CIP_GIP}
 #' @import asmbPLS checkmate
 #' @returns
 #' A list containing; observed distributions of CIP and GIP (variability_param);
@@ -361,12 +369,14 @@ permut_asmbplsda <- function(object, npermut = 100, nbObsPermut = NULL,
 #' (CIP_pvalue); and for GIP distribution (GIP_pvalue).
 #' @export
 #' @examples
-#' data(example_superpathway_fit_model)
+#' file <- system.file("extdata", "example_superpathway_fit_model.rda",
+#' package = "singIST")
+#' load(file)
 #' data <- example_superpathway_fit_model
 #' CIP_GIP_test(data, npermut = 3, type = "jackknife")
 CIP_GIP_test <- function(object, npermut = 100, maxiter = 100,
                         type = c("jackknife", "subsampling"),
-                        nsubsampling = 100) {
+                        nsubsampling = 100, ...) {
     checkmate::assert_choice(type, choices = c("jackknife", "subsampling"))
     # Extract data from the object
     K <- nrow(object@model_fit$`asmbPLS-DA`$Y_group)
@@ -390,11 +400,11 @@ CIP_GIP_test <- function(object, npermut = 100, maxiter = 100,
                                                 npermut, K, X.dim, maxiter)
     # Compute p-values for CIP and GIP distributions
     GIP_pvalue <- calculate_pvalues(CIP_GIP_variability$GIP, NULL_VAR_INF$GIP,
-                                    wilcox_CIP_GIP)
-    CIP_pvalue <- lapply(seq_along(CIP_GIP_variability$GIP), function(i){
+                                    wilcox_CIP_GIP, ...)
+    CIP_pvalue <- lapply(seq_along(CIP_GIP_variability$GIP), function(i, ...){
         variability_cell_CIP <- CIP_GIP_variability$CIP[i,]
         null_cell_CIP <- NULL_VAR_INF$CIP[i,]
-        tests <- wilcox_CIP_GIP(variability_cell_CIP, null_cell_CIP)
+        tests <- wilcox_CIP_GIP(variability_cell_CIP, null_cell_CIP, ...)
         output <- tests
         return(output)
     })
@@ -464,6 +474,8 @@ CIP_GIP_test <- function(object, npermut = 100, maxiter = 100,
 #' Passed onto \link{CIP_GIP_test}.
 #' @param nsubsampling Number of subsamples to generate CIP and GIP observed
 #' distributions. By default 100. Passed onto \link{CIP_GIP_test}.
+#' @param ... Other parameters to be passed onto \link{wilcox_CIP_GIP}, wilcox
+#' test of GIP statistical tests
 #' @import asmbPLS checkmate
 #' @rdname fitOptimal-method
 #'
@@ -478,7 +490,9 @@ CIP_GIP_test <- function(object, npermut = 100, maxiter = 100,
 #' @examples
 #' # fitOptimal with jackknife for CIP/GIP statistics and 10 permutations
 #' # for the global significance test of the optimal model
-#' data(example_superpathway_input)
+#' file <- system.file("extdata", "example_superpathway_input.rda",
+#' package = "singIST")
+#' load(file)
 #' data <- example_superpathway_input
 #' fitOptimal(data, npermut = 10, type = "jackknife")
 #' # fitOptimal with subsampling for CIP/GIP statistics with
@@ -491,7 +505,7 @@ fitOptimal.superpathway.input <- function(
         expected_measure_increase = 0.005, maxiter = 100,
         global_significance_full = FALSE, CIP.GIP_significance_full = FALSE,
         npermut = 100, nbObsPermut = NULL, type = "jackknife",
-        nsubsampling = 100) {
+        nsubsampling = 100, ...) {
     output <- new("superpathway.fit.model", superpathway_input = object,
                     hyperparameters_fit = object@hyperparameters_info,
                     model_fit = list(), model_validation = list())

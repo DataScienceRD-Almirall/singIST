@@ -59,7 +59,8 @@ optimal number of PLS components.
 Leave-one-out Cross-validation
 }
 \examples{
-data(example_superpathway_input)
+file <- system.file("extdata", "example_superpathway_input.rda", package = "singIST")
+load(file)
 data <- example_superpathway_input
 matrices <- matrixToBlock(data)
 X.matrix <- matrices$block_predictor

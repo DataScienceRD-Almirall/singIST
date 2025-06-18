@@ -2,7 +2,7 @@
 % Please edit documentation in R/step2-biologicalLink.R
 \name{diff_expressed}
 \alias{diff_expressed}
-\title{Compute differentially expressed genes with FindMarkers}
+\title{Compute differentially expressed genes with FindMarkers/findMarkers}
 \usage{
 diff_expressed(
   object,
@@ -14,8 +14,9 @@ diff_expressed(
 )
 }
 \arguments{
-\item{object}{A \link{mapping.organism-class} object with \code{Idents(object)}
-assigned to variables with the conditions being tested.}
+\item{object}{A \link{mapping.organism-class} object. If a \code{Seurat} object
+was provided, then \code{Idents(object)} assigned to variables with the conditions
+being tested is expected.}
 
 \item{condition_1}{A vector with the elements of the first factor to perform
 the hypothesis test. By default the mapped cell types
@@ -32,19 +33,34 @@ identifying differentially expressed genes (DEGs). By default
 \item{assay}{Specific assay being used for analysis. By default
 \code{assay = RNA}.}
 
-\item{...}{Other parameters to pass onto \code{Seurat::FindMarkers()}}
+\item{...}{Other parameters to pass onto \code{Seurat::FindMarkers()} or
+\code{scran::findMarkers}.}
 }
 \value{
-A data frame containing the \code{Seurat::FindMarkers} output for the interaction
-of two conditions of the \code{slot(object, counts)} matrix
+A list where each element is a data.frame for a cell type containing: \code{p_val}
+p-value of test, \code{avg_log2FC} logFC between mean expression values,
+\code{pct.1} percentage of cells where the gene is detected in the base class,
+\code{pct.2} percentage of cells where the gene is detected in the target class,
+\code{p_val_adj} FDR.
 }
 \description{
-Computes differentially expressed genes with FindMarkers for the conditions
-indicated.
+Computes differentially expressed genes with \code{Seurat::FindMarkers}, for
+\code{Seurat} objects, or \code{scran::findMarkers}, for \code{SingleCellExperiment}
+objects, for the conditions indicated. Note that \code{Seurat::FindMarkers} will
+compute Wilcoxon Signed Rank Test by default, while \code{scran::findMarkers} will
+perform t-test by default instead. The reported logFC values are differences
+in the log of the average exponentiated data, with pseudocount. This logFC
+reporting is consistent with \code{Seurat::FindMarkers}, and differs from methods
+like \code{scran::findMarkers}, which compute logFC as the difference in mean
+log expression values between groups. Hence, logFC will be differently
+reported than \code{scran::findMarkers} to ensure reproducibility and consistency
+independently of the class, \code{Seurat} or \code{SingleCellExperiment}, provided. The
+output is rendered to be homogeneous indistinguishably of the method used.
 }
 \examples{
 # Set the identities
-data(example_mapping_organism)
+file <- system.file("extdata", "example_mapping_organism.rda", package = "singIST")
+load(file)
 data_organism <- example_mapping_organism
 data <- celltype_mapping(data_organism)
 slot(data, "counts")$test <- paste0(slot(data, "counts")$celltype_cluster,

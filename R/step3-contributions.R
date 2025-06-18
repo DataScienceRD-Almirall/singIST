@@ -13,9 +13,13 @@
 #' cell type contributions and needed scores to compute gene contributions
 #' @export
 #' @examples
-#' data(example_mapping_organism)
+#' file <- system.file("extdata", "example_mapping_organism.rda",
+#' package = "singIST")
+#' load(file)
 #' mapped <- example_mapping_organism
-#' data(example_superpathway_fit_model)
+#' file <- system.file("extdata", "example_superpathway_fit_model.rda",
+#' package = "singIST")
+#' load(file)
 #' model <- example_superpathway_fit_model
 #' singIST_samples <- biological_link_function(mapped, model)$singIST_samples
 #' # Derive the scores for sample 2
@@ -87,9 +91,13 @@ derive_scores <- function(object, data, sample){
 #' contributions to the former
 #' @export
 #' @examples
-#' data(example_mapping_organism)
+#' file <- system.file("extdata", "example_mapping_organism.rda",
+#' package = "singIST")
+#' load(file)
 #' mapped <- example_mapping_organism
-#' data(example_superpathway_fit_model)
+#' file <- system.file("extdata", "example_superpathway_fit_model.rda",
+#' package = "singIST")
+#' load(file)
 #' model <- example_superpathway_fit_model
 #' singIST_samples <- biological_link_function(mapped, model)$singIST_samples
 #' derive_contributions(model, singIST_samples)

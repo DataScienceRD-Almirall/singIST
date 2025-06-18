@@ -210,7 +210,7 @@ generate_null_distributions(
 
 permute_X_matrix(X.matrix, K, X.dim)
 
-calculate_pvalues(variability, null_dist, test_func)
+calculate_pvalues(variability, null_dist, test_func, ...)
 
 perform_cv(
   object,
@@ -275,7 +275,7 @@ deflate_prediction(data, PLS, delta_cbind, fit_asmb)
 
 \item{j}{Block to return indices for}
 
-\item{...}{Other parameters to pass onto \code{furrr::future_pmap}}
+\item{...}{Other parameters of \code{test_func}}
 
 \item{results_CV_summary_n}{Passed from \link{asmbPLSDA.cv.loo}}
 

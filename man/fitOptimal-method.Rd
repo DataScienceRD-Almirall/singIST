@@ -18,7 +18,8 @@ fitOptimal.superpathway.input(
   npermut = 100,
   nbObsPermut = NULL,
   type = "jackknife",
-  nsubsampling = 100
+  nsubsampling = 100,
+  ...
 )
 
 fitOptimal(object, ...)
@@ -35,7 +36,8 @@ fitOptimal(object, ...)
   npermut = 100,
   nbObsPermut = NULL,
   type = "jackknife",
-  nsubsampling = 100
+  nsubsampling = 100,
+  ...
 )
 }
 \arguments{
@@ -122,7 +124,8 @@ recommended.
 \examples{
 # fitOptimal with jackknife for CIP/GIP statistics and 10 permutations
 # for the global significance test of the optimal model
-data(example_superpathway_input)
+file <- system.file("extdata", "example_superpathway_input.rda", package = "singIST")
+load(file)
 data <- example_superpathway_input
 fitOptimal(data, npermut = 10, type = "jackknife")
 # fitOptimal with subsampling for CIP/GIP statistics with

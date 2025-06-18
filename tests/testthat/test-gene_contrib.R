@@ -1,6 +1,8 @@
 test_that("gene_contrib works as expected", {
-    data("example_superpathway_fit_model", package = "singIST")
-    data("example_mapping_organism", package = "singIST")
+    file <- system.file("extdata", "example_superpathway_fit_model.rda", package = "singIST")
+    load(file)
+    file <- system.file("extdata", "example_mapping_organism.rda", package = "singIST")
+    load(file)
     model <- example_superpathway_fit_model
     mapped <- example_mapping_organism
     singIST_samples <- biological_link_function(mapped, model,
@@ -11,7 +13,7 @@ test_that("gene_contrib works as expected", {
     celltype <- celltype_recap(model, original$celltype_contribution,
                              derived$celltype_contribution)
     # Running the function
-    result <- gene_contrib(model_object, original$gene_contribution,
+    result <- gene_contrib(model, original$gene_contribution,
                             derived$gene_contribution, celltype)
     # Checking if the result is a data frame
     expect_true(is.data.frame(result))

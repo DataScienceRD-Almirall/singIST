@@ -26,8 +26,7 @@ infers the gene identifiers of \code{object}, note this may add execution time.}
 \item{model_species}{Organism for which \code{model_object} has been trained. By
 \code{default} \code{hsapiens}.}
 
-\item{...}{Other parameters to pass onto \link{diff_expressed} or function
-\link{orthology_mapping}}
+\item{...}{Other parameters to pass onto \link{diff_expressed}}
 }
 \value{
 A list with; ortholog gene sets as returned by \link{orthology_mapping};

@@ -1,6 +1,11 @@
 test_that("Test multiple_singISTrecapitulations function", {
-    data("example_superpathway_fit_model", package = "singIST")
-    data("example_mapping_organism", package = "singIST")
+    file <- system.file("extdata", "example_superpathway_fit_model.rda", package = "singIST")
+    load(file)
+    file <- system.file("extdata", "example_superpathway_input.rda", package = "singIST")
+    load(file)
+    file <- system.file("extdata", "example_mapping_organism.rda", package = "singIST")
+    load(file)
+    object <- example_mapping_organism
     # Define example superpathway.input objects
     object1 <- object2 <- example_superpathway_input
     models <- list(object1, object2)
@@ -9,7 +14,7 @@ test_that("Test multiple_singISTrecapitulations function", {
     # Test when using default arguments for from_species
     result <- multiple_singISTrecapitulations(object, result_models,
                                                 exact = FALSE)
-    expect_equal(names(result), c("superpathway", "celltype", "gene", "FC"))
+    expect_equal(names(result), c("superpathway", "celltype", "gene", "FC", "orthologs"))
     expect_true(inherits(result$superpathway, "data.frame"))
     expect_true(inherits(result$celltype, "data.frame"))
     expect_true(inherits(result$gene, "data.frame"))

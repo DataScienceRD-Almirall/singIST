@@ -15,9 +15,13 @@
 #' `model_object`, `recapitulation` with the superpathway recapitulation
 #' @export
 #' @examples
-#' data(example_superpathway_fit_model)
+#' file <- system.file("extdata", "example_superpathway_fit_model.rda",
+#' package = "singIST")
+#' load(file)
 #' model <- example_superpathway_fit_model
-#' data(example_mapping_organism)
+#' file <- system.file("extdata", "example_mapping_organism.rda",
+#' package = "singIST")
+#' load(file)
 #' mapped <- example_mapping_organism
 #' singIST_samples <- biological_link_function(mapped, model)$singIST_samples
 #' original <- derive_contributions(model, singIST_samples)
@@ -72,9 +76,13 @@ superpathway_recap <- function(model_object, data_original, data_singIST){
 #' `reference` with the cell type reference recapitulation
 #' @export
 #' @examples
-#' data(example_superpathway_fit_model)
+#' file <- system.file("extdata", "example_superpathway_fit_model.rda",
+#' package = "singIST")
+#' load(file)
 #' model <- example_superpathway_fit_model
-#' data(example_mapping_organism)
+#' file <- system.file("extdata", "example_mapping_organism.rda",
+#' package = "singIST")
+#' load(file)
 #' mapped <- example_mapping_organism
 #' singIST_samples <- biological_link_function(mapped, model)$singIST_samples
 #' original <- derive_contributions(model, singIST_samples)
@@ -142,9 +150,13 @@ celltype_recap <- function(model_object, data_original, data_singIST){
 #' `gene` name, `contribution` gene contribution to cell type recapitulation
 #' @export
 #' @examples
-#' data(example_superpathway_fit_model)
+#' file <- system.file("extdata", "example_superpathway_fit_model.rda",
+#' package = "singIST")
+#' load(file)
 #' model <- example_superpathway_fit_model
-#' data(example_mapping_organism)
+#' file <- system.file("extdata", "example_mapping_organism.rda",
+#' package = "singIST")
+#' load(file)
 #' mapped <- example_mapping_organism
 #' singIST_samples <- biological_link_function(mapped, model)$singIST_samples
 #' original <- derive_contributions(model, singIST_samples)
@@ -228,9 +240,13 @@ gene_contrib <- function(model_object, data_original,
 #' the one-to-one orthology mapping for each cell type gene set.
 #' @export
 #' @examples
-#' data(example_mapping_organism)
+#' file <- system.file("extdata", "example_mapping_organism.rda",
+#' package = "singIST")
+#' load(file)
 #' data_organism <- example_mapping_organism
-#' data(example_superpathway_fit_model)
+#' file <- system.file("extdata", "example_superpathway_fit_model.rda",
+#' package = "singIST")
+#' load(file)
 #' data_model <- example_superpathway_fit_model
 #' singISTrecapitulations(data_organism, data_model)
 singISTrecapitulations <- function(object, model_object, ...){

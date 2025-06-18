@@ -1,5 +1,6 @@
 test_that("CIP_GIP computes correctly", {
-    data("example_superpathway_fit_model", package = "singIST")
+    file <- system.file("extdata", "example_superpathway_fit_model.rda", package = "singIST")
+    load(file)
     result <- CIP_GIP(example_superpathway_fit_model)
     # Test that result is a list with GIP and CIP components
     expect_type(result, "list")

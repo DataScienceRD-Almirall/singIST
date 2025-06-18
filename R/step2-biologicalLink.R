@@ -14,14 +14,16 @@
 #' according to the mapping defined in `slot(object, "celltype_mapping")`.
 #' @export
 #' @examples
-#' data(example_mapping_organism)
+#' file <- system.file("extdata", "example_mapping_organism.rda",
+#' package = "singIST")
+#' load(file)
 #' data <- example_mapping_organism
 #' new_object <- celltype_mapping(data)
 #' slot(new_object, "counts")$celltype_cluster
 celltype_mapping <- function(object){
     checkmate::assert_class(object, "mapping.organism")
     output <- object
-    # Avoid spaces as FindMarkers does not identify them
+    # Avoid spaces as FindMarkers/findMarkers does not identify them
     names(output@celltype_mapping) <- gsub(" ", "_",
                                             names(output@celltype_mapping))
     # Rename cell types based on cell type mapping
@@ -39,13 +41,24 @@ celltype_mapping <- function(object){
     return(output)
 }
 
-#' @title Compute differentially expressed genes with FindMarkers
+#' @title Compute differentially expressed genes with FindMarkers/findMarkers
 #' @description
-#' Computes differentially expressed genes with FindMarkers for the conditions
-#' indicated.
+#' Computes differentially expressed genes with `Seurat::FindMarkers`, for
+#' `Seurat` objects, or `scran::findMarkers`, for `SingleCellExperiment`
+#' objects, for the conditions indicated. Note that `Seurat::FindMarkers` will
+#' compute Wilcoxon Signed Rank Test by default, while `scran::findMarkers` will
+#' perform t-test by default instead. The reported logFC values are differences
+#' in the log of the average exponentiated data, with pseudocount. This logFC
+#' reporting is consistent with `Seurat::FindMarkers`, and differs from methods
+#' like `scran::findMarkers`, which compute logFC as the difference in mean
+#' log expression values between groups. Hence, logFC will be differently
+#' reported than `scran::findMarkers` to ensure reproducibility and consistency
+#' independently of the class, `Seurat` or `SingleCellExperiment`, provided. The
+#' output is rendered to be homogeneous indistinguishably of the method used.
 #'
-#' @param object A \link{mapping.organism-class} object with `Idents(object)`
-#' assigned to variables with the conditions being tested.
+#' @param object A \link{mapping.organism-class} object. If a `Seurat` object
+#' was provided, then `Idents(object)` assigned to variables with the conditions
+#' being tested is expected.
 #' @param condition_1 A vector with the elements of the first factor to perform
 #' the hypothesis test. By default the mapped cell types
 #' `condition_1 = names(slot(object, "celltype_mapping"))`
@@ -55,17 +68,23 @@ celltype_mapping <- function(object){
 #' @param logfc.treshold Sets the minimum log-fold change (logFC) cutoff for
 #' identifying differentially expressed genes (DEGs). By default
 #' `logfc.treshold = 0.25`
-#' @param ... Other parameters to pass onto `Seurat::FindMarkers()`
+#' @param ... Other parameters to pass onto `Seurat::FindMarkers()` or
+#' `scran::findMarkers`.
 #' @param assay Specific assay being used for analysis. By default
 #' `assay = RNA`.
-#' @import checkmate Seurat
+#' @import checkmate Seurat scran SingleCellExperiment
 #' @returns
-#' A data frame containing the `Seurat::FindMarkers` output for the interaction
-#' of two conditions of the `slot(object, counts)` matrix
+#' A list where each element is a data.frame for a cell type containing: `p_val`
+#' p-value of test, `avg_log2FC` logFC between mean expression values, 
+#' `pct.1` percentage of cells where the gene is detected in the base class,
+#' `pct.2` percentage of cells where the gene is detected in the target class,
+#' `p_val_adj` FDR. 
 #' @export
 #' @examples
 #' # Set the identities
-#' data(example_mapping_organism)
+#' file <- system.file("extdata", "example_mapping_organism.rda",
+#' package = "singIST")
+#' load(file)
 #' data_organism <- example_mapping_organism
 #' data <- celltype_mapping(data_organism)
 #' slot(data, "counts")$test <- paste0(slot(data, "counts")$celltype_cluster,
@@ -76,22 +95,50 @@ diff_expressed <- function(object, condition_1 = c(), condition_2 = c(),
                             logfc.treshold = 0.25, assay = "RNA", ...){
     checkmate::assert_class(object, "mapping.organism")
     if(is.null(condition_1)){condition_1 <-
-        names(object@celltype_mapping)[lengths(object@celltype_mapping) > 0]}
+        names(object@celltype_mapping)[lengths(object@celltype_mapping)>0]}
     if(is.null(condition_2)){condition_2 <-
         c(object@target_class, object@base_class)}
     counts <- object@counts
-    # FindMarkers function by row of dataset
-    apply_function <- function(row, data = counts) {
-        logFC <- Seurat::FindMarkers(
-            object = data, ident.1 = row[1], ident.2 = row[2], assay = assay,
-            slot = "data", logfc.threshold = logfc.treshold, ...)
-        return(logFC)
+    if(is(object@counts,"Seurat")){
+        apply_function <- function(row, data = counts, ...) {
+            logFC <- Seurat::FindMarkers(
+                object = data, ident.1 = row[1], ident.2 = row[2],
+                assay = assay, slot = "data", logfc.threshold = logfc.treshold,
+                ...)
+            return(logFC)
+        }
+        # Combinations to test
+        combinations <- base::outer(condition_1, condition_2 , paste, sep = "_")
+        output <- base::apply(combinations, 1, apply_function)
+        names(output) <- condition_1
+    }else{ # If not Seurat then its SingleCellExperiment
+        output <-lapply(condition_1, function(x, sce=counts, lfc=logfc.treshold,
+                                                classes = condition_2, ...){
+            filt <- sce[, sce$celltype_cluster == x]
+            DEG <- scran::findMarkers(filt, groups = filt$class, lfc = lfc,
+                                        add.summary = TRUE, min.prop = 0.01,
+                                        assay.type = "logcounts", ...)
+            norm_expr <- expm1(SingleCellExperiment::logcounts(filt))
+            group_base <- colnames(filt)[filt$class == condition_2[2]]
+            group_target <- colnames(filt)[filt$class == condition_2[1]]
+            mean_base <- log(
+                (rowSums(norm_expr[, group_base]) + 1)/length(group_base),
+                base = 2)
+            mean_target <- log(
+                (rowSums(norm_expr[, group_target]) + 1)/length(group_target), 
+                base = 2)
+            i <- which(names(DEG) == condition_2[1])
+            avg_log2FC <- (mean_target-mean_base)[rownames(DEG[[i]])]
+            output <- data.frame("p_val" = DEG[[i]]$p.value,
+                "avg_log2FC" = avg_log2FC,
+                "pct.1" = DEG[[i]]$self.detected,
+                "pct.2" = DEG[[i]]$other.detected,
+                "p_val_adj" = DEG[[i]]$FDR)
+            rownames(output) <- rownames(DEG[[i]])
+            output
+        })
+        names(output) <- condition_1
     }
-    # Combinations to test
-    combinations <- base::outer(condition_1, condition_2 , paste, sep = "_")
-    # Apply the function to each row of the data frame
-    output <- base::apply(combinations, 1, apply_function)
-    names(output) <- condition_1
     return(output)
 }
 
@@ -119,9 +166,13 @@ diff_expressed <- function(object, condition_1 = c(), condition_2 = c(),
 #' @examples
 #' # Case without stating the gene annotation of the mapping.organisms object
 #' # note this will take longer to execute
-#' data(example_mapping_organism)
+#' file <- system.file("extdata", "example_mapping_organism.rda",
+#' package = "singIST")
+#' load(file)
 #' data_organism <- example_mapping_organism
-#' data(example_superpathway_fit_model)
+#' file <- system.file("extdata", "example_superpathway_fit_model.rda",
+#' package = "singIST")
+#' load(file)
 #' data_model <- example_superpathway_fit_model
 #' orthology_mapping(data_organism, data_model, "hsapiens",
 #' annotation_to_species = NULL)
@@ -176,8 +227,7 @@ orthology_mapping <- function(object, model_object, from_species,
 #' \link{orthology_mapping} with the one-to-one orthologs of each gene set per
 #' cell type
 #' @param logFC A list of `data.frame` objects, as returned by
-#' \link{diff_expressed}, with the log Fold Changes computed by FindMarkers
-#' for each gene set per cell type
+#' \link{diff_expressed} with the logFC for each gene and cell type
 #' @returns
 #' A list object with the singIST treated samples predictor block matrix and
 #' a list of Fold Changes for each cell type used to compute the singIST
@@ -185,9 +235,13 @@ orthology_mapping <- function(object, model_object, from_species,
 #' @export
 #' @examples
 #' # Orthology mapping
-#' data(example_mapping_organism)
+#' file <- system.file("extdata", "example_mapping_organism.rda",
+#' package = "singIST")
+#' load(file)
 #' data_organism <- example_mapping_organism
-#' data(example_superpathway_fit_model)
+#' file <- system.file("extdata", "example_superpathway_fit_model.rda",
+#' package = "singIST")
+#' load(file)
 #' data_model <- example_superpathway_fit_model
 #' orthologs <- orthology_mapping(data_organism, data_model, "hsapiens")
 #' # Set the identities
@@ -263,8 +317,7 @@ singIST_treat <- function(object, model_object, orthologs, logFC){
 #' infers the gene identifiers of `object`, note this may add execution time.
 #' @param model_species Organism for which `model_object` has been trained. By
 #' `default` `hsapiens`.
-#' @param ... Other parameters to pass onto \link{diff_expressed} or function
-#' \link{orthology_mapping}
+#' @param ... Other parameters to pass onto \link{diff_expressed}
 #' @import checkmate SeuratObject
 #' @returns
 #' A list with; ortholog gene sets as returned by \link{orthology_mapping};
@@ -279,7 +332,7 @@ biological_link_function <- function(
     object <- celltype_mapping(object)
     object@counts$test <- paste0(object@counts$celltype_cluster, "_",
                                     object@counts$class)
-    SeuratObject::Idents(object@counts) <- "test"
+    if(is(object@counts,"Seurat")){SeuratObject::Idents(object@counts)<-"test"}
     message("Computing Fold Changes with FindMarkers...")
     logFC <- diff_expressed(object, ...)
     message("Orthology mapping...")
@@ -292,7 +345,7 @@ biological_link_function <- function(
         orthologs <- orthology_mapping(
             object, model_object, to_species = to_species,
             annotation_to_species = object_gene_identifiers, 
-            from_species = model_species, ...)
+            from_species = model_species)
     }else{ # Case where no orthology mapping should be applied 
         orthologs <-lapply(seq_along(model_object@model_fit$observed_gene_sets),
                         function(i){

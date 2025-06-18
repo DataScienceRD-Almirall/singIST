@@ -1,5 +1,6 @@
 test_that("celltype_mapping correctly updates celltype_cluster", {
-    data("example_mapping_organism", package = "singIST")
+    file <- system.file("extdata", "example_mapping_organism.rda", package = "singIST")
+    load(file)
     object <- example_mapping_organism
     # Ensure original celltype_cluster is updated
     new_object <- celltype_mapping(object)

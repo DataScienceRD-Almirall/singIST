@@ -40,9 +40,11 @@ of the \link{superpathway.fit.model-class} object.
 \examples{
 # Case without stating the gene annotation of the mapping.organisms object
 # note this will take longer to execute
-data(example_mapping_organism)
+file <- system.file("extdata", "example_mapping_organism.rda", package = "singIST")
+load(file)
 data_organism <- example_mapping_organism
-data(example_superpathway_fit_model)
+file <- system.file("extdata", "example_superpathway_fit_model.rda", package = "singIST")
+load(file)
 data_model <- example_superpathway_fit_model
 orthology_mapping(data_organism, data_model, "hsapiens",
 annotation_to_species = NULL)

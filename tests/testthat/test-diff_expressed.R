@@ -1,5 +1,6 @@
 test_that("diff_expressed computes differential expression", {
-    data("example_mapping_organism", package = "singIST")
+    file <- system.file("extdata", "example_mapping_organism.rda", package = "singIST")
+    load(file)
     object <- example_mapping_organism
     data <- celltype_mapping(object)
     slot(data, "counts")$test <- paste0(slot(data, "counts")$celltype_cluster,

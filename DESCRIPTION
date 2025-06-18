@@ -38,7 +38,8 @@ Imports:
     SingleCellExperiment,
     SummarizedExperiment,
     scran,
-    scuttle
+    scuttle,
+    glmGamPoi
 VignetteBuilder: knitr
 Depends: 
     R (>= 4.2)
