@@ -351,8 +351,8 @@ biological_link_function <- function(
         checkmate::assert_true(all(names(FC_list) == 
                             gsub("_", " ", names(object@celltype_mapping))))
         for(i in seq_along(FC_list)){
-            checkmate::assert_true(colnames(FC_list[[i]]) == c("p_val",
-                                    "avg_log2FC","pct.1","pct.2","p_val_adj"))
+            checkmate::assert_true(all(colnames(FC_list[[i]]) == c("p_val",
+                                    "avg_log2FC","pct.1","pct.2","p_val_adj")))
             checkmate::assert_true(all(FC_list[[i]]$p_val_adj <= 1))
         }
         logFC <- FC_list
