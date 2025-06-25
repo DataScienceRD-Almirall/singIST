@@ -124,7 +124,8 @@ recommended.
 \examples{
 # fitOptimal with jackknife for CIP/GIP statistics and 10 permutations
 # for the global significance test of the optimal model
-file <- system.file("extdata", "example_superpathway_input.rda", package = "singIST")
+file <- system.file("extdata", "example_superpathway_input.rda",
+package = "singIST")
 load(file)
 data <- example_superpathway_input
 fitOptimal(data, npermut = 10, type = "jackknife")

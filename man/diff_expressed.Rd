@@ -59,7 +59,8 @@ output is rendered to be homogeneous indistinguishably of the method used.
 }
 \examples{
 # Set the identities
-file <- system.file("extdata", "example_mapping_organism.rda", package = "singIST")
+file <- system.file("extdata", "example_mapping_organism.rda",
+package = "singIST")
 load(file)
 data_organism <- example_mapping_organism
 data <- celltype_mapping(data_organism)

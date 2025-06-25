@@ -30,10 +30,12 @@ Derive singIST treated samples
 }
 \examples{
 # Orthology mapping
-file <- system.file("extdata", "example_mapping_organism.rda", package = "singIST")
+file <- system.file("extdata", "example_mapping_organism.rda",
+package = "singIST")
 load(file)
 data_organism <- example_mapping_organism
-file <- system.file("extdata", "example_superpathway_fit_model.rda", package = "singIST")
+file <- system.file("extdata", "example_superpathway_fit_model.rda",
+package = "singIST")
 load(file)
 data_model <- example_superpathway_fit_model
 orthologs <- orthology_mapping(data_organism, data_model, "hsapiens")

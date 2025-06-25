@@ -71,7 +71,8 @@ objects. This wrapper is useful if one wants to assess multiple superpathways
 for analyses and needs to train its respective optimal models.
 }
 \examples{
-file <- system.file("extdata", "example_superpathway_input.rda", package = "singIST")
+file <- system.file("extdata", "example_superpathway_input.rda",
+package = "singIST")
 load(file)
 data <- example_superpathway_input
 models <- list(data, data)

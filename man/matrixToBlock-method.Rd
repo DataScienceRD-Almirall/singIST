@@ -32,7 +32,8 @@ the dimensions of each block, with the information provided in a
 superpathway.input object.
 }
 \examples{
-file <- system.file("extdata", "example_superpathway_input.rda", package = "singIST")
+file <- system.file("extdata", "example_superpathway_input.rda",
+package = "singIST")
 load(file)
 data <- example_superpathway_input
 matrixToBlock(data)

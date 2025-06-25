@@ -21,7 +21,8 @@ to the mapped cell types as indicated in
 \code{names(slot(object, "celltype_mapping"))}.
 }
 \examples{
-file <- system.file("extdata", "example_mapping_organism.rda", package = "singIST")
+file <- system.file("extdata", "example_mapping_organism.rda",
+package = "singIST")
 load(file)
 data <- example_mapping_organism
 new_object <- celltype_mapping(data)

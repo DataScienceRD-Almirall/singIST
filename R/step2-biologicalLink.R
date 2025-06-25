@@ -317,6 +317,8 @@ singIST_treat <- function(object, model_object, orthologs, logFC){
 #' infers the gene identifiers of `object`, note this may add execution time.
 #' @param model_species Organism for which `model_object` has been trained. By
 #' `default` `hsapiens`.
+#' @param FClist Optional parameter with list of matrices containing precomputed
+#' Fold Changes by the user. If such list is provided, 
 #' @param ... Other parameters to pass onto \link{diff_expressed}
 #' @import checkmate SeuratObject
 #' @returns
@@ -326,15 +328,19 @@ singIST_treat <- function(object, model_object, orthologs, logFC){
 #' @export
 biological_link_function <- function(
         object, model_object, object_gene_identifiers = "external_gene_name",
-        model_species = "hsapiens", ...){
+        model_species = "hsapiens", FC_list = NULL, ...){
     # Cell type and orthology mapping
     message("Cell type mapping...")
     object <- celltype_mapping(object)
     object@counts$test <- paste0(object@counts$celltype_cluster, "_",
                                     object@counts$class)
     if(is(object@counts,"Seurat")){SeuratObject::Idents(object@counts)<-"test"}
-    message("Computing Fold Changes with FindMarkers...")
-    logFC <- diff_expressed(object, ...)
+    if(is.null(FC_list)){
+        message("Computing Fold Changes with FindMarkers...")
+        logFC <- diff_expressed(object, ...)
+    }else{
+        logFC <- FC_list
+    }
     message("Orthology mapping...")
     to_species <- paste0(tolower(substr(object@organism,1,1)),
                             tolower(sub(".* ", "", object@organism)))

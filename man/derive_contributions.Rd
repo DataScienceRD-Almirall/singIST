@@ -24,10 +24,12 @@ contribution for a block of predictor matrices for its later use to compute
 recapitulations
 }
 \examples{
-file <- system.file("extdata", "example_mapping_organism.rda", package = "singIST")
+file <- system.file("extdata", "example_mapping_organism.rda",
+package = "singIST")
 load(file)
 mapped <- example_mapping_organism
-file <- system.file("extdata", "example_superpathway_fit_model.rda", package = "singIST")
+file <- system.file("extdata", "example_superpathway_fit_model.rda",
+package = "singIST")
 load(file)
 model <- example_superpathway_fit_model
 singIST_samples <- biological_link_function(mapped, model)$singIST_samples

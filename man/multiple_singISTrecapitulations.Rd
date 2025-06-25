@@ -36,14 +36,16 @@ to assess multiple superpathways against the same
 \link{mapping.organism-class}
 }
 \examples{
-file <- system.file("extdata", "example_superpathway_input.rda", package = "singIST")
+file <- system.file("extdata", "example_superpathway_input.rda",
+package = "singIST")
 load(file)
 data_model <- example_superpathway_input
 models <- list(data_model, data_model)
 # Example with different options
 multiple_model <- multiple_fitOptimal(models, type = c("jackknife",
 "subsampling"), nsubsampling = c(NULL, 10), npermut = c(10,15))
-file <- system.file("extdata", "example_mapping_organism.rda", package = "singIST")
+file <- system.file("extdata", "example_mapping_organism.rda",
+package = "singIST")
 load(file)
 data_organism <- example_mapping_organism
 multiple_singISTrecapitulations(data_organism, multiple_model,

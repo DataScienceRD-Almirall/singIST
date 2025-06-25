@@ -42,7 +42,8 @@ intervals.
 Performs permutation testing for asmbPLS-DA to evaluate model validity.
 }
 \examples{
-file <- system.file("extdata", "example_superpathway_fit_model.rda", package = "singIST")
+file <- system.file("extdata", "example_superpathway_fit_model.rda",
+package = "singIST")
 load(file)
 data <- example_superpathway_fit_model
 permut_asmbplsda(data, npermut = 5, Nc = 1,

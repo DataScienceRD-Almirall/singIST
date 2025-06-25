@@ -18,7 +18,7 @@ cell type.}
 
 \item{\code{gene_sets_celltype}}{A list of character vectors, each list element
 corresponds to a gene set for each cell type. If the gene sets are identical
-for all cell types look at method MIRACOÑO.}
+for all cell types look at method}
 }}
 
 \examples{

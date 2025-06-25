@@ -9,6 +9,7 @@ biological_link_function(
   model_object,
   object_gene_identifiers = "external_gene_name",
   model_species = "hsapiens",
+  FC_list = NULL,
   ...
 )
 }
@@ -25,6 +26,15 @@ infers the gene identifiers of \code{object}, note this may add execution time.}
 
 \item{model_species}{Organism for which \code{model_object} has been trained. By
 \code{default} \code{hsapiens}.}
+
+\item{FC_list}{Optional parameter with list of matrices containing Fold
+Changes provided by the user. If such list is provided, logFC will not be
+computed via \link{diff_expressed} and the list input will be used instead.
+The list length must match the number and order of human cell types modelled.
+Each element of the list must be a \code{data.frame} whose columns are:
+"p_value" p-value of test, "avg_log2FC" the log2FC provided, "pct.1" percent
+of cells where the gene is expressed in base class, "pct.2" percent of cells
+where the gene is expressed in target class, "p_val_adj" adjusted p-value.}
 
 \item{...}{Other parameters to pass onto \link{diff_expressed}}
 }

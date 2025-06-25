@@ -47,7 +47,8 @@ block of predictor matrices. Returns a pvalue of the Mann-Whitney Wilcoxon
 between the observed and null distribution for each CIP and GIP.
 }
 \examples{
-file <- system.file("extdata", "example_superpathway_fit_model.rda", package = "singIST")
+file <- system.file("extdata", "example_superpathway_fit_model.rda",
+package = "singIST")
 load(file)
 data <- example_superpathway_fit_model
 CIP_GIP_test(data, npermut = 3, type = "jackknife")

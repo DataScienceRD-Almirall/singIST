@@ -26,10 +26,12 @@ An object \code{data.frame} with the variables: \code{pathway} name as indicated
 Derive superpathway recapitulation
 }
 \examples{
-file <- system.file("extdata", "example_superpathway_fit_model.rda", package = "singIST")
+file <- system.file("extdata", "example_superpathway_fit_model.rda",
+package = "singIST")
 load(file)
 model <- example_superpathway_fit_model
-file <- system.file("extdata", "example_mapping_organism.rda", package = "singIST")
+file <- system.file("extdata", "example_mapping_organism.rda",
+package = "singIST")
 load(file)
 mapped <- example_mapping_organism
 singIST_samples <- biological_link_function(mapped, model)$singIST_samples

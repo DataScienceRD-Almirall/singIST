@@ -19,7 +19,8 @@ Computes CIP and GIP metrics from a \link{superpathway.fit.model-class}
 object for the target class
 }
 \examples{
-file <- system.file("extdata", "example_superpathway_fit_model.rda", package = "singIST")
+file <- system.file("extdata", "example_superpathway_fit_model.rda",
+package = "singIST")
 load(file)
 data <- example_superpathway_fit_model
 CIP_GIP(data)
