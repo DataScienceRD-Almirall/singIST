@@ -317,8 +317,14 @@ singIST_treat <- function(object, model_object, orthologs, logFC){
 #' infers the gene identifiers of `object`, note this may add execution time.
 #' @param model_species Organism for which `model_object` has been trained. By
 #' `default` `hsapiens`.
-#' @param FClist Optional parameter with list of matrices containing precomputed
-#' Fold Changes by the user. If such list is provided, 
+#' @param FC_list Optional parameter with list of matrices containing Fold
+#' Changes provided by the user. If such list is provided, logFC will not be 
+#' computed via \link{diff_expressed} and the list input will be used instead.
+#' The list length must match the number and order of human cell types modelled.
+#' Each element of the list must be a `data.frame` whose columns are:
+#' "p_value" p-value of test, "avg_log2FC" the log2FC provided, "pct.1" percent
+#' of cells where the gene is expressed in base class, "pct.2" percent of cells
+#' where the gene is expressed in target class, "p_val_adj" adjusted p-value.
 #' @param ... Other parameters to pass onto \link{diff_expressed}
 #' @import checkmate SeuratObject
 #' @returns
@@ -339,6 +345,15 @@ biological_link_function <- function(
         message("Computing Fold Changes with FindMarkers...")
         logFC <- diff_expressed(object, ...)
     }else{
+        checkmate::assert_list(
+            FC_list, len = length(names(object@celltype_mapping)))
+        checkmate::assert_true(names(FC_list) == 
+                            gsub("_", " ", names(object@celltype_mapping)))
+        for(i in seq_along(FC_list)){
+            checkmate::assert_true(colnames(FC_list[[i]]) == c("p_val",
+                                    "avg_log2FC","pct.1","pct.2","p_val_adj"))
+            checkmate::assert_true(all(FC_list[[i]]$p_val_adj <= 1))
+        }
         logFC <- FC_list
     }
     message("Orthology mapping...")
