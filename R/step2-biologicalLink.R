@@ -325,6 +325,7 @@ singIST_treat <- function(object, model_object, orthologs, logFC){
 #' "p_value" p-value of test, "avg_log2FC" the log2FC provided, "pct.1" percent
 #' of cells where the gene is expressed in base class, "pct.2" percent of cells
 #' where the gene is expressed in target class, "p_val_adj" adjusted p-value.
+#' Rownames should contain the gene names.
 #' @param ... Other parameters to pass onto \link{diff_expressed}
 #' @import checkmate SeuratObject
 #' @returns
@@ -347,8 +348,8 @@ biological_link_function <- function(
     }else{
         checkmate::assert_list(
             FC_list, len = length(names(object@celltype_mapping)))
-        checkmate::assert_true(names(FC_list) == 
-                            gsub("_", " ", names(object@celltype_mapping)))
+        checkmate::assert_true(all(names(FC_list) == 
+                            gsub("_", " ", names(object@celltype_mapping))))
         for(i in seq_along(FC_list)){
             checkmate::assert_true(colnames(FC_list[[i]]) == c("p_val",
                                     "avg_log2FC","pct.1","pct.2","p_val_adj"))
