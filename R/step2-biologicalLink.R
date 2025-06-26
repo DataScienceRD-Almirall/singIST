@@ -32,7 +32,7 @@ celltype_mapping <- function(object){
             var_name <- names(output@celltype_mapping)[
                 vapply(output@celltype_mapping, function(vals) x %in% vals,
                         FUN.VALUE = logical(1))]
-            if(length(var_name) > 0) var_name else NA
+            if(length(var_name) > 0) var_name else var_name
         }
         )
     )
