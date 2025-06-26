@@ -283,6 +283,8 @@ singIST_treat <- function(object, model_object, orthologs, logFC){
             FC_aux <- FC_aux[, c("avg_log2FC", "pct.1", "pct.2", "p_val_adj")]
             colnames(FC_aux)[1] <- "r_g^b"
             FC[[c]] <- FC_aux
+            predictor_block <- FCtoExpression(model_object, b, samples,
+                                              predictor_block, FC_aux)
             next
             }
         FC_aux[significant_genes, "avg_log2FC"] <-
