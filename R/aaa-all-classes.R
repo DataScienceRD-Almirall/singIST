@@ -287,7 +287,7 @@ methods::setClass("superpathway.input",
                         t(outer(object@superpathway_info@celltypes,
                                 object@sample_id,
                                 function(x, y)
-                                    paste(x, y, sep = "_")))) ==
+                                    paste(x, y, sep = "_")))) %in%
                                     rownames(object@pseudobulk_lognorm)))
                     # Check that gene_sets is not NULL
                     checkmate::assert_list(

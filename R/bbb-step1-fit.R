@@ -21,6 +21,9 @@
 matrixToBlock.superpathway.input <- function(object){
     checkmate::assert_class(object, "superpathway.input")
     matrix <- object@pseudobulk_lognorm
+    aux <-  base::do.call(base::rbind, base::strsplit(rownames(matrix),"_"))[,1]
+    keep <- aux %in% object@superpathway_info@celltypes
+    matrix <- object@pseudobulk_lognorm[keep, ]
     gene_sets_celltype <- object@superpathway_info@gene_sets_celltype
     observed_gene_sets <- base::lapply(gene_sets_celltype, function(x)
                                         intersect(x, colnames(matrix)))
