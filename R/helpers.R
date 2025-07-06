@@ -90,6 +90,61 @@ get_train_val_sets <- function(X.matrix, Y.matrix, validation_index) {
     ))
 }
 
+#' @title Generate round-robin K-folds with repetition
+#' @noRd
+cv_index_binary_R <- function(y, K) {
+    n <- length(y)
+    assign_fold <- function(idxs) {
+        idxs <- sample(idxs)
+        data.frame(idx = idxs,
+                   fold = rep_len(seq_len(K), length(idxs)))
+    }
+    df1 <- assign_fold(which(y == levels(y)[1]))
+    df2 <- assign_fold(which(y == levels(y)[2]))
+    df <- rbind(df1, df2)
+    lapply(seq_len(K), function(k) {
+        val <- df$idx[df$fold == k]
+        train <- setdiff(seq_len(n), val)
+        list(train = train, validate = val)
+    })
+}
+
+#' @title Build stratified k‐fold splits
+#' @noRd
+make_splits_R <- function(Y.matrix, k, ncv) {
+    splits <- vector("list", k * ncv)
+    ptr <- 1L
+    for(r in seq_len(ncv)) {
+        fl <- cv_index_binary_R(factor(Y.matrix[,1]), k)
+        for(j in seq_len(k)) { splits[[ptr]] <- fl[[j]]
+        ptr <- ptr + 1L }
+    }
+    splits
+}
+
+#' @title Evaluate one split + quantile combo
+#' @noRd
+eval_split_combo_R <- function(X.matrix, Y.matrix, split, qc_mat, i,
+                               X.dim, Method, measure, outcome.type,
+                               center, scale, maxiter, metrics) {
+    E_tr <- X.matrix[split$train, ,drop=FALSE]
+    F_tr <- Y.matrix[split$train,, drop=FALSE]
+    E_va <- X.matrix[split$validate, ,drop=FALSE]
+    F_va <- Y.matrix[split$validate,,drop=FALSE]
+    fit  <- asmbPLS::asmbPLSDA.fit(
+        X.matrix = E_tr, Y.matrix = F_tr,
+        PLS.comp = i, X.dim = X.dim,
+        quantile.comb = qc_mat,
+        outcome.type = outcome.type,
+        center = center, scale = scale, maxiter = maxiter
+    )
+    pred <- asmbPLS::asmbPLSDA.predict(fit, E_va, PLS.comp = i,
+                                        method = Method)$Y_pred
+    res  <- Results_comparison_measure(as.numeric(pred), as.numeric(F_va[,1]),
+                                        outcome.type)
+    res[metrics]
+}
+
 #' @title Parallelize quantile hyperparameter tuning in LOOCV
 #' @description
 #' Function to train and validate asmbPLSDA excluding one observation
@@ -958,25 +1013,21 @@ perform_cv <- function(object, model_block_matrices, nFC, measure, parallel,
             maxiter = maxiter))
     } else {
         message("Running KCV")
-        return(asmbPLS::asmbPLSDA.cv(
+        return(asmbPLSDA.cv.kcv(
             X.matrix = model_block_matrices$block_predictor,
             Y.matrix = model_block_matrices$matrix_response,
-            PLS.comp = object@hyperparameters_info@number_PLS,
+            PLS_term = object@hyperparameters_info@number_PLS,
             X.dim = model_block_matrices$block_dim,
             quantile.comb.table =
                 object@hyperparameters_info@quantile_comb_table,
             outcome.type = object@hyperparameters_info@outcome_type,
-            k = nFC,
-            ncv = object@hyperparameters_info@repetition_CV,
-            expected.measure.increase = expected_measure_increase,
             center = TRUE,
             scale = TRUE,
             measure = measure,
-            maxiter = maxiter,
-            method = Method))
+            expected.measure.increase = expected_measure_increase,
+            maxiter = maxiter))
     }
 }
-
 
 #' @title Compute Validation Metrics for the Fitted Model
 #'

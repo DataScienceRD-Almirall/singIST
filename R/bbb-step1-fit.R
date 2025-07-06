@@ -217,6 +217,78 @@ asmbPLSDA.cv.loo <- function(X.matrix, Y.matrix, PLS_term = 1, X.dim,
                 "optimal_nPLS" = optimal_nPLS))
 }
 
+#' @title K‐fold × Repeated Cross‐Validation for asmbPLS-DA
+#'
+#' @description
+#' Implements stratified K‐fold cross‐validation with repetitions, mirroring the
+#' structure of \code{asmbPLSDA.cv.loo} but using K k and ncv instead of LOO.
+#'
+#' @param X.matrix Predictor matrix (n×p)
+#' @param Y.matrix Response one‐hot matrix (n×q)
+#' @param PLS_term Integer: maximum number of PLS components
+#' @param X.dim Vector: feature counts per block
+#' @param quantile.comb.table Matrix (C×length(X.dim)): quantile combinations
+#' @param k Integer: number of CV k (K)
+#' @param ncv Integer: number of ncv
+#' @param outcome.type "binary" or "multiclass"
+#' @param Method Prediction method
+#' @param measure "B_accuracy","accuracy","precision","recall","F1"
+#' @param parallel Logical: TRUE to parallelize per-fold
+#' @param expected.measure.increase Numeric: min performance gain to add PLS
+#' @param center Logical: center predictors
+#' @param scale Logical: scale predictors
+#' @param maxiter Integer: max iterations for asmbPLSDA.fit
+#' @return A list with:
+#'   \item{quantile_table_CV}{Matrix (PLS_term × (blocks + metrics)) of optimal
+#'   quantiles and CV metrics}
+#'   \item{optimal_nPLS}{Integer: selected number of PLS components}
+#'   \item{splits}{List of length (k*ncv) of train/validation splits}
+#' @export
+asmbPLSDA.cv.kcv <- function(
+        X.matrix, Y.matrix, PLS_term = 2, X.dim,
+        quantile.comb.table, k = 4, ncv = 10,
+        outcome.type = c("binary","multiclass"),
+        Method = NULL, measure = "B_accuracy",
+        parallel = FALSE,
+        expected.measure.increase = 0.005,
+        center = TRUE, scale = TRUE, maxiter = 100
+) {
+    metrics <- c("accuracy","balanced_accuracy","precision","recall","F1")
+    m_idx <- get_measure_index(measure)
+    C <- nrow(quantile.comb.table)
+    splits <- make_splits_R(Y.matrix, k, ncv)
+    cv_results <- array(NA_real_, c(C, k*ncv, length(metrics)),
+                        dimnames=list(NULL,NULL,metrics))
+    qtCV <- matrix(NA_real_, nrow=PLS_term, ncol=length(X.dim)+length(metrics),
+                   dimnames=list(NULL, c(paste0("block", seq_along(X.dim)),
+                                         metrics)))
+    prev_qc <- NULL
+    for(i in seq_len(PLS_term)) {
+        for(s in seq_along(splits)) for(l in seq_len(C)) {
+            qc_mat <- if(i>1) rbind(prev_qc, quantile.comb.table[l,]) else
+                matrix(quantile.comb.table[l,],1)
+            cv_results[l,s,] <- eval_split_combo_R(
+                X.matrix, Y.matrix, splits[[s]], qc_mat, i,
+                X.dim, Method, measure, outcome.type,
+                center, scale, maxiter, metrics
+            )
+        }
+        avg_sel <- rowMeans(cv_results[,,m_idx], na.rm=TRUE)
+        best_l <- which.max(avg_sel)
+        qtCV[i, seq_len(length(X.dim))] <- quantile.comb.table[best_l,]
+        qtCV[i, length(X.dim)+1] <- avg_sel[best_l]
+        qtCV[i, (length(X.dim)+1):ncol(qtCV)] <- colMeans(cv_results[best_l,,],
+                                                          na.rm=TRUE)
+        prev_qc <- qtCV[seq_len(i), seq_len(length(X.dim)), drop=FALSE]
+    }
+    optPLS <- select_optimal_PLS(
+        PLS_term = PLS_term, quantile_table_CV = qtCV,
+        X.dim = X.dim, measure_selected = m_idx,
+        expected.measure.increase = expected.measure.increase
+    )
+    list(quantile_table_CV = qtCV, optimal_nPLS = optPLS, splits = splits)
+}
+
 #' @title Compute Cell Importance Projection (CIP) and Gene Importance
 #' Projection (GIP)
 #' @description
