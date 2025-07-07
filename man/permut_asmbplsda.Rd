@@ -2,7 +2,7 @@
 % Please edit documentation in R/bbb-step1-fit.R
 \name{permut_asmbplsda}
 \alias{permut_asmbplsda}
-\title{Permutation test for asmbPLSDA global significance}
+\title{Permutation test for asmbPLSDA global significance for LOO}
 \usage{
 permut_asmbplsda(
   object,

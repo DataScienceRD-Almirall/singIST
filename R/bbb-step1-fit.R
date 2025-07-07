@@ -440,7 +440,7 @@ permut_asmbplsda_kcv <- function(object,
                                  Nc = 1,
                                  Method  = NULL,
                                  maxiter = 100, 
-                                 CV_error = NULL, ...) {
+                                 CV_error = NULL,...) {
     X_blocks <- object@model_fit$predictor_block
     Y_group  <- object@model_fit$`asmbPLS-DA`$Y_group
     # --- 1) If no splits provided, run LOOCV permutation ---
@@ -466,10 +466,11 @@ permut_asmbplsda_kcv <- function(object,
             fit_p  <- asmbPLS::asmbPLSDA.fit(
                 X.matrix = X_tr,
                 Y.matrix = Y_tr,
-                PLS.comp = object@hyperparameters_fit@number_PLS, X.dim = X.dim,
+                PLS.comp = object@hyperparameters_fit@number_PLS,
+                X.dim = lengths(object@model_fit$observed_gene_sets),
                 quantile.comb = object@hyperparameters_fit@quantile_comb_table,
                 outcome.type = object@hyperparameters_fit@outcome_type,
-                center = center, scale = scale, maxiter = maxiter
+                center = TRUE, scale = TRUE, maxiter = maxiter
             )
             pred <- asmbPLS::asmbPLSDA.predict(
                 fit_p, X_va, PLS.comp = object@hyperparameters_fit@number_PLS,
