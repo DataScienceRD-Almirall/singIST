@@ -1066,13 +1066,17 @@ compute_validation_metrics <- function(
         output, optimal_hyperparameters, model_block_matrices, npermut,
         nbObsPermut, maxiter, global_significance_full,
         CIP.GIP_significance_full, type, nsubsampling, measure, Method) {
-    Nc <- output@hyperparameters_fit@number_PLS
+    Nc <- output@hyperparameters_fit@folds_CV
     CV_error <- optimal_hyperparameters$quantile_table_CV[
         optimal_hyperparameters$optimal_nPLS,
         length(model_block_matrices$block_dim) + get_measure_index(measure)]
-    output_global_significance <- permut_asmbplsda(
-        output, npermut = npermut, nbObsPermut = nbObsPermut, Nc = Nc, CV_error,
-        measure = measure, Method = Method, maxiter = maxiter)
+    splits <- NULL
+    if("splits" %in% names(optimal_hyperparameters)){
+        splits <- optimal_hyperparameters$splits
+    }
+    output_global_significance <- permut_asmbplsda_kcv(output, npermut= npermut,
+        splits = splits, nbObsPermut = nbObsPermut, Nc = Nc,CV_error = CV_error,
+        measure =measure, Method = Method, maxiter = maxiter)
     if (global_significance_full) {
         output@model_validation$`global_significance` <-
             output_global_significance
@@ -1108,7 +1112,7 @@ compute_validation_metrics <- function(
         rownames(output_adjpval) <- rownames(
             output_CIP_GIP_significance$`GIP_pvalue`[[j]])
         return(output_adjpval)
-    })
+        })
     output@model_validation$`adjpvalue_GIP_significance` <- CIP_GIP_adj_pval
     return(output)
 }

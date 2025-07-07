@@ -260,8 +260,8 @@ asmbPLSDA.cv.kcv <- function(
     cv_results <- array(NA_real_, c(C, k*ncv, length(metrics)),
                         dimnames=list(NULL,NULL,metrics))
     qtCV <- matrix(NA_real_, nrow=PLS_term, ncol=length(X.dim)+length(metrics),
-                   dimnames=list(NULL, c(paste0("block", seq_along(X.dim)),
-                                         metrics)))
+                    dimnames=list(NULL, c(paste0("block", seq_along(X.dim)),
+                    metrics)))
     prev_qc <- NULL
     for(i in seq_len(PLS_term)) {
         for(s in seq_along(splits)) for(l in seq_len(C)) {
@@ -278,7 +278,7 @@ asmbPLSDA.cv.kcv <- function(
         qtCV[i, seq_len(length(X.dim))] <- quantile.comb.table[best_l,]
         qtCV[i, length(X.dim)+1] <- avg_sel[best_l]
         qtCV[i, (length(X.dim)+1):ncol(qtCV)] <- colMeans(cv_results[best_l,,],
-                                                          na.rm=TRUE)
+                                                            na.rm=TRUE)
         prev_qc <- qtCV[seq_len(i), seq_len(length(X.dim)), drop=FALSE]
     }
     optPLS <- select_optimal_PLS(
@@ -355,7 +355,7 @@ wilcox_CIP_GIP <- function(ref_distr, null_distr, ...){
         ref_distr, null_distr, alternative = "greater", ...)$p.value)
 }
 
-#' @title Permutation test for asmbPLSDA global significance
+#' @title Permutation test for asmbPLSDA global significance for LOO
 #'
 #' @description
 #' Performs permutation testing for asmbPLS-DA to evaluate model validity.
@@ -382,8 +382,8 @@ wilcox_CIP_GIP <- function(ref_distr, null_distr, ...){
 #' permut_asmbplsda(data, npermut = 5, Nc = 1,
 #' CV_error = 1)
 permut_asmbplsda <- function(object, npermut = 100, nbObsPermut = NULL,
-                                Nc = 1, CV_error, measure = "B_accuracy",
-                                Method = NULL, maxiter = 100) {
+                             Nc = 1, CV_error, measure = "B_accuracy",
+                             Method = NULL, maxiter = 100) {
     Y.matrix <- object@model_fit$`asmbPLS-DA`$Y_group
     X.matrix <- object@model_fit$predictor_block
     nr <- nrow(Y.matrix)
@@ -411,6 +411,88 @@ permut_asmbplsda <- function(object, npermut = 100, nbObsPermut = NULL,
     res$pvalue <- compute_pvalue(null_errors, CV_error)
     res$IC <- compute_IC95(null_errors)
     return(res)
+}
+
+#' @title Permutation test for asmbPLS-DA global significance (LOO or KCV)
+#' @description
+#' If `splits=NULL`, runs LOOCV‐based permutation. Otherwise treats `splits` as
+#' a list of train/validate splits (e.g. from make_splits_R()) and does a fixed
+#' splits K‐fold×repeats permutation test.
+#' @param object A \link{superpathway.fit.model-class} object
+#' @param npermut Number of permutations (default: 100)
+#' @param nbObsPermut Number of samples to permute per iteration
+#' (default: NULL).
+#' @param Nc Number of samples dropped per permutation (default: 1 if LOOCV).
+#' @param splits  Optional list of splits; if NULL uses LOOCV branch
+#' @param CV_error Error obtained from optimal model CV process
+#' @param measure Accuracy measure (`"F1"`, `"accuracy"`, `"B_accuracy"`,
+#' `"precision"`, `"recall"`, default: `"B_accuracy"`).
+#' @param Method Decision rule for prediction (default: NULL).
+#' @param maxiter Maximum iterations (default: 100).
+#' @param ...     Other args passed to LOOCV or to evaluate_performance
+#' @return A list with null distribution, p-value, and (for KCV) splits
+#' @export
+permut_asmbplsda_kcv <- function(object,
+                                 npermut = 100,
+                                 splits  = NULL,
+                                 measure = "B_accuracy",
+                                 nbObsPermut = NULL,
+                                 Nc = 1,
+                                 Method  = NULL,
+                                 maxiter = 100, 
+                                 CV_error = NULL, ...) {
+    X_blocks <- object@model_fit$predictor_block
+    Y_group  <- object@model_fit$`asmbPLS-DA`$Y_group
+    # --- 1) If no splits provided, run LOOCV permutation ---
+    if (is.null(splits)) {
+        return(permut_asmbplsda(object, npermut = npermut,
+                                nbObsPermut = nbObsPermut,
+                                Nc = Nc, CV_error, measure = measure,
+                                Method = Method, maxiter = maxiter, ...))
+    }
+    total_splits <- length(splits)
+    null_scores   <- numeric(npermut)
+    for (i in seq_len(npermut)) {
+        # 2a) permute the labels
+        Yp <- Y_group[sample(nrow(Y_group)), , drop = FALSE]
+        fold_scores <- numeric(total_splits)
+        for (j in seq_along(splits)) {
+            tr <- splits[[j]]$train
+            va <- splits[[j]]$validate
+            X_tr <- X_blocks[tr, , drop = FALSE]
+            Y_tr <- Yp[  tr, , drop = FALSE]
+            X_va <- X_blocks[va, , drop = FALSE]
+            Y_va <- Yp[  va, , drop = FALSE]
+            fit_p  <- asmbPLS::asmbPLSDA.fit(
+                X.matrix = X_tr,
+                Y.matrix = Y_tr,
+                PLS.comp = object@hyperparameters_fit@number_PLS, X.dim = X.dim,
+                quantile.comb = object@hyperparameters_fit@quantile_comb_table,
+                outcome.type = object@hyperparameters_fit@outcome_type,
+                center = center, scale = scale, maxiter = maxiter
+            )
+            pred <- asmbPLS::asmbPLSDA.predict(
+                fit_p, X_va, PLS.comp = object@hyperparameters_fit@number_PLS,
+                method = Method)$Y_pred
+            res  <- Results_comparison_measure(
+                as.numeric(pred), as.numeric(Y_va[,1]),
+                object@hyperparameters_fit@outcome_type)
+            fold_scores[j] <- res[get_measure_index(measure)]
+        }
+        if(measure == "F1"){
+            fold_scores[is.nan(null_scores)] <- 0
+        }
+        null_scores[i] <- mean(fold_scores)
+    }
+    pvalue <- compute_pvalue(null_scores, CV_error)
+    IC <- compute_IC95(null_scores)
+    list(
+        null_distribution = null_scores,
+        pvalue = pvalue,
+        IC = IC,
+        observed = CV_error,
+        splits = splits
+    )
 }
 
 
