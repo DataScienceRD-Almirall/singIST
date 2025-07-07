@@ -1023,6 +1023,8 @@ perform_cv <- function(object, model_block_matrices, nFC, measure, parallel,
             outcome.type = object@hyperparameters_info@outcome_type,
             center = TRUE,
             scale = TRUE,
+            k = nFC,
+            ncv = object@hyperparameters_info@repetition_CV,
             measure = measure,
             expected.measure.increase = expected_measure_increase,
             maxiter = maxiter))
