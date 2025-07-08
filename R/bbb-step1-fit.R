@@ -432,15 +432,10 @@ permut_asmbplsda <- function(object, npermut = 100, nbObsPermut = NULL,
 #' @param ...     Other args passed to LOOCV or to evaluate_performance
 #' @return A list with null distribution, p-value, and (for KCV) splits
 #' @export
-permut_asmbplsda_kcv <- function(object,
-                                 npermut = 100,
-                                 splits  = NULL,
-                                 measure = "B_accuracy",
-                                 nbObsPermut = NULL,
-                                 Nc = 1,
-                                 Method  = NULL,
-                                 maxiter = 100, 
-                                 CV_error = NULL,...) {
+permut_asmbplsda_kcv <- function(object, npermut = 100, splits  = NULL,
+                                    measure = "B_accuracy", nbObsPermut = NULL,
+                                    Nc = 1, Method  = NULL, maxiter = 100, 
+                                    CV_error = NULL,...) {
     X_blocks <- object@model_fit$predictor_block
     Y_group  <- object@model_fit$`asmbPLS-DA`$Y_group
     if (is.null(splits)) {
@@ -451,7 +446,6 @@ permut_asmbplsda_kcv <- function(object,
     total_splits <- length(splits)
     null_scores   <- numeric(npermut)
     for (i in seq_len(npermut)) {
-        # 2a) permute the labels
         Yp <- Y_group[sample(nrow(Y_group)), , drop = FALSE]
         fold_scores <- numeric(total_splits)
         for (j in seq_along(splits)) {
@@ -465,9 +459,7 @@ permut_asmbplsda_kcv <- function(object,
                 fold_scores[j] <- NA_real_
                 next
             }
-            fit_p  <- asmbPLS::asmbPLSDA.fit(
-                X.matrix = X_tr,
-                Y.matrix = Y_tr,
+            fit_p  <- asmbPLS::asmbPLSDA.fit(X.matrix = X_tr,Y.matrix = Y_tr,
                 PLS.comp = object@hyperparameters_fit@number_PLS,
                 X.dim = lengths(object@model_fit$observed_gene_sets),
                 quantile.comb = object@hyperparameters_fit@quantile_comb_table,

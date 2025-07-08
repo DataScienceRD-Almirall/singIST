@@ -257,7 +257,6 @@ singIST_treat <- function(object, model_object, orthologs, logFC){
                         model_object@superpathway_input@base_class)
     predictor_block <- model_object@model_fit$predictor_block
     cells <- as.vector(which(lengths(object@celltype_mapping) > 0))
-    # Update logFC names to remove slashes
     names(logFC) <- gsub("_", " ", names(logFC))
     FC <- vector("list", length(cells))
     for(b in cells){
@@ -287,9 +286,6 @@ singIST_treat <- function(object, model_object, orthologs, logFC){
             FC[[c]] <- FC_aux
             next
             }
-        #FC_aux[significant_genes, "avg_log2FC"] <-
-        #    sign(as.numeric(FC_aux[significant_genes, "avg_log2FC"]))*
-        #    2^FC_aux[significant_genes, "avg_log2FC"]
         FC_aux[significant_genes, "avg_log2FC"] <-
                 (2^FC_aux[significant_genes, "avg_log2FC"]-1)
         FC_aux[!significant_genes, "avg_log2FC"] <-
