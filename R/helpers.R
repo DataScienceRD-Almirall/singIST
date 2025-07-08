@@ -877,7 +877,6 @@ subsampling_CIP_GIP <- function(object, X.matrix, Y.matrix, K, M, nsubsampling,
         }else{
             training_index <- min_samples
         }
-        # Fit model
         E_matrix_training <- X.matrix[training_index, , drop = FALSE]
         F_matrix_training <- Y.matrix[training_index, , drop = FALSE]
         asmbPLSDA_fit_results <- tryCatch({asmbPLS::asmbPLSDA.fit(
@@ -894,7 +893,6 @@ subsampling_CIP_GIP <- function(object, X.matrix, Y.matrix, K, M, nsubsampling,
         if(is.null(asmbPLSDA_fit_results)) next
         object@model_fit$`asmbPLS-DA` <- asmbPLSDA_fit_results
         aux <- CIP_GIP(object)
-        # Store results
         if (j == 1) {
             CIP_GIP_variability <- aux
         } else {

@@ -445,10 +445,12 @@ permut_asmbplsda_kcv <- function(object, npermut = 100, splits  = NULL,
                                 nbObsPermut = nbObsPermut,
                                 Nc = Nc, CV_error, measure = measure,
                                 Method = Method, maxiter = maxiter, ...))}
-    total_splits <- length(splits)
     null_scores   <- numeric(npermut)
     for (i in seq_len(npermut)) {
         Yp <- Y_group[sample(nrow(Y_group)), , drop = FALSE]
+        folds <- make_splits_R(Yp, k = object@hyperparameters_fit@folds_CV, 
+                               ncv = object@hyperparameters_fit@repetition_CV)
+        total_splits <- length(folds)
         fold_scores <- numeric(total_splits)
         for (j in seq_along(splits)) {
             tr <- splits[[j]]$train
@@ -462,11 +464,12 @@ permut_asmbplsda_kcv <- function(object, npermut = 100, splits  = NULL,
                 next
             }
             fit_p  <- asmbPLS::asmbPLSDA.fit(X.matrix = X_tr,Y.matrix = Y_tr,
-                PLS.comp = object@hyperparameters_fit@number_PLS,
-                X.dim = lengths(object@model_fit$observed_gene_sets),
-                quantile.comb = object@hyperparameters_fit@quantile_comb_table,
-                outcome.type = object@hyperparameters_fit@outcome_type,
-                center = TRUE, scale = TRUE, maxiter = maxiter)
+                    PLS.comp = object@hyperparameters_fit@number_PLS,
+                    X.dim = lengths(object@model_fit$observed_gene_sets),
+                    quantile.comb=
+                        object@hyperparameters_fit@quantile_comb_table,
+                    outcome.type = object@hyperparameters_fit@outcome_type,
+                    center = TRUE, scale = TRUE, maxiter = maxiter)
             pred <- asmbPLS::asmbPLSDA.predict(
                 fit_p, X_va, PLS.comp = object@hyperparameters_fit@number_PLS,
                 method = Method)$Y_pred
@@ -474,14 +477,17 @@ permut_asmbplsda_kcv <- function(object, npermut = 100, splits  = NULL,
                 as.numeric(pred), as.numeric(Y_va[,1]),
                 object@hyperparameters_fit@outcome_type)
             fold_scores[j] <- res[get_measure_index(measure)]
+            if(is.nan(fold_scores[j]) && length(unique(Y_va[,1])) == 2 &&
+               measure == "F1"){
+                fold_scores[j] <- 0 # Recall + precision = 0 => Bad performance
+            }
         }
-        if(measure == "F1"){fold_scores[is.nan(null_scores)] <- 0}
         null_scores[i] <- mean(fold_scores, na.rm = TRUE)
     }
     pvalue <- compute_pvalue(null_scores, CV_error)
     IC <- compute_IC95(null_scores)
     list(null_distribution = null_scores, pvalue = pvalue, IC = IC, 
-            observed = CV_error, splits = splits)
+         observed = CV_error, splits = splits)
 }
 
 
