@@ -1,3 +1,33 @@
+#' @title Ensure all celltype–sample combinations are present in the pseudobulkmatrix
+#’ For a given raw pseudobulk matrix whose rows are named “celltype_sample”,
+#’ this helper will insert one NA‐filled row per missing combination of the
+#’ specified celltypes and sample IDs, before any downstream collapse into blocks.
+#' 
+#' @param mat A numeric matrix with rownames in the form “celltype_sample”.
+#' @param celltypes Character vector of the celltypes you intend to include
+#' (in the exact order of \code{object@superpathway_info@celltypes}).
+#' @param sample_ids Character vector of all sample identifiers
+#' (in the order of \code{rownames(object@pseudobulk_lognorm)} split by “_”).
+#' @return A numeric matrix with \code{length(celltypes) * length(sample_ids)}
+#' rows, in the canonical \code{paste(celltypes, sample_ids, sep = "_")}
+#' order, where newly added rows are filled with \code{NA_real_}.
+add_missing_psb_rows <- function(mat, celltypes, sample_ids) {
+    full_rows <- as.vector(outer(
+        celltypes, sample_ids,
+        FUN = function(ct, sid) paste(ct, sid, sep = "_")
+    ))
+    present <- rownames(mat)
+    missing <- setdiff(full_rows, present)
+    if (length(missing) > 0) {
+        na_block <- matrix(
+            NA_real_, nrow = length(missing), ncol = ncol(mat),
+            dimnames = list(missing, colnames(mat))
+        )
+        mat <- rbind(mat, na_block)
+    }
+    mat[full_rows, , drop = FALSE]
+}
+
 #' @title Update block of predictor matrices in matrixToBlock()
 #'
 #' @description

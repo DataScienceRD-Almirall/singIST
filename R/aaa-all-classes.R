@@ -282,7 +282,7 @@ methods::setClass("superpathway.input",
                     # Check for consistency of the pseudobulk matrix with
                     # sample_id and celltypes information
                     checkmate::assert_matrix(
-                        object@pseudobulk_lognorm, any.missing = FALSE)
+                        object@pseudobulk_lognorm, any.missing = TRUE)
                     #checkmate::assert_true(all(as.vector(
                     #    t(outer(object@superpathway_info@celltypes,
                     #            object@sample_id,

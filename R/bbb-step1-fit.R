@@ -21,50 +21,52 @@
 matrixToBlock.superpathway.input <- function(object){
     checkmate::assert_class(object, "superpathway.input")
     matrix <- object@pseudobulk_lognorm
+    split_all <- strsplit(rownames(object@pseudobulk_lognorm), "_")
+    all_samples <- vapply(split_all, `[`, 2, FUN.VALUE = "")
+    matrix <- add_missing_psb_rows(mat=matrix,
+                                   celltypes=object@superpathway_info@celltypes,
+                                   sample_ids = unique(all_samples))
     aux <-  base::do.call(base::rbind, base::strsplit(rownames(matrix),"_"))[,1]
     keep <- aux %in% object@superpathway_info@celltypes
-    matrix <- object@pseudobulk_lognorm[keep, ]
+    matrix <- matrix[keep, ]
     gene_sets_celltype <- object@superpathway_info@gene_sets_celltype
     observed_gene_sets <- base::lapply(gene_sets_celltype, function(x)
-                                        intersect(x, colnames(matrix)))
+        intersect(x, colnames(matrix)))
     block_dim <- vapply(observed_gene_sets, length, FUN.VALUE = numeric(1))
     if(all(block_dim > 0)){
         split <- base::do.call(base::rbind, base::strsplit(rownames(matrix),
-                                                            "_"))
+                                                           "_"))
         block_celltypes <- split[, 1]
         block_sample_id <- split[, 2]
         block_predictor <- matrix(ncol = sum(block_dim),
-                                    nrow = length(unique(block_sample_id)))
+                                  nrow = length(unique(block_sample_id)))
         rownames(block_predictor) <- unique(block_sample_id)
         colnames(block_predictor) <- as.vector(unlist(Map(
             function(prefix, value)
-            paste0(prefix, "*", value),unique(block_celltypes),
+                paste0(prefix, "*", value),unique(block_celltypes),
             observed_gene_sets)))
-    # We use Reduce() to update block_predictor accumulatively
-    block_predictor <- base::Reduce(function(bm, i){
-        update_block(unique(block_celltypes)[i], observed_gene_sets[[i]],
-                        bm, matrix = matrix)
+        # We use Reduce() to update block_predictor accumulatively
+        block_predictor <- base::Reduce(function(bm, i){
+            update_block(unique(block_celltypes)[i], observed_gene_sets[[i]],
+                         bm, matrix = matrix)
         }, seq_along(unique(block_celltypes)), init = block_predictor)
     }else{
         stop("There is at least one cell type gene set that is void check that
                 at least one gene exists in your pseudobulk_lognorm matrix for
                 all cell type gene sets.")
-        }
-    # Build predictor block
+    }
     categories_class <- base::factor(object@sample_class)
     categories_class <- stats::relevel(categories_class,ref = object@base_class)
     matrix_response <- stats::model.matrix(~ categories_class -1)
     if(object@hyperparameters_info@outcome_type == "binary"){
-        # Remove reference class column
         matrix_response <- matrix_response[ , 2:ncol(matrix_response),
                                             drop = FALSE]
-        }else{
-            matrix_response <- matrix_response[ , , drop = FALSE]
-            }
-    # Return predictor_block, matrix_response and block_dim
+    }else{
+        matrix_response <- matrix_response[ , , drop = FALSE]
+    }
     output <- list(block_predictor = block_predictor,
-                    matrix_response = matrix_response,block_dim = block_dim,
-                    observed_gene_sets = observed_gene_sets)
+                   matrix_response = matrix_response,block_dim = block_dim,
+                   observed_gene_sets = observed_gene_sets)
     return(output)
 }
 
