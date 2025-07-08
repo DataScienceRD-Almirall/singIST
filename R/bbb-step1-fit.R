@@ -443,13 +443,11 @@ permut_asmbplsda_kcv <- function(object,
                                  CV_error = NULL,...) {
     X_blocks <- object@model_fit$predictor_block
     Y_group  <- object@model_fit$`asmbPLS-DA`$Y_group
-    # --- 1) If no splits provided, run LOOCV permutation ---
     if (is.null(splits)) {
         return(permut_asmbplsda(object, npermut = npermut,
                                 nbObsPermut = nbObsPermut,
                                 Nc = Nc, CV_error, measure = measure,
-                                Method = Method, maxiter = maxiter, ...))
-    }
+                                Method = Method, maxiter = maxiter, ...))}
     total_splits <- length(splits)
     null_scores   <- numeric(npermut)
     for (i in seq_len(npermut)) {
@@ -463,6 +461,10 @@ permut_asmbplsda_kcv <- function(object,
             Y_tr <- Yp[  tr, , drop = FALSE]
             X_va <- X_blocks[va, , drop = FALSE]
             Y_va <- Yp[  va, , drop = FALSE]
+            if(ncol(Y_tr) == 1 && length(unique(as.numeric(Y_tr[, 1]))) < 2){
+                fold_scores[j] <- NA_real_
+                next
+            }
             fit_p  <- asmbPLS::asmbPLSDA.fit(
                 X.matrix = X_tr,
                 Y.matrix = Y_tr,
@@ -470,8 +472,7 @@ permut_asmbplsda_kcv <- function(object,
                 X.dim = lengths(object@model_fit$observed_gene_sets),
                 quantile.comb = object@hyperparameters_fit@quantile_comb_table,
                 outcome.type = object@hyperparameters_fit@outcome_type,
-                center = TRUE, scale = TRUE, maxiter = maxiter
-            )
+                center = TRUE, scale = TRUE, maxiter = maxiter)
             pred <- asmbPLS::asmbPLSDA.predict(
                 fit_p, X_va, PLS.comp = object@hyperparameters_fit@number_PLS,
                 method = Method)$Y_pred
@@ -480,20 +481,13 @@ permut_asmbplsda_kcv <- function(object,
                 object@hyperparameters_fit@outcome_type)
             fold_scores[j] <- res[get_measure_index(measure)]
         }
-        if(measure == "F1"){
-            fold_scores[is.nan(null_scores)] <- 0
-        }
-        null_scores[i] <- mean(fold_scores)
+        if(measure == "F1"){fold_scores[is.nan(null_scores)] <- 0}
+        null_scores[i] <- mean(fold_scores, na.rm = TRUE)
     }
     pvalue <- compute_pvalue(null_scores, CV_error)
     IC <- compute_IC95(null_scores)
-    list(
-        null_distribution = null_scores,
-        pvalue = pvalue,
-        IC = IC,
-        observed = CV_error,
-        splits = splits
-    )
+    list(null_distribution = null_scores, pvalue = pvalue, IC = IC, 
+            observed = CV_error, splits = splits)
 }
 
 

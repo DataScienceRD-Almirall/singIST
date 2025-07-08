@@ -835,13 +835,14 @@ subsampling_CIP_GIP <- function(object, X.matrix, Y.matrix, K, M, nsubsampling,
             seq_along(object@superpathway_input@sample_class),
             object@superpathway_input@sample_class)
         min_samples <- unlist(lapply(class_indices,
-                                    function(idx) sample(idx, 2)))
+                                     function(idx) sample(idx, 2)))
         # Determine remaining samples
         remaining_samples <- setdiff(seq_len(K), min_samples)
         Nc_remaining <- Nc - length(min_samples)
         if(Nc_remaining > 0){
             additional_samples <- sample(remaining_samples, size = Nc_remaining,
-                                prob = prop[remaining_samples], replace = FALSE)
+                                         prob = prop[remaining_samples],
+                                         replace = FALSE)
             training_index <- c(min_samples, additional_samples)
         }else{
             training_index <- min_samples
@@ -849,12 +850,18 @@ subsampling_CIP_GIP <- function(object, X.matrix, Y.matrix, K, M, nsubsampling,
         # Fit model
         E_matrix_training <- X.matrix[training_index, , drop = FALSE]
         F_matrix_training <- Y.matrix[training_index, , drop = FALSE]
-        asmbPLSDA_fit_results <- asmbPLS::asmbPLSDA.fit(
+        asmbPLSDA_fit_results <- tryCatch({asmbPLS::asmbPLSDA.fit(
             X.matrix = E_matrix_training, Y.matrix = F_matrix_training,
             PLS.comp = object@hyperparameters_fit@number_PLS, X.dim = X.dim,
             quantile.comb = object@hyperparameters_fit@quantile_comb_table,
             outcome.type = object@hyperparameters_fit@outcome_type,
             center = TRUE, scale = TRUE, maxiter = maxiter)
+        }, error = function(e){
+            warning("Skipping subsample", j, "due to fit error: ",
+                    conditionMessage(e))
+            NULL
+        })
+        if(is.null(asmbPLSDA_fit_results)) next
         object@model_fit$`asmbPLS-DA` <- asmbPLSDA_fit_results
         aux <- CIP_GIP(object)
         # Store results
