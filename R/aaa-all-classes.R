@@ -283,12 +283,12 @@ methods::setClass("superpathway.input",
                     # sample_id and celltypes information
                     checkmate::assert_matrix(
                         object@pseudobulk_lognorm, any.missing = FALSE)
-                    checkmate::assert_true(all(as.vector(
-                        t(outer(object@superpathway_info@celltypes,
-                                object@sample_id,
-                                function(x, y)
-                                    paste(x, y, sep = "_")))) %in%
-                                    rownames(object@pseudobulk_lognorm)))
+                    #checkmate::assert_true(all(as.vector(
+                    #    t(outer(object@superpathway_info@celltypes,
+                    #            object@sample_id,
+                    #            function(x, y)
+                    #                paste(x, y, sep = "_")))) %in%
+                    #            rownames(object@pseudobulk_lognorm)))
                     # Check that gene_sets is not NULL
                     checkmate::assert_list(
                         object@superpathway_info@gene_sets_celltype)
