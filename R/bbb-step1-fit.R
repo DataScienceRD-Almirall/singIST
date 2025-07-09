@@ -124,6 +124,9 @@ Results_comparison_measure <- function(Y_predict,
     }else if(outcome.type == "multiclass"){
         balanced_accuracy <- balanced_accuracy_multicalss
     }
+    if(outcome.type == "binary" && length(unique(Y_predict))==2 && is.nan(F1)){
+        F1 <- 0 # recall + precision = 0 bad classification all classes present
+    }
     output <- c("accuracy" = accuracy, "balanced_accuracy" = balanced_accuracy,
                 "precision" = precision, "recall" = recall, "F1" = F1)
     return(output)
@@ -405,11 +408,6 @@ permut_asmbplsda <- function(object, npermut = 100, nbObsPermut = NULL,
     }
     null_errors <- as.vector(
         res$prct.Ychange.values[ , ncol(res$prct.Ychange.values)])
-    # If F1 is NaN => Recall + Precision = 0, the model performance is poor
-    # impute to 0
-    if(measure == "F1"){
-        null_errors[is.nan(null_errors)] <- 0
-    }
     res$pvalue <- compute_pvalue(null_errors, CV_error)
     res$IC <- compute_IC95(null_errors)
     return(res)
@@ -477,10 +475,6 @@ permut_asmbplsda_kcv <- function(object, npermut = 100, splits  = NULL,
                 as.numeric(pred), as.numeric(Y_va[,1]),
                 object@hyperparameters_fit@outcome_type)
             fold_scores[j] <- res[get_measure_index(measure)]
-            if(is.nan(fold_scores[j]) && length(unique(Y_va[,1])) == 2 &&
-               measure == "F1"){
-                fold_scores[j] <- 0 # Recall + precision = 0 => Bad performance
-            }
         }
         null_scores[i] <- mean(fold_scores, na.rm = TRUE)
     }
