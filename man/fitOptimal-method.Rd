@@ -119,7 +119,13 @@ number of samples per class is less than 3 for any class. A K-Fold Cross
 Validation (KCV) is performed if the number of folds is greater or equal
 than 3 and the number of samples per class is always greater than the number
 of folds. If the number of samples is low for some of the classes LOOCV is
-recommended.
+recommended. If KCV is performed, missing values are automatically imputed
+in the K-CV process. The training set is imputed via missMDA::imputeMFA(),
+and an FactoMineR::MFA() is trained on the imputed training set from which
+we extract the mean of each gene and the estimated loadings. We then estimate
+the validation set by projecting the samples onto MFA space of the training
+set. Gene whose variance is 0 are excluded from the imputation, if a gene
+has null variance and full of 0 values, the NA were imputed to 0.
 }
 \examples{
 # fitOptimal with jackknife for CIP/GIP statistics and 10 permutations

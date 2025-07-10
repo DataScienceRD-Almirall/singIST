@@ -39,7 +39,8 @@ Imports:
     SummarizedExperiment,
     scran,
     scuttle,
-    glmGamPoi
+    glmGamPoi,
+    missMDA
 VignetteBuilder: knitr
 Depends: 
     R (>= 4.2)

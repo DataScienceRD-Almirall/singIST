@@ -152,14 +152,248 @@ make_splits_R <- function(Y.matrix, k, ncv) {
     splits
 }
 
+#' @title Clean a predictor matrix for multiblock MFA
+#'
+#' @description Converts non‐finite values to NA, removes any column that is
+#' 100% NA or has zero variance, and returns a logical mask of kept columns.
+#'
+#' @param X A numeric matrix or data.frame of predictors (samples × features).
+#' @return A list with components:
+#'   \describe{
+#'     \item{\code{X_clean}}{Cleaned matrix (only kept columns).}
+#'     \item{\code{keep_cols}}{Logical vector, \code{TRUE} for columns kept.}
+#'     \item{\code{removed}}{Integer indices of removed columns.}
+#'   }
+#' @export
+#' @examples
+#' clean_mfa_data(matrix(matrix(c(0,0,0,NA, 1,2), ncol = 2, nrow = 3)))
+clean_mfa_data <- function(X) {
+    Xm <- as.matrix(X)
+    # 1) convert Inf/-Inf to NA
+    Xm[!is.finite(Xm)] <- NA
+    # 2) detect all‐NA columns
+    col_all_na <- colSums(is.na(Xm)) == nrow(Xm)
+    # 3) detect zero‐variance columns
+    zero_var  <- apply(Xm, 2, function(x) var(x, na.rm = TRUE) == 0)
+    # 4) keep only the rest
+    keep_cols <- !(col_all_na | zero_var)
+    list(
+        X_clean  = Xm[, keep_cols, drop = FALSE],
+        keep_cols = keep_cols,
+        removed   = which(!keep_cols)
+    )
+}
+
+#' @title Update block‐size vector after cleaning
+#'
+#' @description Given an original vector of block lengths and a mask of kept
+#' columns, recomputes the new block lengths.
+#'
+#' @param group_orig Integer vector of original block sizes (\sum group_orig =
+#' ncol before cleaning).
+#' @param keep_cols Logical vector of length \code{sum(group_orig)}, \code{TRUE}
+#' for columns retained.
+#' @return Integer vector of same length as \code{group_orig} with updated block
+#' sizes.
+#' @export
+#' @examples
+#' update_group_sizes(c(2,3), c(TRUE, TRUE, FALSE, TRUE, TRUE))
+update_group_sizes <- function(group_orig, keep_cols) {
+    if (length(keep_cols) != sum(group_orig)) {
+        stop("Length of keep_cols must equal sum(group_orig).")
+    }
+    # assign each column to a block index
+    block_idx <- rep(seq_along(group_orig), times = group_orig)
+    # keep only those columns that survived
+    kept_blocks <- block_idx[keep_cols]
+    # count how many remain in each block, preserving order
+    as.integer(table(factor(kept_blocks, levels = seq_along(group_orig))))
+}
+
+#' @title Fit a multiblock‐MFA imputer on training data
+#'
+#' @description Runs a full EM‐based \code{imputeMFA()} on the training set
+#' then fits a pure MFA to extract the final means and loadings.
+#'
+#' @param X_train Numeric matrix (train samples × features), may contain NAs.
+#' @param group Integer vector of block sizes (must sum to
+#' \code{ncol(X_train)}).
+#' @param ncp Number of MFA components to use for imputation (default \code{2}).
+#' @param method Method for \code{imputeMFA()}: \code{"Regularized"} or
+#' \code{"EM"}.
+#' @return A list with components:
+#'   \describe{
+#'     \item{\code{imputed}}{Matrix \code{X_train} with NAs filled.}
+#'     \item{\code{mu}}{Numeric vector of column means (length = ncol).}
+#'     \item{\code{loadings}}{Numeric matrix of loadings (ncol × ncp).}
+#'   }
+#' @importFrom missMDA imputeMFA
+#' @importFrom FactoMineR MFA
+#' @export
+#' @examples
+#' fit_mfa_imputer(matrix(c(NA,runif(19)), nrow = 5, ncol = 4), c(2,2))
+fit_mfa_imputer <- function(X_train, group, ncp = 2, method = "Regularized") {
+    # 1) Full EM-based imputation
+    imp_res <- missMDA::imputeMFA(
+        X     = X_train,
+        group = group,
+        ncp   = ncp,
+        method= method
+    )
+    X_imp  <- imp_res$completeObs
+    # 2) Pure MFA on the imputed data
+    mfa_res <- FactoMineR::MFA(
+        base = X_imp,
+        group = group,
+        type = rep("s", length(group)),
+        ncp = ncp,
+        graph = FALSE
+    )
+    # 3) Extract parameters
+    mu <- colMeans(X_imp)
+    loadings <- mfa_res$global.pca$svd$V[, seq_len(ncp), drop = FALSE]
+    list(
+        imputed  = X_imp,
+        mu       = mu,
+        loadings = loadings
+    )
+}
+
+#' @title Impute new samples using a fitted MFA imputer
+#'
+#' @description Projects each new sample into the latent space learned on
+#' training, then reconstructs its missing entries.
+#'
+#' @param X_new Numeric matrix (new samples × same features), may contain NAs.
+#' @param mu Numeric vector of column means (as returned by
+#' \code{fit_mfa_imputer}).
+#' @param loadings Numeric matrix of loadings (columns = components).
+#' @return Matrix \code{X_new} with NAs replaced by reconstructed values.
+#' @export
+predict_mfa_imputer <- function(X_new, mu, loadings) {
+    Xm <- as.matrix(X_new)
+    n <- nrow(Xm)
+    q <- ncol(loadings)
+    p <- nrow(loadings)
+    X_out <- Xm
+    for (i in seq_len(n)) {
+        x <- Xm[i, ]
+        obs <- which(!is.na(x))
+        if(length(obs) < p){
+            if (length(obs) >= q) {
+                # center observed
+                xo <- x[obs] - mu[obs]
+                Po <- loadings[obs, , drop = FALSE]
+                # solve for scores
+                t_i <- solve(crossprod(Po), crossprod(Po, xo))
+                # reconstruct full vector
+                xhat <- mu + as.vector(loadings %*% t_i)
+                # fill only NAs
+                nas <- which(is.na(x))
+                x[nas] <- xhat[nas]
+            }
+        }
+        X_out[i, ] <- x
+    }
+    X_out
+}
+
+#' @title Imputes, if required, X predictor matrix to fit optimal asmbPLS-DA
+#' @noRd
+impute_X <- function(X) {
+    if(sum(apply(X, 2, is.na)) == 0){
+        return(X)
+    }else{
+        clean <- clean_mfa_data(X)
+        X.dim.new <- update_group_sizes(X.dim, clean$keep_cols)
+        imp_tr <- fit_mfa_imputer(clean$X_clean, X.dim.new, ncp = 2)
+        X_imp <- restore_removed_columns(
+            as.matrix(imp_tr$imputed), X,
+            clean$keep_cols)
+        return(X_imp)
+    }
+}
+
+#' @title Restore columns removed during MFA cleaning into the imputed matrix
+#'
+#' @description After cleaning and imputing a subset of predictors (removing any
+#' columns with zero variance or 100% missing), this function re‐inserts those
+#' removed columns in their original order. For each re‐inserted column,
+#' original non‐missing values are kept and entries that were originally missing
+#' are set to zero.
+#'
+#' @param X_imp_clean Numeric matrix (n_samples × p_cleaned) of imputed values
+#' for the columns that were kept.
+#' @param X_raw Numeric matrix or data.frame (n_samples × p_oril) of ginathe
+#' original predictor data before cleaning.
+#' @param keep_cols Logical vector of length \code{p_original}, where
+#' \code{TRUE} indicates the column was kept for imputation and
+#' \code{FALSE} indicates it was removed.
+#' @return A numeric matrix (n_samples × p_original) with all original columns
+#' in their original order. Columns where \code{keep_cols == TRUE} contain
+#' the values from \code{X_imp_clean}. Columns where
+#' \code{keep_cols == FALSE} contain the original non‐NA values, and any
+#' entries that were originally NA are set to zero.
+#' @export
+restore_removed_columns <- function(X_imp_clean, X_raw, keep_cols) {
+    # Validate dimensions
+    X_raw_mat <- as.matrix(X_raw)
+    n <- nrow(X_raw_mat)
+    p_orig <- ncol(X_raw_mat)
+    if (length(keep_cols) != p_orig) {
+        stop("Length of keep_cols must equal the number of columns in X_raw.")
+    }
+    if (ncol(X_imp_clean) != sum(keep_cols)) {
+        stop("Number of columns in X_imp_clean must equal sum(keep_cols).")
+    }
+    # Prepare output matrix with original dimensions and names
+    X_full <- matrix(NA_real_, nrow = n, ncol = p_orig,
+                     dimnames = list(rownames(X_raw_mat), colnames(X_raw_mat)))
+    # 1) Fill in the columns that were kept
+    X_full[, keep_cols] <- X_imp_clean
+    # 2) Re‐insert each removed column
+    removed_idx <- which(!keep_cols)
+    for (j in removed_idx) {
+        orig_col <- X_raw_mat[, j]
+        # a) keep original observed values
+        observed <- !is.na(orig_col)
+        X_full[observed, j] <- orig_col[observed]
+        # b) set original NAs to zero
+        missing <- is.na(orig_col)
+        if (any(missing)) {
+            X_full[missing, j] <- 0
+        }
+    }
+    return(X_full)
+}
+
 #' @title Evaluate one split + quantile combo
 #' @noRd
 eval_split_combo_R <- function(X.matrix, Y.matrix, split, qc_mat, i,
                                X.dim, Method, measure, outcome.type,
                                center, scale, maxiter, metrics) {
-    E_tr <- X.matrix[split$train, ,drop=FALSE]
-    F_tr <- Y.matrix[split$train,, drop=FALSE]
-    E_va <- X.matrix[split$validate, ,drop=FALSE]
+    E_tr <- X.matrix[split$train, , drop = FALSE]
+    E_va <- X.matrix[split$validate, , drop = FALSE]
+    if(sum(apply(E_tr, 2, is.na)) > 0){
+        # Impute training set
+        clean <- clean_mfa_data(E_tr)
+        X.dim.new <- update_group_sizes(X.dim, clean$keep_cols)
+        imp_tr <- fit_mfa_imputer(clean$X_clean, X.dim.new, ncp = 2)
+        E_tr <- restore_removed_columns(
+            as.matrix(imp_tr$imputed), E_tr,
+            clean$keep_cols)
+        # Impute validation set
+        imp_va <- predict_mfa_imputer(E_va[, clean$keep_cols],
+                                        mu = imp_tr$mu,
+                                        loadings = imp_tr$loadings)
+        E_va <- restore_removed_columns(
+            imp_va, E_va, clean$keep_cols
+        )
+    }else{ # No missing values
+        E_tr <- X.matrix[split$train, , drop = FALSE]
+        E_va <- X.matrix[split$validate, , drop = FALSE]
+    }
+    F_tr <- Y.matrix[split$train, , drop=FALSE]
     F_va <- Y.matrix[split$validate,,drop=FALSE]
     fit  <- asmbPLS::asmbPLSDA.fit(
         X.matrix = E_tr, Y.matrix = F_tr,
@@ -1029,7 +1263,6 @@ calculate_pvalues <- function(variability, null_dist, test_func, ...) {
 #' quantile table.
 perform_cv <- function(object, model_block_matrices, nFC, measure, parallel,
                         expected_measure_increase, maxiter, Method) {
-    nSamples <- as.vector(base::table(object@sample_class))
     if (nFC == 1) {
         message("Running LOOCV")
         return(asmbPLSDA.cv.loo(

@@ -177,7 +177,7 @@ asmbPLSDA.cv.loo <- function(X.matrix, Y.matrix, PLS_term = 1, X.dim,
                             c("binary", "multiclass"), Method = NULL,
                             measure = "B_accuracy", parallel = FALSE,
                             expected.measure.increase = 0.005,
-                            center = TRUE,scale = TRUE,maxiter = 100){
+                            center = TRUE,scale = TRUE, maxiter = 100){
     n_group <- ncol(Y.matrix)
     measure_selected <- get_measure_index(measure)
     K <- nrow(Y.matrix)
