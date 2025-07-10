@@ -571,7 +571,13 @@ CIP_GIP_test <- function(object, npermut = 100, maxiter = 100,
 #' Validation (KCV) is performed if the number of folds is greater or equal
 #' than 3 and the number of samples per class is always greater than the number
 #' of folds. If the number of samples is low for some of the classes LOOCV is
-#' recommended.
+#' recommended. If KCV is performed, missing values are automatically imputed
+#' in the K-CV process. The training set is imputed via missMDA::imputeMFA(),
+#' and an FactoMineR::MFA() is trained on the imputed training set from which
+#' we extract the mean of each gene and the estimated loadings. We then estimate
+#' the validation set by projecting the samples onto MFA space of the training
+#' set. Gene whose variance is 0 are excluded from the imputation, if a gene
+#' has null variance and full of 0 values, the NA were imputed to 0.
 #'
 #' @param object A \link{superpathway.input-class} object to fit optimal
 #' asmbPLSDA.
@@ -678,6 +684,8 @@ fitOptimal.superpathway.input <- function(
     output@hyperparameters_fit@quantile_comb_table <-
         optimal_hyperparameters$quantile_table_CV
     output@hyperparameters_fit@folds_CV <- as.integer(nFC)
+    model_block_matrices$block_predictor <-
+        impute_X(model_block_matrices$block_predictor)
     optimal_fit <- asmbPLS::asmbPLSDA.fit(
         X.matrix = model_block_matrices$block_predictor,
         Y.matrix = model_block_matrices$matrix_response,
