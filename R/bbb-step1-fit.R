@@ -270,7 +270,7 @@ asmbPLSDA.cv.kcv <- function(
     prev_qc <- NULL
     for(i in seq_len(PLS_term)) {
         for(s in seq_along(splits)){
-            X.matrix_imp <- impute_split_mfa(X.matrix, split[[s]], X.dim)
+            X.matrix_imp <- impute_split_mfa(X.matrix, splits[[s]], X.dim)
             for(l in seq_len(C)) {
                 qc_mat <- if(i>1) rbind(prev_qc, quantile.comb.table[l,]) else
                     matrix(quantile.comb.table[l,],1)
