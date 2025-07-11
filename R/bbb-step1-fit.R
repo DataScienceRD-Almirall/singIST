@@ -269,14 +269,17 @@ asmbPLSDA.cv.kcv <- function(
                     metrics)))
     prev_qc <- NULL
     for(i in seq_len(PLS_term)) {
-        for(s in seq_along(splits)) for(l in seq_len(C)) {
-            qc_mat <- if(i>1) rbind(prev_qc, quantile.comb.table[l,]) else
-                matrix(quantile.comb.table[l,],1)
-            cv_results[l,s,] <- eval_split_combo_R(
-                X.matrix, Y.matrix, splits[[s]], qc_mat, i,
-                X.dim, Method, measure, outcome.type,
-                center, scale, maxiter, metrics
-            )
+        for(s in seq_along(splits)){
+            X.matrix_imp <- impute_split_mfa(X.matrix, split[[s]], X.dim)
+            for(l in seq_len(C)) {
+                qc_mat <- if(i>1) rbind(prev_qc, quantile.comb.table[l,]) else
+                    matrix(quantile.comb.table[l,],1)
+                cv_results[l,s,] <- eval_split_combo_R(
+                    X.matrix_imp, Y.matrix, splits[[s]], qc_mat, i,
+                    X.dim, Method, measure, outcome.type,
+                    center, scale, maxiter, metrics
+                )
+            }
         }
         avg_sel <- rowMeans(cv_results[,,m_idx], na.rm=TRUE)
         best_l <- which.max(avg_sel)
@@ -558,6 +561,71 @@ CIP_GIP_test <- function(object, npermut = 100, maxiter = 100,
     return(list("variability_param" = CIP_GIP_variability,
                 "NULL_CIP_GIP" = NULL_VAR_INF, "CIP_pvalue" = CIP_pvalue,
                 "GIP_pvalue" = GIP_pvalue))
+}
+
+#' @title Impute split via MFA
+#'
+#' @description
+#' Given a data matrix and a train/validate split, performs MFA-based imputation
+#' on the training set if needed, then applies the learned parameters to the
+#' validation set. Returns the full matrix of imputed rows in original order.
+#'
+#' @param X.matrix Numeric matrix of features (rows = samples, cols = variables)
+#' @param split A list with elements 'train' and 'validate' containing row
+#' indices
+#' @param X.dim Vector of block sizes for MFA
+#' @param ncp Integer: number of MFA components (default=2)
+#' @param center Logical: center data (default=TRUE)
+#' @param scale Logical: scale data (default=TRUE)
+#' @param maxiter Integer: max iterations for MFA fitting (default=100)
+#' @return A matrix with the same dimensions and row order as the rows in
+#' 'split', imputed.
+#' @noRd
+impute_split_mfa <- function(
+        X.matrix, split, X.dim,
+        ncp = 2
+) {
+    # Extract training and validation
+    E_tr <- X.matrix[split$train, , drop = FALSE]
+    E_va <- X.matrix[split$validate, , drop = FALSE]
+    train_miss <- any(is.na(E_tr))
+    val_miss <- any(is.na(E_va))
+    if (train_miss || val_miss) {
+        # Clean and fit MFA on training
+        clean <- clean_mfa_data(E_tr)
+        if (train_miss) {
+            X.dim.new <- update_group_sizes(X.dim, clean$keep_cols)
+            imp_tr <- fit_mfa_imputer(clean$X_clean, X.dim.new, ncp = ncp)
+            E_tr <- restore_removed_columns(
+                as.matrix(imp_tr$imputed), E_tr, clean$keep_cols
+            )
+        }else{
+            imp_tr <- FactoMineR::MFA(
+                base = E_tr,
+                group = X.dim,
+                type = rep("s", length(X.dim)),
+                ncp = 2,
+                graph = FALSE
+            )
+            imp_tr$mu <- colMeans(E_tr)
+            imp_tr$loadings <-
+                imp_tr$global.pca$svd$V[,seq_len(ncp),drop = FALSE]
+            clean$keep_cols <- rep(TRUE, ncol(E_tr))
+        }
+        if (val_miss) {
+            imp_va <- predict_mfa_imputer(
+                E_va[, clean$keep_cols, drop = FALSE],
+                mu = imp_tr$mu,
+                loadings = imp_tr$loadings
+            )
+            E_va <- restore_removed_columns(imp_va, E_va, clean$keep_cols)
+        }
+    }
+    # Combine back into full matrix in original row order
+    imputed <- X.matrix
+    imputed[split$train, ] <- E_tr
+    imputed[split$validate, ] <- E_va
+    imputed
 }
 
 #' @title Cross validation and fit of asmbPLSDA

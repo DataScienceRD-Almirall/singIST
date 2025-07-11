@@ -377,25 +377,6 @@ eval_split_combo_R <- function(X.matrix, Y.matrix, split, qc_mat, i,
                                center, scale, maxiter, metrics) {
     E_tr <- X.matrix[split$train, , drop = FALSE]
     E_va <- X.matrix[split$validate, , drop = FALSE]
-    if(sum(apply(E_tr, 2, is.na)) > 0){
-        # Impute training set
-        clean <- clean_mfa_data(E_tr)
-        X.dim.new <- update_group_sizes(X.dim, clean$keep_cols)
-        imp_tr <- fit_mfa_imputer(clean$X_clean, X.dim.new, ncp = 2)
-        E_tr <- restore_removed_columns(
-            as.matrix(imp_tr$imputed), E_tr,
-            clean$keep_cols)
-        # Impute validation set
-        imp_va <- predict_mfa_imputer(E_va[, clean$keep_cols],
-                                        mu = imp_tr$mu,
-                                        loadings = imp_tr$loadings)
-        E_va <- restore_removed_columns(
-            imp_va, E_va, clean$keep_cols
-        )
-    }else{ # No missing values
-        E_tr <- X.matrix[split$train, , drop = FALSE]
-        E_va <- X.matrix[split$validate, , drop = FALSE]
-    }
     F_tr <- Y.matrix[split$train, , drop=FALSE]
     F_va <- Y.matrix[split$validate,,drop=FALSE]
     fit  <- asmbPLS::asmbPLSDA.fit(
