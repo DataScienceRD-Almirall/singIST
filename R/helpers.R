@@ -189,7 +189,7 @@ clean_mfa_data <- function(X) {
 #' @description Given an original vector of block lengths and a mask of kept
 #' columns, recomputes the new block lengths.
 #'
-#' @param group_orig Integer vector of original block sizes (\sum group_orig =
+#' @param group_orig Integer vector of original block sizes (sum group_orig =
 #' ncol before cleaning).
 #' @param keep_cols Logical vector of length \code{sum(group_orig)}, \code{TRUE}
 #' for columns retained.
