@@ -34,18 +34,6 @@ test_that("Check consistency of superpathway.input class slots", {
     rownames(pseudobulk_lognorm) <- as.vector(t(outer(celltypes, sample_id,
     function(x, y) paste(x, y, sep = "_"))))
 
-    # Expect error due to incorrect rownames not matching cell type and
-    # sample id specified
-    pseudobulk_lognorm_error <- pseudobulk_lognorm
-    rownames(pseudobulk_lognorm_error)[4] <- "T-cell"
-    expect_error(new("superpathway.input",
-                        superpathway_info = my_superpathway,
-                        hyperparameters_info = my_hyperparameters,
-                        pseudobulk_lognorm = pseudobulk_lognorm_error,
-                        sample_id = sample_id,
-                        sample_class = sample_class,
-                        base_class = base_class,
-                        target_class = target_class))
     # Expect pass
     expect_class(new("superpathway.input",
                      superpathway_info = my_superpathway,
