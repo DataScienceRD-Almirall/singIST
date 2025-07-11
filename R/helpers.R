@@ -301,21 +301,20 @@ predict_mfa_imputer <- function(X_new, mu, loadings) {
 #' @title Imputes, if required, X predictor matrix to fit optimal asmbPLS-DA
 #' @noRd
 impute_X <- function(X) {
-    impute_X <- function(X) {
-        if(sum(apply(X, 2, is.na)) == 0){
-            return(X)
-        }else{
-            clean <- clean_mfa_data(X)
-            X.dim <- as.integer(table(sub("\\*.*", "", colnames(X))))
-            X.dim.new <- update_group_sizes(X.dim, clean$keep_cols)
-            imp_tr <- fit_mfa_imputer(clean$X_clean, X.dim.new, ncp = 2)
-            X_imp <- restore_removed_columns(
-                as.matrix(imp_tr$imputed), X,
-                clean$keep_cols)
-            return(X_imp)
-        }
+    if(sum(apply(X, 2, is.na)) == 0){
+        return(X)
+    }else{
+        clean <- clean_mfa_data(X)
+        X.dim <- as.integer(table(sub("\\*.*", "", colnames(X))))
+        X.dim.new <- update_group_sizes(X.dim, clean$keep_cols)
+        imp_tr <- fit_mfa_imputer(clean$X_clean, X.dim.new, ncp = 2)
+        X_imp <- restore_removed_columns(
+                    as.matrix(imp_tr$imputed), X,
+                    clean$keep_cols)
+        return(X_imp)
     }
 }
+
 
 #' @title Restore columns removed during MFA cleaning into the imputed matrix
 #'

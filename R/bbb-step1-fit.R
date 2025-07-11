@@ -625,7 +625,7 @@ impute_split_mfa <- function(
     imputed <- X.matrix
     imputed[split$train, ] <- E_tr
     imputed[split$validate, ] <- E_va
-    imputed
+    as.matrix(imputed)
 }
 
 #' @title Cross validation and fit of asmbPLSDA
