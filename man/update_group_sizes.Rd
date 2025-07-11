@@ -7,7 +7,7 @@
 update_group_sizes(group_orig, keep_cols)
 }
 \arguments{
-\item{group_orig}{Integer vector of original block sizes (\sum group_orig =
+\item{group_orig}{Integer vector of original block sizes (sum group_orig =
 ncol before cleaning).}
 
 \item{keep_cols}{Logical vector of length \code{sum(group_orig)}, \code{TRUE}

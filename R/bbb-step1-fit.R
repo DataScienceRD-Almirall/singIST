@@ -51,9 +51,8 @@ matrixToBlock.superpathway.input <- function(object){
                          bm, matrix = matrix)
         }, seq_along(unique(block_celltypes)), init = block_predictor)
     }else{
-        stop("There is at least one cell type gene set that is void check that
-                at least one gene exists in your pseudobulk_lognorm matrix for
-                all cell type gene sets.")
+        stop("Check that at least one gene exists in your pseudobulk_lognorm
+              matrix for each cell-type gene sets.")
     }
     categories_class <- base::factor(object@sample_class)
     categories_class <- stats::relevel(categories_class,ref = object@base_class)
@@ -64,8 +63,9 @@ matrixToBlock.superpathway.input <- function(object){
     }else{
         matrix_response <- matrix_response[ , , drop = FALSE]
     }
+    block_predictor <- block_predictor[order(rownames(block_predictor)), ]
     output <- list(block_predictor = block_predictor,
-                   matrix_response = matrix_response,block_dim = block_dim,
+                   matrix_response = matrix_response, block_dim = block_dim,
                    observed_gene_sets = observed_gene_sets)
     return(output)
 }
