@@ -287,7 +287,8 @@ singIST_treat <- function(object, model_object, orthologs, logFC){
             next
             }
         FC_aux[significant_genes, "avg_log2FC"] <-
-                (2^FC_aux[significant_genes, "avg_log2FC"]-1)
+                sign(FC_aux[significant_genes, "avg_log2FC"])*
+            (2^(abs(FC_aux[significant_genes, "avg_log2FC"]))-1)
         FC_aux[!significant_genes, "avg_log2FC"] <-
             rep(0, sum(!significant_genes))
         indices_match <- match(rownames(FC_aux), orthologs[[b]]$output_gene)
