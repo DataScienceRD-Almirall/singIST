@@ -1505,7 +1505,7 @@ FCtoExpression <- function(model_object, b, samples, predictor_block, FC){
                         rownames(FC))
     mu <- model_object@model_fit$`asmbPLS-DA`$X_col_mean[,indices, drop = FALSE]
     r <- t(FC[indices_FC, "avg_log2FC", drop = FALSE])
-    mu_per_r <- mu*r
+    mu_per_r <-  1*r# mu*r
     min_col <- apply(predictor_block[samples, indices, drop = FALSE], 2, min)
     # Check condition C = min{x + r*mu} >= 0
     sum <- min_col + mu_per_r
@@ -1517,10 +1517,10 @@ FCtoExpression <- function(model_object, b, samples, predictor_block, FC){
     for(i in seq(1, ncol(mu))){
         if(check_negativity_condition[i]){
             predictor_block[samples, indices[i]] <-
-                predictor_block[samples, indices[i]] + mu_per_r[1, i]
+                predictor_block[samples, indices[i]] + mu_per_r[1,i]#mu_per_r[1, i]
         }else{
             predictor_block[samples, indices[i]] <-
-                predictor_block[samples, indices[i]] - min_col[i]
+                predictor_block[samples, indices[i]] + mu_per_r[1,i]# - min_col[i]
         }
     }
     return(predictor_block)
