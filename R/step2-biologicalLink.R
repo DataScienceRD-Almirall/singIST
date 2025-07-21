@@ -111,7 +111,7 @@ diff_expressed <- function(object, condition_1 = c(), condition_2 = c(),
         apply_function <- function(row, data = counts_aggr, ...) {
             logFC <- Seurat::FindMarkers(
                 object = data, ident.1 = row[1], ident.2 = row[2],
-                assay = assay, slot = "counts", logfc.threshold = logfc.treshold,
+                assay = assay, logfc.threshold = logfc.treshold,
                 test.use = "DESeq2", ...)
             return(logFC)
         }
