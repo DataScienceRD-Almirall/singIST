@@ -40,7 +40,8 @@ Imports:
     scran,
     scuttle,
     glmGamPoi,
-    missMDA
+    missMDA,
+    DESeq2
 VignetteBuilder: knitr
 Depends: 
     R (>= 4.2)
