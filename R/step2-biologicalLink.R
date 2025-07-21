@@ -109,7 +109,6 @@ diff_expressed <- function(object, condition_1 = c(), condition_2 = c(),
         counts_aggr$test <- paste0(counts_aggr$celltype_cluster, "_", counts_aggr$class)
         SeuratObject::Idents(counts_aggr) <- "test"
         counts_aggr[["RNA"]]$counts <- round(counts_aggr[["RNA"]]$counts)
-        print(counts_aggr[["RNA"]]$counts)
         apply_function <- function(row, data = counts_aggr, ...) {
             logFC <- Seurat::FindMarkers(
                 object = data, ident.1 = row[1], ident.2 = row[2],
@@ -120,6 +119,10 @@ diff_expressed <- function(object, condition_1 = c(), condition_2 = c(),
         # Combinations to test
         combinations <- base::outer(condition_1, condition_2 , paste, sep = "_")
         output <- base::apply(combinations, 1, apply_function)
+        for(i in seq_along(output)){
+            print(output[[i]])
+            print(sum(is.na(output[[i]]$p_val_adj)))
+        }
         names(output) <- condition_1
     }else{ # If not Seurat then its SingleCellExperiment
         output <-lapply(condition_1, function(x, sce=counts, lfc=logfc.treshold,
