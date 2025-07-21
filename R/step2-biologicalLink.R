@@ -100,11 +100,16 @@ diff_expressed <- function(object, condition_1 = c(), condition_2 = c(),
         c(object@target_class, object@base_class)}
     counts <- object@counts
     if(is(object@counts,"Seurat")){
-        apply_function <- function(row, data = counts, ...) {
+        counts_aggr <- AggregateExpression(counts, assays = "RNA",
+                                           return.seurat = T,
+                                           group.by = c("celltype_cluster",
+                                                        "class",
+                                                        "donor"))
+        apply_function <- function(row, data = counts_aggr, ...) {
             logFC <- Seurat::FindMarkers(
                 object = data, ident.1 = row[1], ident.2 = row[2],
                 assay = assay, slot = "data", logfc.threshold = logfc.treshold,
-                ...)
+                test.use = "DESeq2", ...)
             return(logFC)
         }
         # Combinations to test
