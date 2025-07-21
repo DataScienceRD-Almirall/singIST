@@ -100,7 +100,7 @@ diff_expressed <- function(object, condition_1 = c(), condition_2 = c(),
         c(object@target_class, object@base_class)}
     counts <- object@counts
     if(is(object@counts,"Seurat")){
-        counts_aggr <- AggregateExpression(counts, assays = "RNA",
+        counts_aggr <- AggregateExpression(counts, assays = "RNA", slot = "counts",
                                            return.seurat = TRUE,
                                            group.by = c("celltype_cluster",
                                                         "class",
