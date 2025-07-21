@@ -108,6 +108,7 @@ diff_expressed <- function(object, condition_1 = c(), condition_2 = c(),
         counts_aggr$celltype_cluster <- gsub("-", "_", counts_aggr$celltype_cluster)
         counts_aggr$test <- paste0(counts_aggr$celltype_cluster, "_", counts_aggr$class)
         SeuratObject::Idents(counts_aggr) <- "test"
+        counts_aggr[["RNA"]]$counts <- round(counts_aggr[["RNA"]]$counts)
         print(counts_aggr[["RNA"]]$counts)
         apply_function <- function(row, data = counts_aggr, ...) {
             logFC <- Seurat::FindMarkers(
