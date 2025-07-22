@@ -113,14 +113,14 @@ diff_expressed <- function(object, condition_1 = c(), condition_2 = c(),
             logFC <- Seurat::FindMarkers(
                 object = data, ident.1 = row[1], ident.2 = row[2], slot = "data",
                 logfc.threshold = logfc.treshold,
-                test.use = "wilcox", ...)
+                test.use = "wilcox_limma", ...)
             return(logFC)
         }
         # Combinations to test
         combinations <- base::outer(condition_1, condition_2 , paste, sep = "_")
         output <- base::apply(combinations, 1, apply_function)
         for(i in seq_along(output)){
-            print(output[[i]])
+            print(head(output[[i]]))
             print(sum(is.na(output[[i]]$p_val_adj)))
         }
         names(output) <- condition_1
@@ -282,6 +282,7 @@ singIST_treat <- function(object, model_object, orthologs, logFC){
             }
         FC_aux <- logFC[[c]][rownames(logFC[[c]]) %in% genes, , drop = FALSE]
         significant_genes <- FC_aux[ , "p_val_adj"] <= 0.05
+        print(significant_genes)
         if(nrow(FC_aux) == 0){
             FC[[c]] <- data.frame()
             next
