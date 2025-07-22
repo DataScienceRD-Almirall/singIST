@@ -113,7 +113,7 @@ diff_expressed <- function(object, condition_1 = c(), condition_2 = c(),
             logFC <- Seurat::FindMarkers(
                 object = data, ident.1 = row[1], ident.2 = row[2], slot = "data",
                 logfc.threshold = logfc.treshold,
-                test.use = "wilcox_limma", ...)
+                test.use = "t", ...)
             return(logFC)
         }
         # Combinations to test
