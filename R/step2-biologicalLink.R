@@ -286,7 +286,7 @@ singIST_treat <- function(object, model_object, orthologs, logFC){
             FC[[c]] <- data.frame()
             next
             }
-        if(sum(significant_genes) == 0){
+        if(sum(significant_genes, na.rm = TRUE) == 0){
             indices_match <- match(rownames(FC_aux), orthologs[[b]]$output_gene)
             FC_aux[!significant_genes, "avg_log2FC"] <-
                 rep(0, sum(!significant_genes))
