@@ -156,12 +156,16 @@ pseudobulk_log2FC <- function(object, list, assay = "RNA", target, base){
                              drop=FALSE]
         keys <- gsub("_", "-", names(list))
         map <- setNames(names(list), keys)
+        if("KRT10" %in% rownames(mat)){print(mat[rownames(mat) == "KRT10", ])}
         for(b in names(map)){
             genes <- rownames(list[[map[b]]])
+            print(genes)
             idx_t <- meta$celltype_cluster==b & meta$class==target
             idx_b <- meta$celltype_cluster==b & meta$class==base
             descr_fc <- rowMeans(mat[genes, idx_t, drop = FALSE]) -
                 rowMeans(mat[genes, idx_b, drop = FALSE])
+            print(mat["KRT10", idx_t, drop = FALSE])
+            print(mat["KRT10", idx_b, drop = FALSE])
             list[[map[b]]]$avg_log2FC <- descr_fc
         }
     }else{ # SingleCellExperiment object
@@ -1564,12 +1568,8 @@ FCtoExpression <- function(model_object, b, samples, predictor_block, FC){
     indices_FC <- match(colnames(predictor_block[, indices, drop = FALSE]),
                         rownames(FC))
     mu <- model_object@model_fit$`asmbPLS-DA`$X_col_mean[,indices, drop = FALSE]
-    print("mu missing")
-    print(sum(is.na(mu)))
     r <- t(FC[indices_FC, "avg_log2FC", drop = FALSE])
     print("r fc missing")
-    print(sum(is.na(r)))
-    print(r)
     mu_per_r <-  1*r# mu*r
     min_col <- apply(predictor_block[samples, indices, drop = FALSE], 2, min)
     # Check condition C = min{x + r*mu} >= 0
