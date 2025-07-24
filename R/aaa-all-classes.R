@@ -435,6 +435,10 @@ methods::setClass("mapping.organism",
                             checkmate::assert_true(
                                 all(c(object@target_class, object@base_class)
                                     %in% object@counts@meta.data$class))
+                            # Check non-negative values
+                            m <- 
+                                GetAssayData(object@counts, layer = "counts")
+                            checkmate::assert_false(any(m@x < 0))
                         }else{
                             stop("Object should be either of class Seurat
                                     or SingleCellExperiment")
