@@ -146,7 +146,7 @@ cv_index_binary_R <- function(y, K) {
 pseudobulk_log2FC <- function(object, list, assay = "RNA", target, base){
     if(is(object,"Seurat")){
         pb <- Seurat::AggregateExpression(
-            object = object,
+            object = object@counts,
             assays = assay,
             group.by = c("celltype_cluster", "class", "donor"),
             return.seurat = TRUE
@@ -158,13 +158,10 @@ pseudobulk_log2FC <- function(object, list, assay = "RNA", target, base){
         map <- setNames(names(list), keys)
         for(b in names(map)){
             genes <- rownames(list[[map[b]]])
-            print(genes)
             idx_t <- meta$celltype_cluster==b & meta$class==target
             idx_b <- meta$celltype_cluster==b & meta$class==base
             descr_fc <- rowMeans(mat[genes, idx_t, drop = FALSE]) -
                 rowMeans(mat[genes, idx_b, drop = FALSE])
-            print(mat["KRT10", idx_t, drop = FALSE])
-            print(mat["KRT10", idx_b, drop = FALSE])
             list[[map[b]]]$avg_log2FC <- descr_fc
         }
     }else{ # SingleCellExperiment object
@@ -1568,7 +1565,6 @@ FCtoExpression <- function(model_object, b, samples, predictor_block, FC){
                         rownames(FC))
     mu <- model_object@model_fit$`asmbPLS-DA`$X_col_mean[,indices, drop = FALSE]
     r <- t(FC[indices_FC, "avg_log2FC", drop = FALSE])
-    print("r fc missing")
     mu_per_r <-  1*r# mu*r
     min_col <- apply(predictor_block[samples, indices, drop = FALSE], 2, min)
     # Check condition C = min{x + r*mu} >= 0
