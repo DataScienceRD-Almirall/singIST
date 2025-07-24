@@ -156,7 +156,6 @@ pseudobulk_log2FC <- function(object, list, assay = "RNA", target, base){
                              drop=FALSE]
         keys <- gsub("_", "-", names(list))
         map <- setNames(names(list), keys)
-        if("KRT10" %in% rownames(mat)){print(mat[rownames(mat) == "KRT10", ])}
         for(b in names(map)){
             genes <- rownames(list[[map[b]]])
             print(genes)
