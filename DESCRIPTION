@@ -41,8 +41,7 @@ Imports:
     scuttle,
     glmGamPoi,
     missMDA,
-    edgeR,
-    limma
+    S4Vectors
 VignetteBuilder: knitr
 Depends: 
     R (>= 4.2)
