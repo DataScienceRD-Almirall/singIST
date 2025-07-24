@@ -7,7 +7,7 @@
 #' MsigDB.
 #' @slot dbsource A character with the pathway database to grab information
 #' from. Currently available options are: KEGG, PID, REACTOME, BIOCARTA,
-#' WP (WikiPathways).
+#' WP.
 #' @slot collection A character with MsigDB collection to grab information from
 #' (currently holds for c2 and m2).
 #' @slot subcollection A character with MsigDB subcollection to grab information
@@ -35,12 +35,13 @@ methods::setClass("pathway",
                             ),
                     validity = function(object){
                         checkmate::assert_character(object@standard_name)
-                        # Currently only KEGG, PID, REACTOME, BIOCARTA and WP
+                        # Currently only KEGG, PID, REACTOME, BIOCARTA and
+                        # WP
                         # pathway databases
                         checkmate::assert_choice(
                                     object@dbsource,
                                     choices = c("KEGG", "PID", "REACTOME",
-                                                "BIOCARTA", "WIKIPATHWAYS"))
+                                                "BIOCARTA", "WP"))
                     # Currently only Curated Gene sets (C2) from Canonical
                     # Pathways (CP) are possible
                     checkmate::assert_choice(
