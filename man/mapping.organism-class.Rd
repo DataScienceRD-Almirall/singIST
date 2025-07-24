@@ -35,7 +35,7 @@ LogNormalized counts. This object should contain variables in
 \code{slot(SeuratObject, meta.data)} slot or
 \code{slot(SingleCellExperimentObject, metadata)}; \code{class} indicating the class
 the sample belongs to; \code{celltype_cluster} indicating the cell type cluster
-(either character or numeric)}
+(either character or numeric); \code{donor} indicating the sample ID.}
 }}
 
 \examples{
@@ -43,6 +43,8 @@ organism <- "Mus musculus"
 target_class <- "g1"
 base_class <- "g2"
 counts <- SeuratObject::pbmc_small # Toy dataset
+# Rename "orig.ident" variable to "donor"
+colnames(slot(counts, "meta.data"))[1] <- "donor"
 # Rename "group" variable to "class"
 colnames(slot(counts, "meta.data"))[6] <- "class"
 # Example existing mapping for T-cell but no mapping for Dendritic Cell

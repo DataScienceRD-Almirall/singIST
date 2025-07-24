@@ -35,7 +35,10 @@ Each element of the list must be a \code{data.frame} whose columns are:
 "p_value" p-value of test, "avg_log2FC" the log2FC provided, "pct.1" percent
 of cells where the gene is expressed in base class, "pct.2" percent of cells
 where the gene is expressed in target class, "p_val_adj" adjusted p-value.
-Rownames should contain the gene names.}
+Rownames should contain the gene names. Note that log2FC provided should be
+comparable to log2FC computed in asmbPLS-DA model. log2FC should be reported
+as descriptive point estimates of mean difference of log2 normalized
+expression values.}
 
 \item{...}{Other parameters to pass onto \link{diff_expressed}}
 }

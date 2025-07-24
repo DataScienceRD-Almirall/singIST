@@ -210,8 +210,9 @@ oxazolone <- OXA
 # Rename the variable containing the class each sample belongs to and the
 # cell type cluster variable into "class" and "celltype_cluster" names as
 # requested by mapping.organism object 
-colnames(slot(oxazolone, "meta.data"))[c(5,11)] <- c("class", 
-                                                        "celltype_cluster")
+colnames(slot(oxazolone, "meta.data"))[c(5,11,1)] <- c("class", 
+                                                        "celltype_cluster",
+                                                       "donor")
 # Initialize the mapping.organism object that contains the information on
 # the disease model
 # The target_class is the element of variable "class" that serves as the

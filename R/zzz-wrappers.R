@@ -246,7 +246,8 @@ multiple_singISTrecapitulations <- function(
 #' disease models and superpathways, the output is friendly for visualizing
 #' the results
 #' @param objects A list as retuned by \link{multiple_singISTrecapitulations}
-#' @import checkmate purrr
+#' @import checkmate 
+#' @importFrom purrr pmap_int
 #' @returns
 #' A list with the row binded `data.frame` for each superpathway assessed for
 #' the superpathway and cell type recapitulations, gene contributions

@@ -2,7 +2,8 @@
 % Please edit documentation in R/step2-biologicalLink.R
 \name{diff_expressed}
 \alias{diff_expressed}
-\title{Compute differentially expressed genes with FindMarkers/findMarkers}
+\title{Compute differentially expressed genes with FindMarkers/findMarkers
+and descriptive point estimates of log2FC}
 \usage{
 diff_expressed(
   object,
@@ -26,9 +27,9 @@ the hypothesis test. By default the mapped cell types
 the hypothesis test with. By default the class of the organism
 \code{condition_2 = c(slot(object, "target_class"), slot(object, "base_class"))}}
 
-\item{logfc.treshold}{Sets the minimum log-fold change (logFC) cutoff for
-identifying differentially expressed genes (DEGs). By default
-\code{logfc.treshold = 0.25}}
+\item{logfc.treshold}{Sets the minimum FindMarkers log-fold change (logFC)
+cutoff for identifying differentially expressed genes (DEGs). By default
+\code{logfc.treshold = 0.25}.}
 
 \item{assay}{Specific assay being used for analysis. By default
 \code{assay = RNA}.}
@@ -38,7 +39,7 @@ identifying differentially expressed genes (DEGs). By default
 }
 \value{
 A list where each element is a data.frame for a cell type containing: \code{p_val}
-p-value of test, \code{avg_log2FC} logFC between mean expression values,
+p-value of test, \code{avg_log2FC} descriptive point estimate of logFC,
 \code{pct.1} percentage of cells where the gene is detected in the base class,
 \code{pct.2} percentage of cells where the gene is detected in the target class,
 \code{p_val_adj} FDR.
@@ -48,14 +49,11 @@ Computes differentially expressed genes with \code{Seurat::FindMarkers}, for
 \code{Seurat} objects, or \code{scran::findMarkers}, for \code{SingleCellExperiment}
 objects, for the conditions indicated. Note that \code{Seurat::FindMarkers} will
 compute Wilcoxon Signed Rank Test by default, while \code{scran::findMarkers} will
-perform t-test by default instead. The reported logFC values are differences
-in the log of the average exponentiated data, with pseudocount. This logFC
-reporting is consistent with \code{Seurat::FindMarkers}, and differs from methods
-like \code{scran::findMarkers}, which compute logFC as the difference in mean
-log expression values between groups. Hence, logFC will be differently
-reported than \code{scran::findMarkers} to ensure reproducibility and consistency
-independently of the class, \code{Seurat} or \code{SingleCellExperiment}, provided. The
-output is rendered to be homogeneous indistinguishably of the method used.
+perform t-test by default instead. The reported logFC values are difference
+of means of log-normalized expression values with
+\code{Seurat::AggregateExpression} or
+\code{SingleCellExperiment::aggregateAcrossCells}. This logFC is consistent with
+the human log2FC computation by asmbPLS-DA.
 }
 \examples{
 # Set the identities

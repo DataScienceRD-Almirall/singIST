@@ -18,7 +18,7 @@ singIST_treat(object, model_object, orthologs, logFC)
 cell type}
 
 \item{logFC}{A list of \code{data.frame} objects, as returned by
-\link{diff_expressed} with the logFC for each gene and cell type}
+\link{diff_expressed} with the logFC for each gene and cell type.}
 }
 \value{
 A list object with the singIST treated samples predictor block matrix and

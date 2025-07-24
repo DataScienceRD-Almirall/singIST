@@ -139,6 +139,66 @@ cv_index_binary_R <- function(y, K) {
     })
 }
 
+#' @title Descriptive point estimate of log2FC of pseudobulk data
+#' @importFrom SingleCellExperiment sizeFactors
+#' @importFrom S4Vectors DataFrame
+#' @noRd
+pseudobulk_log2FC <- function(object, list, assay = "RNA", target, base){
+    if(is(object,"Seurat")){
+        pb <- Seurat::AggregateExpression(
+            object = object,
+            assays = assay,
+            group.by = c("celltype_cluster", "class", "donor"),
+            return.seurat = TRUE
+        )
+        mat <- Seurat::GetAssayData(pb, assay=assay, layer="data")
+        meta <- pb@meta.data[, c("celltype_cluster", "class", "donor"),
+                             drop=FALSE]
+        keys <- gsub("_", "-", names(list))
+        map <- setNames(names(list), keys)
+        for(b in names(map)){
+            genes <- rownames(list[[map[b]]])
+            idx_t <- meta$celltype_cluster==b & meta$class==target
+            idx_b <- meta$celltype_cluster==b & meta$class==base
+            descr_fc <- rowMeans(mat[genes, idx_t, drop = FALSE]) -
+                rowMeans(mat[genes, idx_b, drop = FALSE])
+            list[[map[b]]]$avg_log2FC <- descr_fc
+        }
+    }else{ # SingleCellExperiment object
+        grp <- paste0(
+            SummarizedExperiment::colData(object)$celltype_cluster, "_",
+            SummarizedExperiment::colData(object)$class, "_",
+            SummarizedExperiment::colData(object)$donor
+        )
+        ids <- S4Vectors::DataFrame(
+            celltype_cluster=
+                SummarizedExperiment::colData(object)$celltype_cluster,
+            class = SummarizedExperiment::colData(object)$class,
+            donor = SummarizedExperiment::colData(object)$donor, row.names = grp
+        )
+        sce_pb <- scuttle::aggregateAcrossCells(object, ids=ids,
+                                                use.assay.type = "counts")
+        sce_pb <- scuttle::computeLibraryFactors(sce_pb)
+        sce_pb <- scuttle::logNormCounts(
+            sce_pb, assay.type = "counts",
+            size.factors = SingleCellExperiment::sizeFactors(sce_pb),
+            pseudo_count = 1, center_size_factors = FALSE)
+        mat <- SummarizedExperiment::assay(sce_pb, "logcounts")
+        meta <- as.data.frame(SummarizedExperiment::colData(sce_pb))[
+            , c("celltype_cluster", "class", "donor"), drop = FALSE
+        ]
+        for(b in names(list)){
+            genes <- rownames(list[[b]])
+            idx_t <- meta$celltype_cluster==b & meta$class==target
+            idx_b <- meta$celltype_cluster==b & meta$class==base
+            descr_fc <- rowMeans(mat[genes, idx_t, drop = FALSE]) -
+                rowMeans(mat[genes, idx_b, drop = FALSE])
+            list[[b]]$avg_log2FC <- descr_fc
+        }
+    }
+    return(list)
+}
+
 #' @title Build stratified k‐fold splits
 #' @noRd
 make_splits_R <- function(Y.matrix, k, ncv) {

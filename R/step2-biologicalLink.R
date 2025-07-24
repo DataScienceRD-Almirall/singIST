@@ -41,46 +41,158 @@ celltype_mapping <- function(object){
     return(output)
 }
 
-#' @title Compute differentially expressed genes with FindMarkers/findMarkers
+#' @title Compute differentially expressed genes for pseudobulk with limma-voom
 #' @description
-#' Computes differentially expressed genes with `Seurat::FindMarkers`, for
-#' `Seurat` objects, or `scran::findMarkers`, for `SingleCellExperiment`
-#' objects, for the conditions indicated. Note that `Seurat::FindMarkers` will
-#' compute Wilcoxon Signed Rank Test by default, while `scran::findMarkers` will
-#' perform t-test by default instead. The reported logFC values are differences
-#' in the log of the average exponentiated data, with pseudocount. This logFC
-#' reporting is consistent with `Seurat::FindMarkers`, and differs from methods
-#' like `scran::findMarkers`, which compute logFC as the difference in mean
-#' log expression values between groups. Hence, logFC will be differently
-#' reported than `scran::findMarkers` to ensure reproducibility and consistency
-#' independently of the class, `Seurat` or `SingleCellExperiment`, provided. The
-#' output is rendered to be homogeneous indistinguishably of the method used.
-#'
-#' @param object A \link{mapping.organism-class} object. If a `Seurat` object
-#' was provided, then `Idents(object)` assigned to variables with the conditions
-#' being tested is expected.
-#' @param condition_1 A vector with the elements of the first factor to perform
-#' the hypothesis test. By default the mapped cell types
-#' `condition_1 = names(slot(object, "celltype_mapping"))`
-#' @param condition_2 A vector with the elements of the second factor to perform
-#' the hypothesis test with. By default the class of the organism
-#' `condition_2 = c(slot(object, "target_class"), slot(object, "base_class"))`
+#' Computes differentially expressed genes with limma-voom after pseudobulking
+#' the scRNAseq matrix. The reported logFC values are difference of means of
+#' log-normalized expression values with `Seurat::AggregateExpression` or
+#' `SingleCellExperiment::aggregateAcrossCells`. This logFC is consistent with
+#' the human log2FC computation by asmbPLS-DA. 
+#' @param object A \link{mapping.organism-class} object. 
 #' @param logfc.treshold Sets the minimum log-fold change (logFC) cutoff for
 #' identifying differentially expressed genes (DEGs). By default
-#' `logfc.treshold = 0.25`
-#' @param ... Other parameters to pass onto `Seurat::FindMarkers()` or
-#' `scran::findMarkers`.
+#' `logfc.treshold = 0`.
+#' @param ... Other parameters to pass onto `limma::voom` or `limma::lmFit`.
 #' @param assay Specific assay being used for analysis. By default
 #' `assay = RNA`.
 #' @import checkmate Seurat scran SingleCellExperiment
 #' @returns
 #' A list where each element is a data.frame for a cell type containing: `p_val`
-#' p-value of test, `avg_log2FC` logFC between mean expression values, 
-#' `pct.1` percentage of cells where the gene is detected in the base class,
-#' `pct.2` percentage of cells where the gene is detected in the target class,
-#' `p_val_adj` FDR. 
+#' p-value of limma-voom test, `avg_log2FC` descriptive point estimate of
+#' logFC, and `p_val_adj` FDR for all the transcriptome as output by limma-voom. 
+#' @import Seurat edgeR limma dplyr
 #' @export
 #' @examples
+#' # Set the identities
+#' file <- system.file("extdata", "example_mapping_organism.rda",
+#' package = "singIST")
+#' load(file)
+#' data_organism <- example_mapping_organism
+#' data <- celltype_mapping(data_organism)
+#' diff_expressed(data)
+diff_expressed <- function(object, assay = "RNA", logfc.treshold = 0, ...){
+    checkmate::assert_class(object, "mapping.organism")
+    # 1) PSEUDOBULK -----------------------------------------------------------
+    sce <- object@counts
+    if (inherits(sce, "Seurat")) {
+        pb <- Seurat::AggregateExpression(
+            object = sce,
+            assays = assay,
+            group.by = c("celltype_cluster", "class", "donor"),
+            return.seurat = TRUE
+        )
+        mat <- round(Seurat::GetAssayData(pb, assay=assay, slot="counts"))
+        meta <- pb@meta.data[, c("celltype_cluster", "class", "donor"),
+                             drop=FALSE]
+    } else if (inherits(sce, "SingleCellExperiment")) {
+        require(scuttle)
+        grp <- paste0(
+            SummarizedExperiment::colData(sce)$celltype_cluster, "_",
+            SummarizedExperiment::colData(sce)$class, "_",
+            SummarizedExperiment::colData(sce)$donor
+        )
+        pb_sce <- scuttle::aggregateAcrossCells(sce, ids=DataFrame(grp=grp))
+        mat <- assay(pb_sce, assay)
+        tmp <- strsplit(as.character(colData(pb_sce)$grp), "_", fixed=TRUE)
+        meta <- data.frame(
+            celltype_cluster = vapply(tmp, `[`, 1, FUN.VALUE=""),
+            class = vapply(tmp, `[`, 2, FUN.VALUE=""),
+            donor = vapply(tmp, `[`, 3, FUN.VALUE=""),
+            row.names = colnames(mat),
+            stringsAsFactors = FALSE
+        )
+    }
+    # 2) BUILD LIMMA–VOOM MODEL ACROSS ALL PSEUDOBULK SAMPLES -----------------
+    meta$celltype_cluster <- gsub("-", "_",meta$celltype_cluster)
+    meta$class <- gsub("-", "_", meta$class)
+    meta$grp <- factor(paste(meta$celltype_cluster, meta$class, sep="_"))
+    dge <- edgeR::DGEList(counts = mat)
+    dge <- edgeR::calcNormFactors(dge)
+    design <- stats::model.matrix(~0 + grp, data=meta)
+    colnames(design) <- levels(meta$grp)
+    v <- limma::voom(dge, design, plot=FALSE, ...)
+    fit <- limma::lmFit(v, design, ...)
+    # for each cell-type, define the "target-base" contrast
+    celltypes <- sort(unique(meta$celltype_cluster))
+    contrasts <- paste0(
+        celltypes, "_", object@target_class, 
+        " - ",
+        celltypes, "_", object@base_class
+    )
+    cm <- makeContrasts(contrasts=contrasts, levels=design)
+    fit2 <- contrasts.fit(fit, cm) %>% limma::eBayes()
+    # 3) EXTRACT FOR PER CELL TYPE ------------------------------
+    all_pvals <- fit2$p.value # genes × contrasts
+    genes <- rownames(fit2)
+    out <- setNames(vector("list", length(celltypes)), celltypes)
+    for (i in seq_along(celltypes)) {
+        b <- celltypes[i]
+        cn <- colnames(cm)[i] # e.g. "Bcell_target - Bcell_base"
+        pv <- all_pvals[genes, cn]
+        pv_adj <- p.adjust(pv, method="BH") # 
+        # descriptive log2FC on voom E (log2-CPM)
+        idx_t <- meta$celltype_cluster==b & meta$class==object@target_class
+        idx_b <- meta$celltype_cluster==b & meta$class==object@base_class
+        if(inherits(pb, "Seurat")){
+            mat_log <- Seurat::GetAssayData(pb[genes, ],
+                                            assay=assay,slot="data")
+        }
+        descr_fc <- rowMeans(mat_log[genes, idx_t, drop = FALSE]) -
+            rowMeans(mat_log[genes, idx_b, drop = FALSE])
+        df <- data.frame(
+            "p_val" = pv,
+            "avg_log2FC" = descr_fc,
+            "pct.1" = rep("Not available", length(descr_fc)),
+            "pct.2" = rep("Not available", length(descr_fc)),
+            "p_val_adj" = pv_adj, # This will be corrected only with gene set
+            row.names = genes,
+            stringsAsFactors = FALSE
+        )
+        out[[b]] <- df
+    }
+    return(out)
+}
+
+#' title Compute differentially expressed genes with FindMarkers/findMarkers
+#' description
+#' Computes differentially expressed genes with Seurat::FindMarkers, for
+#' Seurat objects, or scran::findMarkers, for SingleCellExperiment
+#' objects, for the conditions indicated. Note that Seurat::FindMarkers will
+#' compute Wilcoxon Signed Rank Test by default, while scran::findMarkers will
+#' perform t-test by default instead. The reported logFC values are differences
+#' in the log of the average exponentiated data, with pseudocount. This logFC
+#' reporting is consistent with Seurat::FindMarkers, and differs from methods
+#' like scran::findMarkers, which compute logFC as the difference in mean
+#' log expression values between groups. Hence, logFC will be differently
+#' reported than scran::findMarkers to ensure reproducibility and consistency
+#' independently of the class, Seurat or SingleCellExperiment, provided. The
+#' output is rendered to be homogeneous indistinguishably of the method used.
+#' 
+#' param object A link{mapping.organism-class} object. If a Seurat object
+#' was provided, then Idents(object) assigned to variables with the conditions
+#' being tested is expected.
+#' param condition_1 A vector with the elements of the first factor to perform
+#' the hypothesis test. By default the mapped cell types
+#' condition_1 = names(slot(object, "celltype_mapping"))
+#' param condition_2 A vector with the elements of the second factor to perform
+#' the hypothesis test with. By default the class of the organism
+#' condition_2 = c(slot(object, "target_class"), slot(object, "base_class"))
+#' param logfc.treshold Sets the minimum log-fold change (logFC) cutoff for
+#' identifying differentially expressed genes (DEGs). By default
+#' logfc.treshold = 0.25
+#' param ... Other parameters to pass onto Seurat::FindMarkers() or
+#' scran::findMarkers.
+#' param assay Specific assay being used for analysis. By default
+#' assay = RNA.
+#' import checkmate Seurat scran SingleCellExperiment
+#' returns
+#' A list where each element is a data.frame for a cell type containing: p_val
+#' p-value of test, avg_log2FC logFC between mean expression values,
+#' pct.1 percentage of cells where the gene is detected in the base class,
+#' pct.2 percentage of cells where the gene is detected in the target class,
+#' p_val_adj FDR.
+#' export
+#' examples
 #' # Set the identities
 #' file <- system.file("extdata", "example_mapping_organism.rda",
 #' package = "singIST")
@@ -91,69 +203,65 @@ celltype_mapping <- function(object){
 #' "_", slot(data, "counts")$class)
 #' SeuratObject::Idents(slot(data, "counts")) <- "test"
 #' diff_expressed(data)
-diff_expressed <- function(object, condition_1 = c(), condition_2 = c(),
-                            logfc.treshold = 0.25, assay = "RNA", ...){
-    checkmate::assert_class(object, "mapping.organism")
-    if(is.null(condition_1)){condition_1 <-
-        names(object@celltype_mapping)[lengths(object@celltype_mapping)>0]}
-    if(is.null(condition_2)){condition_2 <-
-        c(object@target_class, object@base_class)}
-    counts <- object@counts
-    if(is(object@counts,"Seurat")){
-        counts_aggr <- AggregateExpression(counts, assays = "RNA", slot = "data",
-                                           return.seurat = TRUE,
-                                           group.by = c("celltype_cluster",
-                                                        "class",
-                                                        "donor"))
-        counts_aggr$celltype_cluster <- gsub("-", "_", counts_aggr$celltype_cluster)
-        counts_aggr$test <- paste0(counts_aggr$celltype_cluster, "_", counts_aggr$class)
-        SeuratObject::Idents(counts_aggr) <- "test"
-        #counts_aggr[["RNA"]]$counts <- round(counts_aggr[["RNA"]]$counts)
-        apply_function <- function(row, data = counts_aggr, ...) {
-            logFC <- Seurat::FindMarkers(
-                object = data, ident.1 = row[1], ident.2 = row[2], slot = "data",
-                logfc.threshold = logfc.treshold,
-                test.use = "t", ...)
-            return(logFC)
-        }
-        # Combinations to test
-        combinations <- base::outer(condition_1, condition_2 , paste, sep = "_")
-        output <- base::apply(combinations, 1, apply_function)
-        for(i in seq_along(output)){
-            print(head(output[[i]]))
-            print(sum(is.na(output[[i]]$p_val_adj)))
-        }
-        names(output) <- condition_1
-    }else{ # If not Seurat then its SingleCellExperiment
-        output <-lapply(condition_1, function(x, sce=counts, lfc=logfc.treshold,
-                                                classes = condition_2, ...){
-            filt <- sce[, sce$celltype_cluster == x]
-            DEG <- scran::findMarkers(filt, groups = filt$class, lfc = lfc,
-                                        add.summary = TRUE, min.prop = 0.01,
-                                        assay.type = "logcounts", ...)
-            norm_expr <- expm1(SingleCellExperiment::logcounts(filt))
-            group_base <- colnames(filt)[filt$class == condition_2[2]]
-            group_target <- colnames(filt)[filt$class == condition_2[1]]
-            mean_base <- log(
-                (rowSums(norm_expr[, group_base]) + 1)/length(group_base),
-                base = 2)
-            mean_target <- log(
-                (rowSums(norm_expr[, group_target]) + 1)/length(group_target), 
-                base = 2)
-            i <- which(names(DEG) == condition_2[1])
-            avg_log2FC <- (mean_target-mean_base)[rownames(DEG[[i]])]
-            output <- data.frame("p_val" = DEG[[i]]$p.value,
-                "avg_log2FC" = avg_log2FC,
-                "pct.1" = DEG[[i]]$self.detected,
-                "pct.2" = DEG[[i]]$other.detected,
-                "p_val_adj" = DEG[[i]]$FDR)
-            rownames(output) <- rownames(DEG[[i]])
-            output
-        })
-        names(output) <- condition_1
-    }
-    return(output)
-}
+# diff_expressed <- function(object, condition_1 = c(), condition_2 = c(),
+#                             logfc.treshold = 0.25, assay = "RNA", ...){
+#     checkmate::assert_class(object, "mapping.organism")
+#     if(is.null(condition_1)){condition_1 <-
+#         names(object@celltype_mapping)[lengths(object@celltype_mapping)>0]}
+#     if(is.null(condition_2)){condition_2 <-
+#         c(object@target_class, object@base_class)}
+#     counts <- object@counts
+#     if(is(object@counts,"Seurat")){
+#         counts_aggr <- AggregateExpression(counts, assays = "RNA", slot = "data",
+#                                            return.seurat = TRUE,
+#                                            group.by = c("celltype_cluster",
+#                                                         "class",
+#                                                         "donor"))
+#         counts_aggr$celltype_cluster <- gsub("-", "_", counts_aggr$celltype_cluster)
+#         counts_aggr$test <- paste0(counts_aggr$celltype_cluster, "_", counts_aggr$class)
+#         SeuratObject::Idents(counts_aggr) <- "test"
+#         #counts_aggr[["RNA"]]$counts <- round(counts_aggr[["RNA"]]$counts)
+#         apply_function <- function(row, data = counts_aggr, ...) {
+#             logFC <- Seurat::FindMarkers(
+#                 object = data, ident.1 = row[1], ident.2 = row[2], slot = "data",
+#                 logfc.threshold = logfc.treshold,
+#                 test.use = "t", ...)
+#             return(logFC)
+#         }
+#         # Combinations to test
+#         combinations <- base::outer(condition_1, condition_2 , paste, sep = "_")
+#         output <- base::apply(combinations, 1, apply_function)
+#         names(output) <- condition_1
+#     }else{ # If not Seurat then its SingleCellExperiment
+#         output <-lapply(condition_1, function(x, sce=counts, lfc=logfc.treshold,
+#                                                 classes = condition_2, ...){
+#             filt <- sce[, sce$celltype_cluster == x]
+#             DEG <- scran::findMarkers(filt, groups = filt$class, lfc = lfc,
+#                                         add.summary = TRUE, min.prop = 0.01,
+#                                         assay.type = "logcounts", ...)
+#             norm_expr <- expm1(SingleCellExperiment::logcounts(filt))
+#             group_base <- colnames(filt)[filt$class == condition_2[2]]
+#             group_target <- colnames(filt)[filt$class == condition_2[1]]
+#             mean_base <- log(
+#                 (rowSums(norm_expr[, group_base]) + 1)/length(group_base),
+#                 base = 2)
+#             mean_target <- log(
+#                 (rowSums(norm_expr[, group_target]) + 1)/length(group_target), 
+#                 base = 2)
+#             i <- which(names(DEG) == condition_2[1])
+#             avg_log2FC <- (mean_target-mean_base)[rownames(DEG[[i]])]
+#             output <- data.frame("p_val" = DEG[[i]]$p.value,
+#                 "avg_log2FC" = avg_log2FC,
+#                 "pct.1" = DEG[[i]]$self.detected,
+#                 "pct.2" = DEG[[i]]$other.detected,
+#                 "p_val_adj" = DEG[[i]]$FDR)
+#             rownames(output) <- rownames(DEG[[i]])
+#             output
+#         })
+#         names(output) <- condition_1
+#     }
+#     return(output)
+# }
 
 #' @title Orthology mapping
 #' @description
@@ -240,11 +348,14 @@ orthology_mapping <- function(object, model_object, from_species,
 #' \link{orthology_mapping} with the one-to-one orthologs of each gene set per
 #' cell type
 #' @param logFC A list of `data.frame` objects, as returned by
-#' \link{diff_expressed} with the logFC for each gene and cell type
+#' \link{diff_expressed} with the logFC for each gene and cell type. 
+#' P-values will be corrected with BH, selecting only the genes in the orthologs
+#' gene set.
 #' @returns
 #' A list object with the singIST treated samples predictor block matrix and
 #' a list of Fold Changes for each cell type used to compute the singIST
 #' treated samples.
+#' @import stats
 #' @export
 #' @examples
 #' # Orthology mapping
@@ -270,18 +381,21 @@ singIST_treat <- function(object, model_object, orthologs, logFC){
                         model_object@superpathway_input@base_class)
     predictor_block <- model_object@model_fit$predictor_block
     cells <- as.vector(which(lengths(object@celltype_mapping) > 0))
-    names(logFC) <- gsub("_", " ", names(logFC))
+    names(logFC) <- names(object@celltype_mapping)[cells] # gsub("_", " ", names(logFC))
     FC <- vector("list", length(cells))
     for(b in cells){
         genes <- base::intersect(
             orthologs[[b]]$output_gene, rownames(object@counts))
         c <- names(object@celltype_mapping)[b]
         if(length(genes) == 0){
-            FC[[c]] <- FC_aux
+            FC[[c]] <- data.frame()
             next
             }
         FC_aux <- logFC[[c]][rownames(logFC[[c]]) %in% genes, , drop = FALSE]
-        significant_genes <- FC_aux[ , "p_val_adj"] <= 0.05
+        FC_aux$`p_val_adj` <- stats::p.adjust(FC_aux[,"p_val"], # Correction pval
+                                              method="BH")
+        significant_genes <- FC_aux[, "p_val_adj"] <= 0.05
+        print(c)
         print(significant_genes)
         if(nrow(FC_aux) == 0){
             FC[[c]] <- data.frame()
@@ -290,7 +404,7 @@ singIST_treat <- function(object, model_object, orthologs, logFC){
         if(sum(significant_genes, na.rm = TRUE) == 0){
             indices_match <- match(rownames(FC_aux), orthologs[[b]]$output_gene)
             FC_aux[!significant_genes, "avg_log2FC"] <-
-                rep(0, sum(!significant_genes))
+                rep(0, sum(!significant_genes, na.rm = TRUE))
             rownames(FC_aux) <- paste0(
                 c, "*", orthologs[[b]][indices_match, ]$input_gene)
             predictor_block <- FCtoExpression(model_object, b, samples,
@@ -304,7 +418,7 @@ singIST_treat <- function(object, model_object, orthologs, logFC){
        #        sign(FC_aux[significant_genes, "avg_log2FC"])*
        #    (2^(abs(FC_aux[significant_genes, "avg_log2FC"]))-1)
         FC_aux[!significant_genes, "avg_log2FC"] <-
-            rep(0, sum(!significant_genes))
+            rep(0, sum(!significant_genes, na.rm = TRUE))
         indices_match <- match(rownames(FC_aux), orthologs[[b]]$output_gene)
         rownames(FC_aux) <- paste0(c, "*",
                                     orthologs[[b]][indices_match, ]$input_gene)
@@ -340,7 +454,10 @@ singIST_treat <- function(object, model_object, orthologs, logFC){
 #' "p_value" p-value of test, "avg_log2FC" the log2FC provided, "pct.1" percent
 #' of cells where the gene is expressed in base class, "pct.2" percent of cells
 #' where the gene is expressed in target class, "p_val_adj" adjusted p-value.
-#' Rownames should contain the gene names.
+#' Rownames should contain the gene names. Note that log2FC provided should be
+#' comparable to log2FC computed in asmbPLS-DA model. log2FC should be reported
+#' as descriptive point estimates of mean difference of log2 normalized
+#' expression values.
 #' @param ... Other parameters to pass onto \link{diff_expressed}
 #' @import checkmate SeuratObject
 #' @returns
@@ -354,11 +471,11 @@ biological_link_function <- function(
     # Cell type and orthology mapping
     message("Cell type mapping...")
     object <- celltype_mapping(object)
-    object@counts$test <- paste0(object@counts$celltype_cluster, "_",
-                                    object@counts$class)
-    if(is(object@counts,"Seurat")){SeuratObject::Idents(object@counts)<-"test"}
+    #object@counts$test <- paste0(object@counts$celltype_cluster, "_",
+    #                               object@counts$class)
+    #if(is(object@counts,"Seurat")){SeuratObject::Idents(object@counts)<-"test"}
     if(is.null(FC_list)){
-        message("Computing Fold Changes with FindMarkers...")
+        message("Computing log Fold Changes...")
         logFC <- diff_expressed(object, ...)
     }else{
         checkmate::assert_list(
