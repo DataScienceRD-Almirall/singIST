@@ -1564,7 +1564,12 @@ FCtoExpression <- function(model_object, b, samples, predictor_block, FC){
     indices_FC <- match(colnames(predictor_block[, indices, drop = FALSE]),
                         rownames(FC))
     mu <- model_object@model_fit$`asmbPLS-DA`$X_col_mean[,indices, drop = FALSE]
+    print("mu missing")
+    print(sum(is.na(mu)))
     r <- t(FC[indices_FC, "avg_log2FC", drop = FALSE])
+    print("r fc missing")
+    print(sum(is.na(r)))
+    print(r)
     mu_per_r <-  1*r# mu*r
     min_col <- apply(predictor_block[samples, indices, drop = FALSE], 2, min)
     # Check condition C = min{x + r*mu} >= 0
