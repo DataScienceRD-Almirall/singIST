@@ -347,9 +347,10 @@ methods::setClass("superpathway.fit.model",
 #'
 #' @slot organism A character with the scientific Latin name of the organism
 #' @slot target_class A character indicating the name of the target class for
-#' this organism
+#' this organism. Characters "_" are not allowed, as these are restricted to
+#' Seurat.
 #' @slot base_class A character indicating the name of the base class for this
-#' organism
+#' organism. Characters "_" are not allowed, as these are restricted to Seurat.
 #' @slot celltype_mapping A list of vectors with the cell type correspondence
 #' between the mapping organism and the reference organism for which asmbPLSDA
 #' has been trained. Note that the name of each element of the list should be
@@ -411,7 +412,10 @@ methods::setClass("mapping.organism",
                         # class
                         checkmate::assert_true(
                             object@target_class != object@base_class)
-                        
+                        # Do not allow "_" characters in target and base class
+                        # these are restricted characters to Seurat
+                        checkmate::assert_false(grepl("_", object@target_class))
+                        checkmate::assert_false(grepl("_", object@base_class))
                         # Check object is either Seurat or SingleCellExperiment
                         if(is(object@counts,"SingleCellExperiment")){
                             # Check that class and celltype_cluster columns
