@@ -146,7 +146,7 @@ cv_index_binary_R <- function(y, K) {
 pseudobulk_log2FC <- function(object, list, assay = "RNA", target, base){
     if(is(object,"Seurat")){
         pb <- Seurat::AggregateExpression(
-            object = object@counts,
+            object = object,
             assays = assay,
             group.by = c("celltype_cluster", "class", "donor"),
             return.seurat = TRUE
