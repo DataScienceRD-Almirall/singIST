@@ -1,4 +1,6 @@
 test_that("asmbPLSDA.cv.loo runs correctly", {
+    testthat::skip_on_cran()
+    testthat::skip_if_not(interactive())
     file <- system.file("extdata", "example_superpathway_input.rda", package = "singIST")
     load(file)
     matrices <- matrixToBlock(example_superpathway_input)

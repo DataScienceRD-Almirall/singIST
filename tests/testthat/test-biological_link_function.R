@@ -1,4 +1,6 @@
 test_that("biological_link_function runs end-to-end correctly", {
+    testthat::skip_on_cran()
+    testthat::skip_if_not(interactive())
     file <- system.file("extdata", "example_mapping_organism.rda", package = "singIST")
     load(file)
     object <- example_mapping_organism

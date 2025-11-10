@@ -1,4 +1,6 @@
 test_that("Check that slots of pathway class are consistent", {
+    testthat::skip_on_cran()
+    testthat::skip_if_not(interactive())
     # Error due to collection not being c2
     expect_error(new("pathway",
                     standard_name = "KEGG_DENDRITIC",

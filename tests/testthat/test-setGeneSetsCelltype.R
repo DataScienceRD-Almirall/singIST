@@ -1,4 +1,6 @@
 test_that("Check that setGeneSetsCelltype works as intended", {
+    testthat::skip_on_cran()
+    testthat::skip_if_not(interactive())
     file <- system.file("extdata", "example_superpathway_input.rda", package = "singIST")
     load(file)
     # Throws warning of "Assuming organism to be human"

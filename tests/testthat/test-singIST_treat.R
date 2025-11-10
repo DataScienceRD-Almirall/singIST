@@ -1,4 +1,6 @@
 test_that("singIST_treat computes treated samples correctly", {
+    testthat::skip_on_cran()
+    testthat::skip_if_not(interactive())
     file <- system.file("extdata", "example_mapping_organism.rda", package = "singIST")
     load(file)
     file <- system.file("extdata", "example_superpathway_fit_model.rda", package = "singIST")

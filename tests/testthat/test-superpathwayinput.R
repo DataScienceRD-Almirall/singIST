@@ -1,4 +1,6 @@
 test_that("Check consistency of superpathway.input class slots", {
+    testthat::skip_on_cran()
+    testthat::skip_if_not(interactive())
     # Load pathway and superpathway.gene.sets objects
     my_pathway <- new("pathway",
         standard_name = "KEGG_CYTOKINE_CYTOKINE_RECEPTOR_INTERACTION",

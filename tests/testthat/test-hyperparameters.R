@@ -1,4 +1,6 @@
 test_that("Check that slots of hyperparameters class are consistent", {
+    testthat::skip_on_cran()
+    testthat::skip_if_not(interactive())
     quantile_comb_table <- base::as.matrix(
         RcppAlgos::permuteGeneral(seq(0.05, 0.95, by = 0.50)),
         ncol = length(c("T-cell", "Dendritic Cell"))

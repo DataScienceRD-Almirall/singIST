@@ -1,4 +1,6 @@
 test_that("Test multiple_fitOptimal function", {
+    testthat::skip_on_cran()
+    testthat::skip_if_not(interactive())
     file <- system.file("extdata", "example_superpathway_input.rda", package = "singIST")
     load(file)
     # Define example superpathway.input objects

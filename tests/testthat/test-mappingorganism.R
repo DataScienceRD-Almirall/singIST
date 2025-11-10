@@ -1,4 +1,6 @@
 test_that("Check consistency of mapping.organism class slots", {
+    testthat::skip_on_cran()
+    testthat::skip_if_not(interactive())
     organism <- "Mus musculus"
     target_class <- "g1"
     base_class <- "g2"

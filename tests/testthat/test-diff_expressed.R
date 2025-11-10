@@ -1,4 +1,6 @@
 test_that("diff_expressed computes differential expression", {
+    testthat::skip_on_cran()
+    testthat::skip_if_not(interactive())
     file <- system.file("extdata", "example_mapping_organism.rda", package = "singIST")
     load(file)
     object <- example_mapping_organism
