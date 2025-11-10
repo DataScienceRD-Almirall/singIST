@@ -151,6 +151,7 @@ diff_expressed <- function(object, condition_1 = c(), condition_2 = c(),
 #' A list with the gene sets per cell type with the one-to-one orthology
 #' @export
 #' @examples
+#' \donttest{
 #' # Case without stating the gene annotation of the mapping.organisms object
 #' # note this will take longer to execute
 #' file <- system.file("extdata", "example_mapping_organism.rda",
@@ -165,7 +166,7 @@ diff_expressed <- function(object, condition_1 = c(), condition_2 = c(),
 #' annotation_to_species = NULL)
 #' # Case assuming the gene annotation of the mapping.organism object is
 #' # by default "external_gene_name" this is faster
-#' orthology_mapping(data_organism, data_model, "hsapiens")
+#' orthology_mapping(data_organism, data_model, "hsapiens")}
 orthology_mapping <- function(object, model_object, from_species,
                                 to_species = "mmusculus",
                                 annotation_to_species = "external_gene_name"){

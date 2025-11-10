@@ -38,6 +38,7 @@ object \link{mapping.organism-class} to the reference (human) organism
 of the \link{superpathway.fit.model-class} object.
 }
 \examples{
+\donttest{
 # Case without stating the gene annotation of the mapping.organisms object
 # note this will take longer to execute
 file <- system.file("extdata", "example_mapping_organism.rda",
@@ -52,5 +53,5 @@ orthology_mapping(data_organism, data_model, "hsapiens",
 annotation_to_species = NULL)
 # Case assuming the gene annotation of the mapping.organism object is
 # by default "external_gene_name" this is faster
-orthology_mapping(data_organism, data_model, "hsapiens")
+orthology_mapping(data_organism, data_model, "hsapiens")}
 }

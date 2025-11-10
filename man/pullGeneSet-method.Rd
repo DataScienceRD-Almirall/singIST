@@ -36,6 +36,7 @@ ENTREZ ID and Human Gene Symbol (SYM) ID,cif any other gse is desired one
 should load it with msigdb::getMsigdb(...).#'
 }
 \examples{
+\donttest{
 # Example for pathway class
 my_pathway <- new("pathway",
              standard_name = "KEGG_CYTOKINE_CYTOKINE_RECEPTOR_INTERACTION",
@@ -48,14 +49,16 @@ pullGeneSet(my_pathway)
 my_superpathway <- new("superpathway.gene.sets", pathway_info = my_pathway,
                        celltypes = c("T-cell", "Dendritic Cell")
                       )
-pullGeneSet(my_superpathway)
+pullGeneSet(my_superpathway)}
+\donttest{
 # Example for pathway class
 my_pathway <- new("pathway",
              standard_name = "KEGG_CYTOKINE_CYTOKINE_RECEPTOR_INTERACTION",
              dbsource = "KEGG",
              collection = "c2",
              subcollection = "CP")
-pullGeneSet(my_pathway)
+pullGeneSet(my_pathway)}
+\donttest{
 # Example for superpathway.gene.sets class
 my_pathway <- new("pathway",
 standard_name = "KEGG_CYTOKINE_CYTOKINE_RECEPTOR_INTERACTION",
@@ -65,5 +68,5 @@ subcollection = "CP")
 my_superpathway <- new("superpathway.gene.sets", pathway_info = my_pathway,
                        celltypes = c("T-cell", "Dendritic Cell")
                        )
-pullGeneSet(my_superpathway)
+pullGeneSet(my_superpathway)}
 }

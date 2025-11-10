@@ -63,6 +63,7 @@ methods::setGeneric("pseudobulk_sce",
 #' @importFrom GSEABase geneIds
 #'
 #' @examples
+#' \donttest{
 #' # Example for pathway class
 #' my_pathway <- new("pathway",
 #'              standard_name = "KEGG_CYTOKINE_CYTOKINE_RECEPTOR_INTERACTION",
@@ -75,7 +76,7 @@ methods::setGeneric("pseudobulk_sce",
 #' my_superpathway <- new("superpathway.gene.sets", pathway_info = my_pathway,
 #'                        celltypes = c("T-cell", "Dendritic Cell")
 #'                       )
-#' pullGeneSet(my_superpathway)
+#' pullGeneSet(my_superpathway)}
 methods::setGeneric("pullGeneSet",
                     function(object, gse = NULL, ...)
                         standardGeneric("pullGeneSet"))
@@ -86,13 +87,14 @@ methods::setGeneric("pullGeneSet",
 #' @importFrom GSEABase geneIds
 #'
 #' @examples
+#' \donttest{
 #' # Example for pathway class
 #' my_pathway <- new("pathway",
 #'              standard_name = "KEGG_CYTOKINE_CYTOKINE_RECEPTOR_INTERACTION",
 #'              dbsource = "KEGG",
 #'              collection = "c2",
 #'              subcollection = "CP")
-#' pullGeneSet(my_pathway)
+#' pullGeneSet(my_pathway)}
 methods::setMethod("pullGeneSet",
                     "pathway",
                     function(object, gse = NULL, ...){
@@ -139,6 +141,7 @@ methods::setMethod("pullGeneSet",
 #' @importFrom GSEABase geneIds
 #'
 #' @examples
+#' \donttest{
 #' # Example for superpathway.gene.sets class
 #' my_pathway <- new("pathway",
 #' standard_name = "KEGG_CYTOKINE_CYTOKINE_RECEPTOR_INTERACTION",
@@ -148,7 +151,7 @@ methods::setMethod("pullGeneSet",
 #' my_superpathway <- new("superpathway.gene.sets", pathway_info = my_pathway,
 #'                        celltypes = c("T-cell", "Dendritic Cell")
 #'                        )
-#' pullGeneSet(my_superpathway)
+#' pullGeneSet(my_superpathway)}
 methods::setMethod("pullGeneSet",
                     "superpathway.gene.sets",
                     function(object, gse = NULL, ...){
@@ -218,6 +221,7 @@ methods::setGeneric("setGeneSetsCelltype<-",
 #' @importFrom GSEABase geneIds
 #'
 #' @examples
+#' \donttest{
 #' my_pathway <- new("pathway",
 #'                standard_name = "KEGG_CYTOKINE_CYTOKINE_RECEPTOR_INTERACTION",
 #'                 dbsource = "KEGG",
@@ -227,7 +231,7 @@ methods::setGeneric("setGeneSetsCelltype<-",
 #' my_superpathway <- new("superpathway.gene.sets", pathway_info = my_pathway,
 #'                        celltypes = c("T-cell", "Dendritic Cell")
 #'                        )
-#' setGeneSetsCelltype(my_superpathway) <- list(c("IL2"), c("IL4"))
+#' setGeneSetsCelltype(my_superpathway) <- list(c("IL2"), c("IL4"))}
 methods::setMethod("setGeneSetsCelltype<-",
                     "superpathway.gene.sets",
                     function(x, value){
@@ -263,6 +267,7 @@ methods::setGeneric("setRepeatGeneSets",
 #' @rdname setRepeatGeneSets-method
 #' @exportMethod setRepeatGeneSets
 #' @examples
+#' \donttest{
 #' my_pathway <- new("pathway",
 #'              standard_name = "KEGG_CYTOKINE_CYTOKINE_RECEPTOR_INTERACTION",
 #'              dbsource = "KEGG",
@@ -272,7 +277,7 @@ methods::setGeneric("setRepeatGeneSets",
 #'                        celltypes = c("T-cell", "Dendritic Cell")
 #'                        )
 #' my_superpathway <- setRepeatGeneSets(my_superpathway)
-#' print(my_superpathway)
+#' print(my_superpathway)}
 methods::setMethod("setRepeatGeneSets",
                     "superpathway.gene.sets",
                     function(object, ...){
