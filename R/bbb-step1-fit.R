@@ -249,6 +249,23 @@ asmbPLSDA.cv.loo <- function(X.matrix, Y.matrix, PLS_term = 1, X.dim,
 #'   \item{optimal_nPLS}{Integer: selected number of PLS components}
 #'   \item{splits}{List of length (k*ncv) of train/validation splits}
 #' @export
+#' @examples
+#' # example code
+#' file <- system.file("extdata", "example_superpathway_input.rda",
+#' package = "singIST")
+#' load(file)
+#' data <- example_superpathway_input
+#' matrices <- matrixToBlock(data)
+#' X.matrix <- matrices$block_predictor
+#' Y.matrix <- matrices$matrix_response
+#' X.dim <- matrices$block_dim
+#' quantile.comb.table <- slot(slot(data, "hyperparameters_info"), 
+#' "quantile_comb_table")
+#' outcome.type <- slot(slot(data, "hyperparameters_info"), "outcome_type")
+#' \donttest{asmbPLSDA.cv.kcv(X.matrix, Y.matrix, PLS_term = 1, X.dim,quantile.comb.table,
+#' Method = NULL, measure = "B_accuracy", parallel = TRUE,
+#' outcome.type = outcome.type, expected.measure.increase = 0.005,
+#' center = TRUE, scale = TRUE,maxiter = 100)}
 asmbPLSDA.cv.kcv <- function(
         X.matrix, Y.matrix, PLS_term = 2, X.dim,
         quantile.comb.table, k = 4, ncv = 10,

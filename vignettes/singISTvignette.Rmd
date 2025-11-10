@@ -225,7 +225,7 @@ oxa_org <- new("mapping.organism", organism = "Mus musculus",
                     "Keratinocytes" = c("Keratinocytes"),
                     "Langerhan Cells" = c("LC"), 
                     "Melanocytes" = c(),
-                    "T-cell" = c("DETC", "dγdT", "T")),
+                    "T-cell" = c("DETC", "T")),
                 counts = oxazolone
 )
 ```
