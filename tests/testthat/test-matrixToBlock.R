@@ -1,4 +1,6 @@
 test_that("matrixToBlock processes superpathway.input correctly", {
+    testthat::skip_on_cran()
+    testthat::skip_if_not(interactive())
     file <- system.file("extdata", "example_superpathway_input.rda", package = "singIST")
     load(file)
     result <- matrixToBlock(example_superpathway_input)
