@@ -10,7 +10,7 @@ test_that("Check consistency of mapping.organism class slots", {
     # Rename "group" variable to "class"
     colnames(slot(counts, "meta.data"))[6] <- "class"
     # Example existing mapping for T-cell but no mapping for Dendritic Cell
-    celltype_mapping <- list("T-cell" = c("dγdT", "T"),
+    celltype_mapping <- list("T-cell" = c("DETC", "T"),
     "Dendritic Cell" = c())
     # Rename "RNA_snn.res.1" variable to "celltype_cluster"
     colnames(slot(counts, "meta.data"))[7] <- "celltype_cluster"
