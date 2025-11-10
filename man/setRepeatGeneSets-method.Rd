@@ -25,7 +25,6 @@ gene_sets_celltype slot with the repeated gene sets.
 useful when all cell types have the same gene set.
 }
 \examples{
-\donttest{
 my_pathway <- new("pathway",
              standard_name = "KEGG_CYTOKINE_CYTOKINE_RECEPTOR_INTERACTION",
              dbsource = "KEGG",
@@ -34,6 +33,7 @@ my_pathway <- new("pathway",
 my_superpathway <- new("superpathway.gene.sets", pathway_info = my_pathway,
                        celltypes = c("T-cell", "Dendritic Cell")
                        )
+\donttest{
 my_superpathway <- setRepeatGeneSets(my_superpathway)
 print(my_superpathway)}
 }

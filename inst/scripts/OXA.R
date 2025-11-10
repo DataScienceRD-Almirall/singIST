@@ -10,7 +10,7 @@ raw_OXA_IMQ <- Seurat::UpdateSeuratObject(raw_OXA_IMQ)
 # Filter for Oxazolone model and cell types to model
 OXA <- raw_OXA_IMQ[, raw_OXA_IMQ$stim %in% c("OXA", "ETOH")]
 OXA <- OXA[, OXA$identities %in% c("cDC2", "cDC1", "migratory DCs",
-                                    "Keratinocytes", "LC", "DETC", "dγdT", "T")]
+                                    "Keratinocytes", "LC", "DETC", "T")]
 # Subsample cells and genes of the object to reduce memory 
 # Sample 20 cells per cell type + condition combination
 meta <- OXA@meta.data  %>% mutate(cell_id = rownames(.))
