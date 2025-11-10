@@ -13,10 +13,11 @@ Mapping organism input
 \item{\code{organism}}{A character with the scientific Latin name of the organism}
 
 \item{\code{target_class}}{A character indicating the name of the target class for
-this organism}
+this organism. Characters "_" are not allowed, as these are restricted to
+Seurat.}
 
 \item{\code{base_class}}{A character indicating the name of the base class for this
-organism}
+organism. Characters "_" are not allowed, as these are restricted to Seurat.}
 
 \item{\code{celltype_mapping}}{A list of vectors with the cell type correspondence
 between the mapping organism and the reference organism for which asmbPLSDA

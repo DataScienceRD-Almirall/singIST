@@ -15,7 +15,7 @@ MsigDB.}
 
 \item{\code{dbsource}}{A character with the pathway database to grab information
 from. Currently available options are: KEGG, PID, REACTOME, BIOCARTA,
-WP (WikiPathways).}
+WIKIPATHWAYS.}
 
 \item{\code{collection}}{A character with MsigDB collection to grab information from
 (currently holds for c2 and m2).}
