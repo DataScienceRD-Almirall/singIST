@@ -1,6 +1,6 @@
 test_that("CIP_GIP computes correctly", {
     testthat::skip_on_cran()
-    testthat::skip_if_not(interactive())
+    testthat::skip_on_bioc()
     file <- system.file("extdata", "example_superpathway_fit_model.rda", package = "singIST")
     load(file)
     result <- CIP_GIP(example_superpathway_fit_model)

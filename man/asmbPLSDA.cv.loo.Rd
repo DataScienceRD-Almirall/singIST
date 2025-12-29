@@ -26,16 +26,16 @@ asmbPLSDA.cv.loo(
 \item{Y.matrix}{Response matrix from \code{matrixToBlock}}
 
 \item{PLS_term}{An integer with the number of PLS components to use passed
-from \link{hyperparameters-class} obect}
+from hyperparameter list}
 
 \item{X.dim}{A list with the observed gene set size for each cell type
 from \code{matrixToBlock}}
 
 \item{quantile.comb.table}{A matrix with the quantile comb table passed
-from \link{hyperparameters-class} object}
+from hyperparameters list object}
 
 \item{outcome.type}{A character indicating \code{binary} or \code{multiclass} passed
-from \link{hyperparameters-class} object}
+from hyperparameters list object}
 
 \item{Method}{A parameter passed from \code{fitOptimal}}
 
@@ -67,9 +67,8 @@ matrices <- matrixToBlock(data)
 X.matrix <- matrices$block_predictor
 Y.matrix <- matrices$matrix_response
 X.dim <- matrices$block_dim
-quantile.comb.table <- slot(slot(data, "hyperparameters_info"),
-"quantile_comb_table")
-outcome.type <- slot(slot(data, "hyperparameters_info"), "outcome_type")
+quantile.comb.table <- data$hyperparameters_info$quantile_comb_table
+outcome.type <- data$hyperparameters_info$outcome_type
 asmbPLSDA.cv.loo(X.matrix, Y.matrix, PLS_term = 1, X.dim,quantile.comb.table,
 Method = NULL, measure = "B_accuracy", parallel = TRUE,
 outcome.type = outcome.type, expected.measure.increase = 0.005,

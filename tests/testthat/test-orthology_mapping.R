@@ -1,6 +1,6 @@
 test_that("orthology_mapping produces correct output", {
     testthat::skip_on_cran()
-    testthat::skip_if_not(interactive())
+    testthat::skip_on_bioc()
     file <- system.file("extdata", "example_mapping_organism.rda", package = "singIST")
     load(file)
     file <- system.file("extdata", "example_superpathway_fit_model.rda", package = "singIST")

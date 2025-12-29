@@ -334,7 +334,7 @@ Default is \code{NULL}.}
 
 \item{Ypermut}{Permuted response matrix.}
 
-\item{object}{A \code{superpathway.input} object containing the data to be used
+\item{object}{A superpathway input list containing the data to be used
 for the cross-validation.}
 
 \item{Nc}{Number of samples to drop at each permutation.}
@@ -379,7 +379,7 @@ should be used.}
 \item{expected_measure_increase}{Expected decrease in measure per additional
 PLS component. Default is 0.005.}
 
-\item{output}{The \code{superpathway.fit.model} object that contains the
+\item{output}{The superpathway fit model list that contains the
 fitted model and validation information.}
 
 \item{optimal_hyperparameters}{The optimal hyperparameters obtained
@@ -405,7 +405,7 @@ indicates the annotation of the gene set provided}
 
 \item{to_species}{A parameter passed from \link{orthology_mapping}}
 
-\item{model_object}{A \link{superpathway.fit.model-class} object}
+\item{model_object}{A superpathway fit model list}
 
 \item{b}{A parameter passed from \link{singIST_treat}. The index of
 current iteration block.}

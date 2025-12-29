@@ -1,6 +1,5 @@
 ## code to prepare `example_superpathway_input` object goes here
-cytokine_pathway <- methods::new("pathway",
-                                    standard_name = output_dataset$Pathway_name,
+cytokine_pathway <- create_pathway(standard_name = "KEGG_CYTOKINE_CYTOKINE_RECEPTOR_INTERACTION",
                                     dbsource = "KEGG",
                                     collection = "c2",
                                     subcollection = "CP")
@@ -45,31 +44,28 @@ gene_set <- c("CCL26", "TNFSF13", "HGF", "CCL3L1", "TNFSF12", "TNFRSF8",
             "IFNL1", "TNFRSF21", "FAS", "IFNL2", "FASLG", "IFNW1", "PPBP",
             "TSLP", "IL4", "IL4R", "IL5", "IL5RA", "IL6"
 )
-cytokine_superpathway <- methods::new("superpathway.gene.sets",
-                                        pathway_info = cytokine_pathway,
-                                        celltypes = c("Dendritic Cells",
+cytokine_superpathway <- create_superpathway(pathway_info = cytokine_pathway,
+                                             celltypes = c("Dendritic Cells",
                                                         "Keratinocytes"),
-                                      gene_sets_celltype = list(gene_set,
-                                                                gene_set))
+                                             gene_sets_celltype = list(gene_set, gene_set))
 # Initialize hyperparameters
 library(RcppAlgos)
 quantile_comb_table <- as.matrix(
     RcppAlgos::permuteGeneral(seq(0.05, 0.95, by = 1),
-                                m = length(cytokine_superpathway@celltypes),
+                                m = length(cytokine_superpathway$celltypes),
                                 TRUE))
-my_hyperparameters <- methods::new("hyperparameters",
-                                   quantile_comb_table = quantile_comb_table,
-                                   outcome_type = "binary",
-                                   number_PLS = as.integer(1),
-                                   folds_CV = as.integer(1),
-                                   repetition_CV = as.integer(1))
+my_hyperparameters <- create_hyperparameters(quantile_comb_table = quantile_comb_table,
+                                             outcome_type = "binary",
+                                             number_PLS = as.integer(1),
+                                             folds_CV = as.integer(1),
+                                             repetition_CV = as.integer(1))
 # Initialize superpathway input object
 pseudobulk <- matrix(rnorm(12*length(gene_set)), nrow = 6*2, ncol = length(gene_set))
 names1 <- expand.grid("Dendritic Cells", c(paste0("Target", 1:3), paste0("Base", 1:3)))
 names2 <- expand.grid("Keratinocytes", c(paste0("Target", 1:3), paste0("Base", 1:3)))
 rownames(pseudobulk) <- c(paste0(names1[,1], "_", names1[,2]), paste0(names2[,1], "_", names2[,2]))
 colnames(pseudobulk) <- gene_set
-cytokine_superpathway_input <- methods::new("superpathway.input",
+cytokine_superpathway_input <- create_superpathway_input(
                                       superpathway_info = cytokine_superpathway,
                                       hyperparameters_info = my_hyperparameters,
                                       pseudobulk_lognorm = pseudobulk,

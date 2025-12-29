@@ -13,9 +13,9 @@ orthology_mapping(
 )
 }
 \arguments{
-\item{object}{A \link{mapping.organism-class} object}
+\item{object}{A mapping organism list}
 
-\item{model_object}{A \link{superpathway.fit.model-class} object}
+\item{model_object}{A superpathway fit model list}
 
 \item{from_species}{A character indicating the reference organism for which
 the parameter \code{model_fit} has information from.}
@@ -25,7 +25,7 @@ parameter \code{object} has information from. By default \code{mmusculus}.}
 
 \item{annotation_to_species}{A character indicating the gene identifier
 annotation used for the \code{to_species}. Note this should match with the gene
-names in \code{slot(object, counts)}. By default \code{external_gene_name}. If \code{NULL}
+names in \code{object$counts}. By default \code{external_gene_name}. If \code{NULL}
 the \code{annotation_to_species} is inferred with \link{detect_gene_type}, note
 this might take time.}
 }
@@ -34,8 +34,8 @@ A list with the gene sets per cell type with the one-to-one orthology
 }
 \description{
 Performs the one-to-one orthology mapping between the mapped disease model
-object \link{mapping.organism-class} to the reference (human) organism
-of the \link{superpathway.fit.model-class} object.
+list to the reference (human) organism of the superpathway fit model
+list.
 }
 \examples{
 \donttest{

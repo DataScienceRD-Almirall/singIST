@@ -3,8 +3,8 @@
 #' Computes scores from the predictor to later derive the superpathway's score,
 #' cell type contribution and gene contributions, for the target class
 #'
-#' @param object A \link{superpathway.fit.model-class} object passed from
-#' \link{derive_contributions}
+#' @param object A superpathway fit model list passed from
+#'  \link{derive_contributions}
 #' @param data Block of predictor matrices to compute scores from
 #' @param sample Current sample from `data` to compute scores
 #'
@@ -21,11 +21,12 @@
 #' package = "singIST")
 #' load(file)
 #' model <- example_superpathway_fit_model
-#' singIST_samples <- biological_link_function(mapped, model)$singIST_samples
+#' \donttest{singIST_samples <- biological_link_function(mapped,
+#' model)$singIST_samples
 #' # Derive the scores for sample 2
-#' derive_scores(model, singIST_samples, 2)
+#' derive_scores(model, singIST_samples, 2)}
 derive_scores <- function(object, data, sample){
-    fit_asmb <- object@model_fit$`asmbPLS-DA`
+    fit_asmb <- object$model_fit$`asmbPLS-DA`
     delta_cbind <- Delta <- gamma <- Gamma <- c()
     Y_fit <- 0
     n.PLS <- ncol(fit_asmb$Y_weight)
@@ -35,11 +36,11 @@ derive_scores <- function(object, data, sample){
     X_col_mean <- fit_asmb$X_col_mean
     X_col_sd <- fit_asmb$X_col_sd
     FC_applied_test <- center_scale(FC_applied_test, fit_asmb)
-    cell_types <- object@superpathway_input@superpathway_info@celltypes
+    cell_types <- object$superpathway_input$superpathway_info$celltypes
     class_position <- stringr::str_replace(
-        colnames(object@model_fit$response_matrix), ".*categories_class", "")
+        colnames(object$model_fit$response_matrix), ".*categories_class", "")
     target_class_position <- which(
-        class_position == object@superpathway_input@target_class)
+        class_position == object$superpathway_input$target_class)
     for(i in seq(1, n.PLS)){
         for(j in seq(1, length(X.dim))){
             indices <- get_indices(j, X.dim)
@@ -81,8 +82,7 @@ derive_scores <- function(object, data, sample){
 #' Computes the superpathway score, its cell type contribution and gene
 #' contribution for a block of predictor matrices for its later use to compute
 #' recapitulations
-#' @param model_object A \link{superpathway.fit.model-class} object with the
-#' fitted asmbPLSDA
+#' @param model_object A superpathway fit model list with the fitted asmbPLSDA
 #' @param data A matrix with the block of predictor matrices to compute
 #' score and contributions from
 #' @import checkmate
@@ -99,12 +99,13 @@ derive_scores <- function(object, data, sample){
 #' package = "singIST")
 #' load(file)
 #' model <- example_superpathway_fit_model
-#' singIST_samples <- biological_link_function(mapped, model)$singIST_samples
+#' \donttest{singIST_samples <- biological_link_function(mapped,
+#' model)$singIST_samples
 #' derive_contributions(model, singIST_samples)
+#' }
 derive_contributions <- function(model_object, data){
-    checkmate::assert_class(model_object, "superpathway.fit.model")
     superpathway_score <- celltype_contribution <- gene_contribution <- c()
-    fit_asmb <- model_object@model_fit$`asmbPLS-DA`
+    fit_asmb <- model_object$model_fit$`asmbPLS-DA`
     # Derive scores for each sample under analysis
     for(i in seq(1, nrow(data))){
         output <- derive_scores(model_object, data, i)

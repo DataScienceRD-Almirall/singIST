@@ -144,7 +144,7 @@ cv_index_binary_R <- function(y, K) {
 #' @importFrom S4Vectors DataFrame
 #' @noRd
 pseudobulk_log2FC <- function(object, list, assay = "RNA", target, base){
-    if(is(object,"Seurat")){
+    if(inherits(object,"Seurat")){
         pb <- Seurat::AggregateExpression(
             object = object,
             assays = assay,
@@ -952,7 +952,7 @@ compute_permutation_stats <- function(res, Y.matrix, Ypermut, j, q, nr) {
 #'
 #' @description Selects sample indices for training and validation.
 #'
-#' @param object The fitted model object.
+#' @param object The superpathway fit model list.
 #' @param nr Number of samples.
 #' @param Nc Number of samples to drop at each permutation.
 #' @name helpers
@@ -961,8 +961,8 @@ compute_permutation_stats <- function(res, Y.matrix, Ypermut, j, q, nr) {
 #' @export
 select_samples <- function(object, nr, Nc) {
     if (Nc == 1) return(sample(nr, Nc))
-    table_counts <- table(object@superpathway_input@sample_class)/nr
-    prob <- as.vector(table_counts[object@superpathway_input@sample_class])
+    table_counts <- table(object$superpathway_input$sample_class)/nr
+    prob <- as.vector(table_counts[object$superpathway_input$sample_class])
     s <- sample(nr, Nc, prob = prob)
     return(s)
 }
@@ -971,7 +971,7 @@ select_samples <- function(object, nr, Nc) {
 #'
 #' @description Fits the asmbPLS-DA model using permuted data.
 #'
-#' @param object The fitted model object.
+#' @param object The superpathway fit model list.
 #' @param X_train Training predictor matrix.
 #' @param Y_train Training response matrix.
 #' @param maxiter Maximum number of iterations.
@@ -982,10 +982,10 @@ select_samples <- function(object, nr, Nc) {
 #' @export
 fit_permuted_model <- function(object, X_train, Y_train, maxiter) {
     model <- asmbPLS::asmbPLSDA.fit(
-        X_train, Y_train, object@hyperparameters_fit@number_PLS,
-        lengths(object@model_fit$observed_gene_sets),
-        object@hyperparameters_fit@quantile_comb_table, center = TRUE,
-        scale = TRUE, object@hyperparameters_fit@outcome_type, maxiter
+        X_train, Y_train, object$hyperparameters_fit$number_PLS,
+        lengths(object$model_fit$observed_gene_sets),
+        object$hyperparameters_fit$quantile_comb_table, center = TRUE,
+        scale = TRUE, object$hyperparameters_fit$outcome_type, maxiter
     )
     return(model)
 }
@@ -1001,7 +1001,7 @@ fit_permuted_model <- function(object, X_train, Y_train, maxiter) {
 #' @param measure Selected measure to compute performance
 #' @param j Current permutation index
 #' @param nr Number of samples
-#' @param object A \link{superpathway.fit.model-class} object
+#' @param object A superpathway fit model list
 #' @param Method Method to compute predictions
 #' @name helpers
 #' @rdname helpers
@@ -1012,13 +1012,13 @@ evaluate_performance <- function(res, Modelpermut, X_train, X_val,
                                 Y.matrix, s, measure, j, nr, Method, object) {
     Yperm_pred <- numeric(nr)
     Yperm_pred[s] <- asmbPLS::asmbPLSDA.predict(
-        Modelpermut, X_val, object@hyperparameters_fit@number_PLS,
+        Modelpermut, X_val, object$hyperparameters_fit$number_PLS,
         Method)$Y_pred
     Yperm_pred[-s] <- asmbPLS::asmbPLSDA.predict(
-        Modelpermut, X_train, object@hyperparameters_fit@number_PLS,
+        Modelpermut, X_train, object$hyperparameters_fit$number_PLS,
         Method)$Y_pred
     measures <- Results_comparison_measure(
-        Yperm_pred, Y.matrix, object@hyperparameters_fit@outcome_type)
+        Yperm_pred, Y.matrix, object$hyperparameters_fit$outcome_type)
     res$prct.Ychange.values[j, ncol(res$prct.Ychange.values)] <-
         measures[get_measure_index(measure)]
     return(res)
@@ -1075,7 +1075,7 @@ compute_IC95 <- function(m) {
 #' @title Jackknife Resampling for CIP/GIP Calculation
 #' @description Perform the jackknife resampling procedure for CIP/GIP
 #' calculations.
-#' @param object Model object.
+#' @param object Superpathway fit model list.
 #' @param X.matrix Predictor matrix.
 #' @param Y.matrix Response matrix.
 #' @param K Number of samples.
@@ -1095,11 +1095,11 @@ jackknife_CIP_GIP <- function(object, X.matrix, Y.matrix, K, maxiter, X.dim) {
         # Fit model
         asmbPLSDA_fit_results <- asmbPLS::asmbPLSDA.fit(
             X.matrix = E_matrix_training, Y.matrix = F_matrix_training,
-            PLS.comp = object@hyperparameters_fit@number_PLS, X.dim = X.dim,
-            quantile.comb = object@hyperparameters_fit@quantile_comb_table,
-            outcome.type = object@hyperparameters_fit@outcome_type,
+            PLS.comp = object$hyperparameters_fit$number_PLS, X.dim = X.dim,
+            quantile.comb = object$hyperparameters_fit$quantile_comb_table,
+            outcome.type = object$hyperparameters_fit$outcome_type,
             center = TRUE, scale = TRUE, maxiter = maxiter)
-        object@model_fit$`asmbPLS-DA` <- asmbPLSDA_fit_results
+        object$model_fit$`asmbPLS-DA` <- asmbPLSDA_fit_results
         aux <- CIP_GIP(object)
         # Store results
         if (j == 1) {
@@ -1117,7 +1117,7 @@ jackknife_CIP_GIP <- function(object, X.matrix, Y.matrix, K, maxiter, X.dim) {
 
 #' @title Subsampling Resampling for CIP/GIP Calculation
 #' @description Perform the subsampling procedure for CIP/GIP calculations.
-#' @param object Model object.
+#' @param object superpathway fit model list.
 #' @param X.matrix Predictor matrix.
 #' @param Y.matrix Response matrix.
 #' @param K Number of samples.
@@ -1132,15 +1132,15 @@ jackknife_CIP_GIP <- function(object, X.matrix, Y.matrix, K, maxiter, X.dim) {
 #' @returns A list with the observed CIP and GIP distributions.
 subsampling_CIP_GIP <- function(object, X.matrix, Y.matrix, K, M, nsubsampling,
                                 maxiter, X.dim) {
-    table_counts <- table(object@superpathway_input@sample_class)/K
-    prop <- as.vector(table_counts[object@superpathway_input@sample_class])
+    table_counts <- table(object$superpathway_input$sample_class)/K
+    prop <- as.vector(table_counts[object$superpathway_input$sample_class])
     CIP_GIP_variability <- list()
     for (j in seq_len(nsubsampling)) {
         Nc <- sample(x = min(floor(K/M), 2 * M):K, size = 1)
         # Ensure at least 2 samples per class
         class_indices <- split(
-            seq_along(object@superpathway_input@sample_class),
-            object@superpathway_input@sample_class)
+            seq_along(object$superpathway_input$sample_class),
+            object$superpathway_input$sample_class)
         min_samples <- unlist(lapply(class_indices,
                                      function(idx) sample(idx, 2)))
         # Determine remaining samples
@@ -1158,9 +1158,9 @@ subsampling_CIP_GIP <- function(object, X.matrix, Y.matrix, K, M, nsubsampling,
         F_matrix_training <- Y.matrix[training_index, , drop = FALSE]
         asmbPLSDA_fit_results <- tryCatch({asmbPLS::asmbPLSDA.fit(
             X.matrix = E_matrix_training, Y.matrix = F_matrix_training,
-            PLS.comp = object@hyperparameters_fit@number_PLS, X.dim = X.dim,
-            quantile.comb = object@hyperparameters_fit@quantile_comb_table,
-            outcome.type = object@hyperparameters_fit@outcome_type,
+            PLS.comp = object$hyperparameters_fit$number_PLS, X.dim = X.dim,
+            quantile.comb = object$hyperparameters_fit$quantile_comb_table,
+            outcome.type = object$hyperparameters_fit$outcome_type,
             center = TRUE, scale = TRUE, maxiter = maxiter)
         }, error = function(e){
             warning("Skipping subsample", j, "due to fit error: ",
@@ -1168,7 +1168,7 @@ subsampling_CIP_GIP <- function(object, X.matrix, Y.matrix, K, M, nsubsampling,
             NULL
         })
         if(is.null(asmbPLSDA_fit_results)) next
-        object@model_fit$`asmbPLS-DA` <- asmbPLSDA_fit_results
+        object$model_fit$`asmbPLS-DA` <- asmbPLSDA_fit_results
         aux <- CIP_GIP(object)
         if (j == 1) {
             CIP_GIP_variability <- aux
@@ -1186,7 +1186,7 @@ subsampling_CIP_GIP <- function(object, X.matrix, Y.matrix, K, M, nsubsampling,
 
 #' @title Generate Null Distributions by Permutation
 #' @description Generate null distributions of CIP and GIP using permutations.
-#' @param object Model object.
+#' @param object Superpathway fit model list.
 #' @param X.matrix Predictor matrix.
 #' @param Y.matrix Response matrix.
 #' @param npermut Number of permutations.
@@ -1206,11 +1206,11 @@ generate_null_distributions <- function(object, X.matrix, Y.matrix,
         # Fit model with permuted data
         Modelpermut <- asmbPLS::asmbPLSDA.fit(
             X.matrix = X_perm_aux, Y.matrix = Y.matrix,
-            PLS.comp = object@hyperparameters_fit@number_PLS, X.dim = X.dim,
-            quantile.comb = object@hyperparameters_fit@quantile_comb_table,
-            outcome.type = object@hyperparameters_fit@outcome_type,
+            PLS.comp = object$hyperparameters_fit$number_PLS, X.dim = X.dim,
+            quantile.comb = object$hyperparameters_fit$quantile_comb_table,
+            outcome.type = object$hyperparameters_fit$outcome_type,
             center = TRUE, scale = TRUE, maxiter = maxiter)
-        object@model_fit$`asmbPLS-DA` <- Modelpermut
+        object$model_fit$`asmbPLS-DA` <- Modelpermut
         aux <- CIP_GIP(object)
         # Store null results
         if (j == 1) {
@@ -1282,7 +1282,7 @@ calculate_pvalues <- function(variability, null_dist, test_func, ...) {
 #' (LOOCV) or K-Fold Cross Validation (KCV) on the given dataset and returns
 #' the optimal hyperparameters based on the specified accuracy measure.
 #'
-#' @param object A `superpathway.input` object containing the data to be used
+#' @param object A superpathway input list containing the data to be used
 #' for the cross-validation.
 #' @param model_block_matrices A list containing the model block matrices
 #' (predictor and response matrices).
@@ -1311,11 +1311,11 @@ perform_cv <- function(object, model_block_matrices, nFC, measure, parallel,
         return(asmbPLSDA.cv.loo(
             X.matrix = model_block_matrices$block_predictor,
             Y.matrix = model_block_matrices$matrix_response,
-            PLS_term = object@hyperparameters_info@number_PLS,
+            PLS_term = object$hyperparameters_info$number_PLS,
             X.dim = model_block_matrices$block_dim,
             quantile.comb.table =
-                object@hyperparameters_info@quantile_comb_table,
-            outcome.type = object@hyperparameters_info@outcome_type,
+                object$hyperparameters_info$quantile_comb_table,
+            outcome.type = object$hyperparameters_info$outcome_type,
             center = TRUE,
             scale = TRUE,
             measure = measure,
@@ -1327,15 +1327,15 @@ perform_cv <- function(object, model_block_matrices, nFC, measure, parallel,
         return(asmbPLSDA.cv.kcv(
             X.matrix = model_block_matrices$block_predictor,
             Y.matrix = model_block_matrices$matrix_response,
-            PLS_term = object@hyperparameters_info@number_PLS,
+            PLS_term = object$hyperparameters_info$number_PLS,
             X.dim = model_block_matrices$block_dim,
             quantile.comb.table =
-                object@hyperparameters_info@quantile_comb_table,
-            outcome.type = object@hyperparameters_info@outcome_type,
+                object$hyperparameters_info$quantile_comb_table,
+            outcome.type = object$hyperparameters_info$outcome_type,
             center = TRUE,
             scale = TRUE,
             k = nFC,
-            ncv = object@hyperparameters_info@repetition_CV,
+            ncv = object$hyperparameters_info$repetition_CV,
             measure = measure,
             expected.measure.increase = expected_measure_increase,
             maxiter = maxiter))
@@ -1348,7 +1348,7 @@ perform_cv <- function(object, model_block_matrices, nFC, measure, parallel,
 #' This helper function computes various validation metrics, including global
 #' significance, CIP/GIP significance, and adjusted p-values for the fitted
 #' model based on cross-validation results.
-#' @param output The `superpathway.fit.model` object that contains the
+#' @param output The superpathway fit model list that contains the
 #' fitted model and validation information.
 #' @param optimal_hyperparameters The optimal hyperparameters obtained
 #' from cross-validation.
@@ -1379,7 +1379,7 @@ compute_validation_metrics <- function(
         output, optimal_hyperparameters, model_block_matrices, npermut,
         nbObsPermut, maxiter, global_significance_full,
         CIP.GIP_significance_full, type, nsubsampling, measure, Method) {
-    Nc <- output@hyperparameters_fit@folds_CV
+    Nc <- output$hyperparameters_fit$folds_CV
     CV_error <- optimal_hyperparameters$quantile_table_CV[
         optimal_hyperparameters$optimal_nPLS,
         length(model_block_matrices$block_dim) + get_measure_index(measure)]
@@ -1389,36 +1389,36 @@ compute_validation_metrics <- function(
     }
     output_global_significance <- permut_asmbplsda_kcv(output, npermut= npermut,
         splits = splits, nbObsPermut = nbObsPermut, Nc = Nc,CV_error = CV_error,
-        measure =measure, Method = Method, maxiter = maxiter)
+        measure = measure, Method = Method, maxiter = maxiter)
     if (global_significance_full) {
-        output@model_validation$`global_significance` <-
+        output$model_validation$`global_significance` <-
             output_global_significance
     } else {
-        output@model_validation$`pvalue_global_significance` <-
+        output$model_validation$`pvalue_global_significance` <-
             output_global_significance$pvalue
     }
     output_CIP_GIP_significance <- CIP_GIP_test(
         output, npermut = npermut, maxiter = maxiter, type = type,
         nsubsampling = nsubsampling)
     if (CIP.GIP_significance_full) {
-        output@model_validation$`CIP_significance` <-
+        output$model_validation$`CIP_significance` <-
             output_CIP_GIP_significance
     } else {
-        output@model_validation$`pvalue_CIP_significance` <-
+        output$model_validation$`pvalue_CIP_significance` <-
             output_CIP_GIP_significance$`CIP_pvalue`
-        output@model_validation$`pvalue_GIP_significance` <-
+        output$model_validation$`pvalue_GIP_significance` <-
             output_CIP_GIP_significance$`GIP_pvalue`
     }
     CIP_GIP_adj_pval <- lapply(
-        seq_along(output@model_fit$observed_gene_sets),function(j) {
+        seq_along(output$model_fit$observed_gene_sets),function(j) {
         lambdas <- optimal_hyperparameters$quantile_table_CV[
             seq_len(optimal_hyperparameters$optimal_nPLS),
-            seq_len(length(output@model_fit$observed_gene_sets)), drop = FALSE]
+            seq_len(length(output$model_fit$observed_gene_sets)), drop = FALSE]
         prod_lambdas <- apply(lambdas, 2, function(x) prod(x, na.rm = TRUE))
         m_0 <- ifelse(floor(
-            prod_lambdas * lengths(output@model_fit$observed_gene_sets)) == 0,
+            prod_lambdas * lengths(output$model_fit$observed_gene_sets)) == 0,
             1, floor(prod_lambdas *
-                        lengths(output@model_fit$observed_gene_sets)))
+                        lengths(output$model_fit$observed_gene_sets)))
         pval <- output_CIP_GIP_significance$`GIP_pvalue`[[j]][, 1]
         adj_pval <- ifelse(pval * m_0[j] < 1, pval*m_0[j], 1) 
         output_adjpval <- data.frame("adj_p_val" = adj_pval)
@@ -1426,7 +1426,7 @@ compute_validation_metrics <- function(
             output_CIP_GIP_significance$`GIP_pvalue`[[j]])
         return(output_adjpval)
         })
-    output@model_validation$`adjpvalue_GIP_significance` <- CIP_GIP_adj_pval
+    output$model_validation$`adjpvalue_GIP_significance` <- CIP_GIP_adj_pval
     return(output)
 }
 
@@ -1545,7 +1545,7 @@ retrieve_one2one_orthologs <- function(annotation, gene_set, mart,
 #' Applies the biological link function conditions onto a predictor block
 #' matrix. The resulting gene expression of the predictor block are the
 #' cases defined in the biological link function.
-#' @param model_object A \link{superpathway.fit.model-class} object
+#' @param model_object A superpathway fit model list
 #' @param b A parameter passed from \link{singIST_treat}. The index of
 #' current iteration block.
 #' @param samples A parameter passed from \link{singIST_treat}. The samples
@@ -1563,7 +1563,7 @@ FCtoExpression <- function(model_object, b, samples, predictor_block, FC){
     indices <- which(colnames(predictor_block) %in% rownames(FC))
     indices_FC <- match(colnames(predictor_block[, indices, drop = FALSE]),
                         rownames(FC))
-    mu <- model_object@model_fit$`asmbPLS-DA`$X_col_mean[,indices, drop = FALSE]
+    mu <- model_object$model_fit$`asmbPLS-DA`$X_col_mean[,indices, drop = FALSE]
     r <- t(FC[indices_FC, "avg_log2FC", drop = FALSE])
     mu_per_r <-  1*r# mu*r
     min_col <- apply(predictor_block[samples, indices, drop = FALSE], 2, min)

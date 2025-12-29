@@ -7,18 +7,17 @@
 celltype_mapping(object)
 }
 \arguments{
-\item{object}{A \link{mapping.organism-class} object}
+\item{object}{A mapping organism list}
 }
 \value{
-A \link{mapping.organism-class} object with the \code{slot(object, "counts")}
+A mapping organism list with the \code{object$counts}
 slot updated, for the variable \code{celltype_cluster} with the cell types
-according to the mapping defined in \code{slot(object, "celltype_mapping")}.
+according to the mapping defined in \code{object$celltype_mapping}.
 }
 \description{
-For a given \link{mapping.organism-class} it updates the variable
+For a given mapping organism list it updates the variable
 \code{celltype_cluster} so that each element of it is updated accordingly
-to the mapped cell types as indicated in
-\code{names(slot(object, "celltype_mapping"))}.
+to the mapped cell types as indicated in \code{object$celltype_mapping}.
 }
 \examples{
 file <- system.file("extdata", "example_mapping_organism.rda",
@@ -26,5 +25,5 @@ package = "singIST")
 load(file)
 data <- example_mapping_organism
 new_object <- celltype_mapping(data)
-slot(new_object, "counts")$celltype_cluster
+new_object$counts$celltype_cluster
 }

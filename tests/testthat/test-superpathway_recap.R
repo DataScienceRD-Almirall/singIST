@@ -1,6 +1,6 @@
 test_that("superpathway_recap works as expected", {
     testthat::skip_on_cran()
-    testthat::skip_if_not(interactive())
+    testthat::skip_on_bioc()
     file <- system.file("extdata", "example_superpathway_fit_model.rda", package = "singIST")
     load(file)
     file <- system.file("extdata", "example_mapping_organism.rda", package = "singIST")
@@ -11,7 +11,7 @@ test_that("superpathway_recap works as expected", {
                                                 exact = FALSE)$singIST_samples
     original <- derive_contributions(model, singIST_samples)
     derived <- derive_contributions(model,
-                                    slot(model, "model_fit")$predictor_block)
+                                    model$model_fit$predictor_block)
     result <- superpathway_recap(model, original$superpathway_score,
                                     derived$superpathway_score)
     # Checking if the result is a data frame

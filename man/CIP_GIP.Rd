@@ -8,15 +8,15 @@ Projection (GIP)}
 CIP_GIP(object)
 }
 \arguments{
-\item{object}{A \link{superpathway.fit.model-class} object}
+\item{object}{A superpathway fit model list}
 }
 \value{
 A list with the CIP and GIP metrics for all cell types. The metrics are
 computed for the target class.
 }
 \description{
-Computes CIP and GIP metrics from a \link{superpathway.fit.model-class}
-object for the target class
+Computes CIP and GIP metrics from a superpathway fit model list for the
+target class
 }
 \examples{
 file <- system.file("extdata", "example_superpathway_fit_model.rda",

@@ -1,18 +1,14 @@
 test_that("asmbPLSDA.cv.loo runs correctly", {
     testthat::skip_on_cran()
-    testthat::skip_if_not(interactive())
+    testthat::skip_on_bioc()
     file <- system.file("extdata", "example_superpathway_input.rda", package = "singIST")
     load(file)
     matrices <- matrixToBlock(example_superpathway_input)
     X.matrix <- matrices$block_predictor
     Y.matrix <- matrices$matrix_response
     X.dim <- matrices$block_dim
-    quantile.comb.table <- slot(slot(example_superpathway_input,
-                                "hyperparameters_info"),
-                                "quantile_comb_table")
-    outcome.type <- slot(slot(example_superpathway_input,
-                            "hyperparameters_info"),
-                            "outcome_type")
+    quantile.comb.table <- example_superpathway_input$hyperparameters_info$quantile_comb_table
+    outcome.type <- example_superpathway_input$hyperparameters_info$outcome_type
     result <- asmbPLSDA.cv.loo(X.matrix, Y.matrix, PLS_term = 1, X.dim = X.dim,
                                 quantile.comb.table = quantile.comb.table,
                                 outcome.type = outcome.type, Method = NULL,

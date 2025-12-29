@@ -7,10 +7,10 @@
 singISTrecapitulations(object, model_object, ...)
 }
 \arguments{
-\item{object}{A \link{mapping.organism-class} object for which to calculate
+\item{object}{A mapping organism list for which to calculate
 the recapitulations against the fitted superpathway model}
 
-\item{model_object}{A \link{superpathway.fit.model-class} object used to
+\item{model_object}{A superpathway fit model list used to
 calculate the recapitulations}
 
 \item{...}{Other parameters to pass onto \link{biological_link_function}}
@@ -49,5 +49,5 @@ file <- system.file("extdata", "example_superpathway_fit_model.rda",
 package = "singIST")
 load(file)
 data_model <- example_superpathway_fit_model
-singISTrecapitulations(data_organism, data_model)
+\donttest{singISTrecapitulations(data_organism, data_model)}
 }

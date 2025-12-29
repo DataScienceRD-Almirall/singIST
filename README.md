@@ -34,7 +34,7 @@ The main functions to be used as a user are fitOptimal(), or its wrapper multipl
 # Installation
 
 ``` r
-remotes::install_github("DataScienceRD-Almirall/singIST")
+BiocManager::install("singIST")
 ```
 
 # Vignette

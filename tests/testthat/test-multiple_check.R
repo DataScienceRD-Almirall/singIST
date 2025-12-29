@@ -1,6 +1,6 @@
 test_that("Test multiple_check function", {
     testthat::skip_on_cran()
-    testthat::skip_if_not(interactive())
+    testthat::skip_on_bioc()
     # Test when parameter is NULL
     parameter <- NULL
     objectLength <- 3

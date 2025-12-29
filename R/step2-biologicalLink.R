@@ -1,17 +1,16 @@
 #' @title Cell type mapping
 #' @description
-#' For a given \link{mapping.organism-class} it updates the variable
+#' For a given mapping organism list it updates the variable
 #' `celltype_cluster` so that each element of it is updated accordingly
-#' to the mapped cell types as indicated in 
-#' `names(slot(object, "celltype_mapping"))`.
+#' to the mapped cell types as indicated in `object$celltype_mapping`.
 #'
-#' @param object A \link{mapping.organism-class} object
+#' @param object A mapping organism list
 #'
 #' @import checkmate
 #' @returns
-#' A \link{mapping.organism-class} object with the `slot(object, "counts")`
+#' A mapping organism list with the `object$counts`
 #' slot updated, for the variable `celltype_cluster` with the cell types
-#' according to the mapping defined in `slot(object, "celltype_mapping")`.
+#' according to the mapping defined in `object$celltype_mapping`.
 #' @export
 #' @examples
 #' file <- system.file("extdata", "example_mapping_organism.rda",
@@ -19,25 +18,27 @@
 #' load(file)
 #' data <- example_mapping_organism
 #' new_object <- celltype_mapping(data)
-#' slot(new_object, "counts")$celltype_cluster
+#' new_object$counts$celltype_cluster
 celltype_mapping <- function(object){
-    checkmate::assert_class(object, "mapping.organism")
+    check_mapping_organism(object$organism, object$target_class,
+                           object$base_class, object$celltype_mapping,
+                           object$counts)
     output <- object
     # Avoid spaces as FindMarkers/findMarkers does not identify them
-    names(output@celltype_mapping) <- gsub(" ", "_",
-                                            names(output@celltype_mapping))
+    names(output$celltype_mapping) <- gsub(" ", "_",
+                                            names(output$celltype_mapping))
     # Rename cell types based on cell type mapping
-    output@counts$celltype_cluster <- base::unlist(
-        base::lapply(output@counts$celltype_cluster, function(x){
-            var_name <- names(output@celltype_mapping)[
-                vapply(output@celltype_mapping, function(vals) x %in% vals,
+    output$counts$celltype_cluster <- base::unlist(
+        base::lapply(output$counts$celltype_cluster, function(x){
+            var_name <- names(output$celltype_mapping)[
+                vapply(output$celltype_mapping, function(vals) x %in% vals,
                         FUN.VALUE = logical(1))]
             if(length(var_name) > 0) var_name else NA
         }
         )
     )
     # Remove cell types with NA values as those do not have a mapping
-    output@counts <- output@counts[, !is.na(output@counts$celltype_cluster)]
+    output$counts <- output$counts[, !is.na(output$counts$celltype_cluster)]
     return(output)
 }
 
@@ -54,15 +55,15 @@ celltype_mapping <- function(object){
 #' `SingleCellExperiment::aggregateAcrossCells`. This logFC is consistent with
 #' the human log2FC computation by asmbPLS-DA. 
 #'
-#' @param object A \link{mapping.organism-class} object. If a `Seurat` object
+#' @param object A mapping organism list. If a `Seurat` object
 #' was provided, then `Idents(object)` assigned to variables with the conditions
 #' being tested is expected.
 #' @param condition_1 A vector with the elements of the first factor to perform
 #' the hypothesis test. By default the mapped cell types
-#' `condition_1 = names(slot(object, "celltype_mapping"))`
+#' `condition_1 = names(object$celltype_mapping)`
 #' @param condition_2 A vector with the elements of the second factor to perform
 #' the hypothesis test with. By default the class of the organism
-#' `condition_2 = c(slot(object, "target_class"), slot(object, "base_class"))`
+#' `condition_2 = c(object$target_class), object$base_class)`
 #' @param logfc.treshold Sets the minimum FindMarkers log-fold change (logFC)
 #' cutoff for identifying differentially expressed genes (DEGs). By default
 #' `logfc.treshold = 0.25`.
@@ -85,19 +86,21 @@ celltype_mapping <- function(object){
 #' load(file)
 #' data_organism <- example_mapping_organism
 #' data <- celltype_mapping(data_organism)
-#' slot(data, "counts")$test <- paste0(slot(data, "counts")$celltype_cluster,
-#' "_", slot(data, "counts")$class)
-#' SeuratObject::Idents(slot(data, "counts")) <- "test"
+#' data$counts$test <- paste0(data$counts$celltype_cluster, "_",
+#' data$counts$class)
+#' SeuratObject::Idents(data$counts) <- "test"
 #' diff_expressed(data)
 diff_expressed <- function(object, condition_1 = c(), condition_2 = c(),
                            logfc.treshold = 0.25, assay = "RNA", ...){
-    checkmate::assert_class(object, "mapping.organism")
+    check_mapping_organism(object$organism, object$target_class,
+                           object$base_class, object$celltype_mapping,
+                           object$counts)
     if(is.null(condition_1)){condition_1 <-
-        names(object@celltype_mapping)[lengths(object@celltype_mapping)>0]}
+        names(object$celltype_mapping)[lengths(object$celltype_mapping)>0]}
     if(is.null(condition_2)){condition_2 <-
-        c(object@target_class, object@base_class)}
-    counts <- object@counts
-    if(is(object@counts,"Seurat")){
+        c(object$target_class, object$base_class)}
+    counts <- object$counts
+    if(inherits(object$counts,"Seurat")){
         apply_function <- function(row, data = counts, ...) {
             logFC <- Seurat::FindMarkers(
                 object = data, ident.1 =row[1], ident.2 = row[2], slot = "data",
@@ -115,35 +118,35 @@ diff_expressed <- function(object, condition_1 = c(), condition_2 = c(),
                                       add.summary = TRUE, min.prop = 0.01,
                                       assay.type = "logcounts", ...)
             output <- data.frame(
-                "p_val" = DEG[[object@target_class]]$p.value,
-                "pct.1" = DEG[[object@target_class]]$self.detected,
-                "pct.2" = DEG[[object@target_class]]$other.detected,
-                "p_val_adj" = DEG[[object@target_class]]$FDR)
-            rownames(output) <- rownames(DEG[[object@target_class]])
+                "p_val" = DEG[[object$target_class]]$p.value,
+                "pct.1" = DEG[[object$target_class]]$self.detected,
+                "pct.2" = DEG[[object$target_class]]$other.detected,
+                "p_val_adj" = DEG[[object$target_class]]$FDR)
+            rownames(output) <- rownames(DEG[[object$target_class]])
             output
         })
         names(output) <- condition_1
     }
     output <- pseudobulk_log2FC(counts, output, assay = "RNA",
-                                object@target_class, object@base_class)
+                                object$target_class, object$base_class)
     return(output)
 }
 
 #' @title Orthology mapping
 #' @description
 #' Performs the one-to-one orthology mapping between the mapped disease model
-#' object \link{mapping.organism-class} to the reference (human) organism
-#' of the \link{superpathway.fit.model-class} object.
+#' list to the reference (human) organism of the superpathway fit model
+#' list.
 #'
-#' @param object A \link{mapping.organism-class} object
-#' @param model_object A \link{superpathway.fit.model-class} object
+#' @param object A mapping organism list
+#' @param model_object A superpathway fit model list
 #' @param from_species A character indicating the reference organism for which
 #' the parameter `model_fit` has information from.
 #' @param to_species A character indicating the mapped organism for which the
 #' parameter `object` has information from. By default `mmusculus`.
 #' @param annotation_to_species A character indicating the gene identifier
 #' annotation used for the `to_species`. Note this should match with the gene
-#' names in `slot(object, counts)`. By default `external_gene_name`. If `NULL`
+#' names in `object$counts`. By default `external_gene_name`. If `NULL`
 #' the `annotation_to_species` is inferred with \link{detect_gene_type}, note
 #' this might take time.
 #' @import biomaRt data.table
@@ -170,22 +173,28 @@ diff_expressed <- function(object, condition_1 = c(), condition_2 = c(),
 orthology_mapping <- function(object, model_object, from_species,
                                 to_species = "mmusculus",
                                 annotation_to_species = "external_gene_name"){
+    check_fit_model(model_object$superpathway_input,
+                    model_object$hyperparameters_fit, model_object$model_fit,
+                    model_object$model_validation)
+    check_mapping_organism(object$organism, object$target_class,
+                           object$base_class, object$celltype_mapping,
+                           object$counts)
     # Connect to Ensembl
     mart_from <- biomaRt::useMart(biomart = "ENSEMBL_MART_ENSEMBL",
                                 dataset = paste0(from_species, "_gene_ensembl"))
     mart_to <- biomaRt::useMart(biomart = "ENSEMBL_MART_ENSEMBL",
                                 dataset = paste0(to_species, "_gene_ensembl"))
     if(is.null(annotation_to_species)){
-        genes_mapped <- rownames(object@counts)
+        genes_mapped <- rownames(object$counts)
         annotation_to_species <- detect_gene_type(genes_mapped, mart_to)
     }
-    gene_sets <- unique(unlist(model_object@model_fit$observed_gene_sets))
+    gene_sets <- unique(unlist(model_object$model_fit$observed_gene_sets))
     annotation_ref <- detect_gene_type(gene_sets, mart_from)
     # Retrieve ortholog for each observed gene set in the reference species
     gene_set_orthologs <- lapply(
-        seq_along(model_object@model_fit$observed_gene_sets),
+        seq_along(model_object$model_fit$observed_gene_sets),
         function(i, annotation_from = annotation_ref){
-            gene_set <- model_object@model_fit$observed_gene_sets[[i]]
+            gene_set <- model_object$model_fit$observed_gene_sets[[i]]
             orthologs <- retrieve_one2one_orthologs(
                 annotation = annotation_from, gene_set = gene_set,
                 mart = mart_from, from_species = from_species,
@@ -207,9 +216,9 @@ orthology_mapping <- function(object, model_object, from_species,
 
 #' @title Derive singIST treated samples
 #'
-#' @param object A \link{mapping.organism-class} object passed from
+#' @param object A mapping organism list passed from
 #' \link{biological_link_function}.
-#' @param model_object A \link{superpathway.fit.model-class} passed from
+#' @param model_object A superpathway fit model list passed from
 #' \link{biological_link_function}
 #' @param orthologs A list of `data.table` objects, as returned by
 #' \link{orthology_mapping} with the one-to-one orthologs of each gene set per
@@ -236,22 +245,22 @@ orthology_mapping <- function(object, model_object, from_species,
 #' # Set the identities
 #' # Cell type mapping
 #' data <- celltype_mapping(data_organism)
-#' slot(data, "counts")$test <- paste0(slot(data, "counts")$celltype_cluster,
-#' "_", slot(data, "counts")$class)
-#' SeuratObject::Idents(slot(data, "counts")) <- "test"
+#' data$counts$test <- paste0(data$counts$celltype_cluster, 
+#' "_", data$counts$class)
+#' SeuratObject::Idents(data$counts) <- "test"
 #' logFC <- diff_expressed(data)
-#' singIST_treat(data_organism, data_model, orthologs, logFC)
+#' \donttest{singIST_treat(data_organism, data_model, orthologs, logFC)}
 singIST_treat <- function(object, model_object, orthologs, logFC){
-    samples <- which(model_object@superpathway_input@sample_class ==
-                        model_object@superpathway_input@base_class)
-    predictor_block <- model_object@model_fit$predictor_block
-    cells <- as.vector(which(lengths(object@celltype_mapping) > 0))
-    names(logFC) <- names(object@celltype_mapping)[cells]
+    samples <- which(model_object$superpathway_input$sample_class ==
+                        model_object$superpathway_input$base_class)
+    predictor_block <- model_object$model_fit$predictor_block
+    cells <- as.vector(which(lengths(object$celltype_mapping) > 0))
+    names(logFC) <- names(object$celltype_mapping)[cells]
     FC <- vector("list", length(cells))
     for(b in cells){
         genes <- base::intersect(
-            orthologs[[b]]$output_gene, rownames(object@counts))
-        c <- names(object@celltype_mapping)[b]
+            orthologs[[b]]$output_gene, rownames(object$counts))
+        c <- names(object$celltype_mapping)[b]
         if(length(genes) == 0){
             FC[[c]] <- data.frame()
             next
@@ -291,14 +300,12 @@ singIST_treat <- function(object, model_object, orthologs, logFC){
 
 #' @title Biological link function
 #' @description
-#' Maps the organism information in \link{mapping.organism-class} and
-#' \link{superpathway.fit.model-class} to obtain the "singIST treated samples"
+#' Maps the organism information in mapping organism list and
+#' superpathway fit model list to obtain the "singIST treated samples"
 #' with the simulated human. The biological link function involves the
 #' cell type mapping, orthology mapping and fold change computation.
-#' @param object A \link{mapping.organism-class} class with the disease model
-#' data
-#' @param model_object A \link{superpathway.fit.model-class} with the fitted
-#' model
+#' @param object A mapping organism list with the disease model data
+#' @param model_object A superpathway fit model list with the fitted model
 #' @param object_gene_identifiers Annotation of gene identifiers used in
 #' `object`. By default `external_gene_name`. If `NULL` \link{orthology_mapping}
 #' infers the gene identifiers of `object`, note this may add execution time.
@@ -323,23 +330,39 @@ singIST_treat <- function(object, model_object, orthologs, logFC){
 #' a list with the Fold Changes used; singIST treated samples as returned by
 #' \link{singIST_treat}
 #' @export
+#' @examples
+#' file <- system.file("extdata", "example_mapping_organism.rda",
+#' package = "singIST")
+#' load(file)
+#' data_organism <- example_mapping_organism
+#' file <- system.file("extdata", "example_superpathway_fit_model.rda",
+#' package = "singIST")
+#' load(file)
+#' data_model <- example_superpathway_fit_model
+#' \donttest{biological_link_function(data_organism, data_model)}
 biological_link_function <- function(
         object, model_object, object_gene_identifiers = "external_gene_name",
         model_species = "hsapiens", FC_list = NULL, ...){
+    check_fit_model(model_object$superpathway_input,
+                    model_object$hyperparameters_fit, model_object$model_fit,
+                    model_object$model_validation)
+    check_mapping_organism(object$organism, object$target_class,
+                           object$base_class, object$celltype_mapping,
+                           object$counts)
     # Cell type and orthology mapping
     message("Cell type mapping...")
     object <- celltype_mapping(object)
-    object@counts$test <- paste0(object@counts$celltype_cluster, "_",
-                                    object@counts$class)
-    if(is(object@counts,"Seurat")){SeuratObject::Idents(object@counts)<-"test"}
+    object$counts$test <- paste0(object$counts$celltype_cluster, "_",
+                                    object$counts$class)
+    if(inherits(object$counts,"Seurat")){SeuratObject::Idents(object$counts)<-"test"}
     if(is.null(FC_list)){
         message("Computing log Fold Changes...")
         logFC <- diff_expressed(object, ...)
     }else{
         checkmate::assert_list(
-            FC_list, len = length(names(object@celltype_mapping)))
+            FC_list, len = length(names(object$celltype_mapping)))
         checkmate::assert_true(all(names(FC_list) == 
-                            gsub("_", " ", names(object@celltype_mapping))))
+                            gsub("_", " ", names(object$celltype_mapping))))
         for(i in seq_along(FC_list)){
             checkmate::assert_true(all(colnames(FC_list[[i]]) == c("p_val",
                                     "avg_log2FC","pct.1","pct.2","p_val_adj")))
@@ -348,20 +371,20 @@ biological_link_function <- function(
         logFC <- FC_list
     }
     message("Orthology mapping...")
-    to_species <- paste0(tolower(substr(object@organism,1,1)),
-                            tolower(sub(".* ", "", object@organism)))
+    to_species <- paste0(tolower(substr(object$organism,1,1)),
+                            tolower(sub(".* ", "", object$organism)))
     # Remove "_" from cell type name once diff_expressed is executed
-    names(object@celltype_mapping) <- gsub("_", " ",
-                                            names(object@celltype_mapping))
+    names(object$celltype_mapping) <- gsub("_", " ",
+                                            names(object$celltype_mapping))
     if(to_species != model_species){
         orthologs <- orthology_mapping(
             object, model_object, to_species = to_species,
             annotation_to_species = object_gene_identifiers, 
             from_species = model_species)
     }else{ # Case where no orthology mapping should be applied 
-        orthologs <-lapply(seq_along(model_object@model_fit$observed_gene_sets),
+        orthologs <-lapply(seq_along(model_object$model_fit$observed_gene_sets),
                         function(i){
-                        sets <- model_object@model_fit$observed_gene_sets[[i]]
+                        sets <- model_object$model_fit$observed_gene_sets[[i]]
                         aux <- data.table("input_gene" = sets,
                                             "output_gene" = sets)
                         aux
@@ -371,7 +394,7 @@ biological_link_function <- function(
     message("Deriving singIST treated samples...")
     singIST_samples <- singIST_treat(object, model_object, orthologs, logFC)
     # Set names
-    names(orthologs) <- names(object@celltype_mapping)
+    names(orthologs) <- names(object$celltype_mapping)
     return(list("orthologs" = orthologs,
             "singIST_samples" = singIST_samples$singIST_samples,
             "FC" = singIST_samples$FC))

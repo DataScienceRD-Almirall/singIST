@@ -64,12 +64,12 @@ multiple_check <- function(parameter, objectLength){
 #' @title Multiple Cross validation and fit of asmbPLSDA
 #'
 #' @description
-#' Use \link{fitOptimal} for multiple \link{superpathway.input-class}
+#' Use \link{fitOptimal} for multiple superpathway input list
 #' objects. This wrapper is useful if one wants to assess multiple superpathways
 #' for analyses and needs to train its respective optimal models.
 #'
-#' @param object A list whose elements are \link{superpathway.input-class}
-#' objects to use \link{fitOptimal} to
+#' @param object A list whose elements are superpathway input lists
+#' objects to use \link{fitOptimal}
 #' @param parallel A vector whose elements are `parallel` parameters for each
 #' object as requested by \link{fitOptimal}
 #' @param measure A vector whose elements are `measure` parameters for each
@@ -98,17 +98,17 @@ multiple_check <- function(parameter, objectLength){
 #' @param ... Other parameters to be passed onto \link{fitOptimal}
 #' @import checkmate
 #' @returns
-#' A list of \link{superpathway.fit.model-class} objects
+#' A list of superpathway fit model list
 #' @export
 #' @examples
-#' file <- system.file("extdata", "example_superpathway_input.rda",
+#' \donttest{file <- system.file("extdata", "example_superpathway_input.rda",
 #' package = "singIST")
 #' load(file)
 #' data <- example_superpathway_input
 #' models <- list(data, data)
 #' # Example with different options
 #' multiple_model <- multiple_fitOptimal(models, type = c("jackknife",
-#' "subsampling"), nsubsampling = c(NULL, 10), npermut = c(10,15))
+#' "subsampling"), nsubsampling = c(NULL, 10), npermut = c(10,15))}
 multiple_fitOptimal <- function(
         object = list(), parallel = c(FALSE),
         measure = c("B_accuracy"), expected_measure_increase = c(0.005),
@@ -122,7 +122,7 @@ multiple_fitOptimal <- function(
     checkmate::assert_list(object, any.missing = FALSE, all.missing = FALSE)
     checkmate::assert_true(nobjects > 1)
     for(element in object){
-        checkmate::assert_class(element, "superpathway.input")
+        checkmate::assert_list(element)
     }
     # If parameter provided is NULL then the rest is NULL otherwise provide all
     parallel <- multiple_check(parallel, nobjects)
@@ -141,7 +141,7 @@ multiple_fitOptimal <- function(
     # fitOptimal for each object in the list
     model <- vector("list", length = nobjects)
     for(l in seq(1, nobjects)){
-        pathway <- object[[l]]@superpathway_info@pathway_info@standard_name
+        pathway <- object[[l]]$superpathway_info$pathway_info$standard_name
         names(model)[[l]] <- pathway
         message("Object ", pathway)
         model[[l]] <- fitOptimal(
@@ -162,14 +162,14 @@ multiple_fitOptimal <- function(
 #'
 #' @description
 #' Use \link{singISTrecapitulations} for multiple
-#' \link{superpathway.input-class} objects against the same
-#' \link{mapping.organism-class} object. This wrapper is useful if one wants
+#' superpathway fit model list against the same
+#' mapping organism list. This wrapper is useful if one wants
 #' to assess multiple superpathways against the same
-#' \link{mapping.organism-class}
+#' mapping organism list.
 #'
-#' @param object A \link{mapping.organism-class} object
+#' @param object A mapping organism list
 #' @param model_object A list whose elements
-#' are \link{superpathway.fit.model-class}
+#' are superpathway fit model list
 #' @param model_species A list of characters indicating the organism of each
 #' `model_object` element. By default `list("hsapiens")` which assumes the same
 #' organism across all elements of `model_object` parameter
@@ -182,7 +182,7 @@ multiple_fitOptimal <- function(
 #' to the former.
 #' @export
 #' @examples
-#' file <- system.file("extdata", "example_superpathway_input.rda",
+#' \donttest{file <- system.file("extdata", "example_superpathway_input.rda",
 #' package = "singIST")
 #' load(file)
 #' data_model <- example_superpathway_input
@@ -195,7 +195,7 @@ multiple_fitOptimal <- function(
 #' load(file)
 #' data_organism <- example_mapping_organism
 #' multiple_singISTrecapitulations(data_organism, multiple_model,
-#' model_species = list("hsapiens", "hsapiens"))
+#' model_species = list("hsapiens", "hsapiens"))}
 multiple_singISTrecapitulations <- function(
         object, model_object = list(), model_species = list("hsapiens"), ...){
     # Check that multiple objects are provided in the proper format
@@ -204,7 +204,7 @@ multiple_singISTrecapitulations <- function(
                             all.missing = FALSE)
     checkmate::assert_true(nmodels > 1)
     for(element in model_object){
-        checkmate::assert_class(element, "superpathway.fit.model")
+        checkmate::assert_list(element)
     }
     model_species <- multiple_check(model_species, nmodels)
     # Initialize output
@@ -214,15 +214,15 @@ multiple_singISTrecapitulations <- function(
     aux_FC <- vector("list", length = nmodels)
     aux_orthologs <- vector("list", length = nmodels)
     for(i in seq(1, nmodels)){
-        pathway <- model_object[[i]]@superpathway_input@superpathway_info
-        message("Executing superpathway ", pathway@pathway_info@standard_name)
+        pathway <- model_object[[i]]$superpathway_input$superpathway_info
+        message("Executing superpathway ", pathway$pathway_info$standard_name)
         aux <- singISTrecapitulations(
             object, model_object[[i]], model_species = model_species[[i]], ...)
         aux_superpathway[[i]] <- aux$superpathway
         aux_celltype[[i]] <- aux$celltype
         aux_gene[[i]] <- aux$gene
         aux_FC[[i]] <- aux$FC
-        names(aux_FC)[i] <- pathway@pathway_info@standard_name
+        names(aux_FC)[i] <- pathway$pathway_info$standard_name
         aux_orthologs[[i]] <- aux$orthologs
     }
     output <- vector("list", length = 5)

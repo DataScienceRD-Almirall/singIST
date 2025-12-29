@@ -14,11 +14,9 @@ biological_link_function(
 )
 }
 \arguments{
-\item{object}{A \link{mapping.organism-class} class with the disease model
-data}
+\item{object}{A mapping organism list with the disease model data}
 
-\item{model_object}{A \link{superpathway.fit.model-class} with the fitted
-model}
+\item{model_object}{A superpathway fit model list with the fitted model}
 
 \item{object_gene_identifiers}{Annotation of gene identifiers used in
 \code{object}. By default \code{external_gene_name}. If \code{NULL} \link{orthology_mapping}
@@ -48,8 +46,19 @@ a list with the Fold Changes used; singIST treated samples as returned by
 \link{singIST_treat}
 }
 \description{
-Maps the organism information in \link{mapping.organism-class} and
-\link{superpathway.fit.model-class} to obtain the "singIST treated samples"
+Maps the organism information in mapping organism list and
+superpathway fit model list to obtain the "singIST treated samples"
 with the simulated human. The biological link function involves the
 cell type mapping, orthology mapping and fold change computation.
+}
+\examples{
+file <- system.file("extdata", "example_mapping_organism.rda",
+package = "singIST")
+load(file)
+data_organism <- example_mapping_organism
+file <- system.file("extdata", "example_superpathway_fit_model.rda",
+package = "singIST")
+load(file)
+data_model <- example_superpathway_fit_model
+\donttest{biological_link_function(data_organism, data_model)}
 }

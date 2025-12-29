@@ -7,10 +7,10 @@
 singIST_treat(object, model_object, orthologs, logFC)
 }
 \arguments{
-\item{object}{A \link{mapping.organism-class} object passed from
+\item{object}{A mapping organism list passed from
 \link{biological_link_function}.}
 
-\item{model_object}{A \link{superpathway.fit.model-class} passed from
+\item{model_object}{A superpathway fit model list passed from
 \link{biological_link_function}}
 
 \item{orthologs}{A list of \code{data.table} objects, as returned by
@@ -42,9 +42,9 @@ orthologs <- orthology_mapping(data_organism, data_model, "hsapiens")
 # Set the identities
 # Cell type mapping
 data <- celltype_mapping(data_organism)
-slot(data, "counts")$test <- paste0(slot(data, "counts")$celltype_cluster,
-"_", slot(data, "counts")$class)
-SeuratObject::Idents(slot(data, "counts")) <- "test"
+data$counts$test <- paste0(data$counts$celltype_cluster, 
+"_", data$counts$class)
+SeuratObject::Idents(data$counts) <- "test"
 logFC <- diff_expressed(data)
-singIST_treat(data_organism, data_model, orthologs, logFC)
+\donttest{singIST_treat(data_organism, data_model, orthologs, logFC)}
 }

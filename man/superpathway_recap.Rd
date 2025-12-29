@@ -7,7 +7,7 @@
 superpathway_recap(model_object, data_original, data_singIST)
 }
 \arguments{
-\item{model_object}{A \link{superpathway.fit.model-class} object passed
+\item{model_object}{A superpathway fit model list passed
 from \link{singISTrecapitulations}}
 
 \item{data_original}{A matrix with the superpathway's score as returned
@@ -34,10 +34,11 @@ file <- system.file("extdata", "example_mapping_organism.rda",
 package = "singIST")
 load(file)
 mapped <- example_mapping_organism
-singIST_samples <- biological_link_function(mapped, model)$singIST_samples
+\donttest{singIST_samples <- biological_link_function(mapped,
+model)$singIST_samples
 original <- derive_contributions(model, singIST_samples)
-derived <- derive_contributions(model,
-slot(model, "model_fit")$predictor_block)
+derived <- derive_contributions(model,model$model_fit$predictor_block)
 superpathway_recap(model, original$superpathway_score,
 derived$superpathway_score)
+}
 }

@@ -8,8 +8,7 @@ contribution}
 derive_contributions(model_object, data)
 }
 \arguments{
-\item{model_object}{A \link{superpathway.fit.model-class} object with the
-fitted asmbPLSDA}
+\item{model_object}{A superpathway fit model list with the fitted asmbPLSDA}
 
 \item{data}{A matrix with the block of predictor matrices to compute
 score and contributions from}
@@ -32,6 +31,8 @@ file <- system.file("extdata", "example_superpathway_fit_model.rda",
 package = "singIST")
 load(file)
 model <- example_superpathway_fit_model
-singIST_samples <- biological_link_function(mapped, model)$singIST_samples
+\donttest{singIST_samples <- biological_link_function(mapped,
+model)$singIST_samples
 derive_contributions(model, singIST_samples)
+}
 }

@@ -1,6 +1,6 @@
 test_that("derive_scores computes scores correctly", {
     testthat::skip_on_cran()
-    testthat::skip_if_not(interactive())
+    testthat::skip_on_bioc()
     file <- system.file("extdata", "example_superpathway_fit_model.rda", package = "singIST")
     load(file)
     file <- system.file("extdata", "example_mapping_organism.rda", package = "singIST")
@@ -20,13 +20,13 @@ test_that("derive_scores computes scores correctly", {
     # Check if Delta is a matrix and has expected dimensions
     expect_class(scores_output$Delta, "matrix")
     expect_equal(nrow(scores_output$Delta),
-                length(object@superpathway_input@superpathway_info@celltypes))
+                length(object$superpathway_input$superpathway_info$celltypes))
     # Check Y_pred_num is a numeric vector
     expect_type(scores_output$Y_pred_num, "double")
     # Check if gamma is a matrix with expected dimensions
     expect_class(scores_output$gamma, "matrix")
     expect_equal(nrow(scores_output$gamma),
-            length(object@superpathway_input@superpathway_info@celltypes))
+            length(object$superpathway_input$superpathway_info$celltypes))
 })
 
 test_that("derive_scores handles empty input correctly", {

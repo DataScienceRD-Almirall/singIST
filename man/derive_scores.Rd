@@ -7,7 +7,7 @@
 derive_scores(object, data, sample)
 }
 \arguments{
-\item{object}{A \link{superpathway.fit.model-class} object passed from
+\item{object}{A superpathway fit model list passed from
 \link{derive_contributions}}
 
 \item{data}{Block of predictor matrices to compute scores from}
@@ -31,7 +31,8 @@ file <- system.file("extdata", "example_superpathway_fit_model.rda",
 package = "singIST")
 load(file)
 model <- example_superpathway_fit_model
-singIST_samples <- biological_link_function(mapped, model)$singIST_samples
+\donttest{singIST_samples <- biological_link_function(mapped,
+model)$singIST_samples
 # Derive the scores for sample 2
-derive_scores(model, singIST_samples, 2)
+derive_scores(model, singIST_samples, 2)}
 }

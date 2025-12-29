@@ -1,6 +1,6 @@
 test_that("matrixToBlock processes superpathway.input correctly", {
     testthat::skip_on_cran()
-    testthat::skip_if_not(interactive())
+    testthat::skip_on_bioc()
     file <- system.file("extdata", "example_superpathway_input.rda", package = "singIST")
     load(file)
     result <- matrixToBlock(example_superpathway_input)
@@ -22,6 +22,6 @@ test_that("matrixToBlock processes superpathway.input correctly", {
     # Test for case with empty gene sets
     # Create an object with empty gene sets
     data_with_empty_gene_sets <- example_superpathway_input
-    data_with_empty_gene_sets@superpathway_info@gene_sets_celltype <- list()
+    data_with_empty_gene_sets$superpathway_info$gene_sets_celltype <- list()
     expect_error(matrixToBlock(data_with_empty_gene_sets))
 })

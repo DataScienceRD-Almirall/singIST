@@ -18,7 +18,7 @@ permut_asmbplsda_kcv(
 )
 }
 \arguments{
-\item{object}{A \link{superpathway.fit.model-class} object}
+\item{object}{A superpathway fit model list}
 
 \item{npermut}{Number of permutations (default: 100)}
 

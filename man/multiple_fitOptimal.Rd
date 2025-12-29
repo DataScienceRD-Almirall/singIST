@@ -21,8 +21,8 @@ multiple_fitOptimal(
 )
 }
 \arguments{
-\item{object}{A list whose elements are \link{superpathway.input-class}
-objects to use \link{fitOptimal} to}
+\item{object}{A list whose elements are superpathway input lists
+objects to use \link{fitOptimal}}
 
 \item{parallel}{A vector whose elements are \code{parallel} parameters for each
 object as requested by \link{fitOptimal}}
@@ -63,20 +63,20 @@ each object as requested by \link{fitOptimal}}
 \item{...}{Other parameters to be passed onto \link{fitOptimal}}
 }
 \value{
-A list of \link{superpathway.fit.model-class} objects
+A list of superpathway fit model list
 }
 \description{
-Use \link{fitOptimal} for multiple \link{superpathway.input-class}
+Use \link{fitOptimal} for multiple superpathway input list
 objects. This wrapper is useful if one wants to assess multiple superpathways
 for analyses and needs to train its respective optimal models.
 }
 \examples{
-file <- system.file("extdata", "example_superpathway_input.rda",
+\donttest{file <- system.file("extdata", "example_superpathway_input.rda",
 package = "singIST")
 load(file)
 data <- example_superpathway_input
 models <- list(data, data)
 # Example with different options
 multiple_model <- multiple_fitOptimal(models, type = c("jackknife",
-"subsampling"), nsubsampling = c(NULL, 10), npermut = c(10,15))
+"subsampling"), nsubsampling = c(NULL, 10), npermut = c(10,15))}
 }

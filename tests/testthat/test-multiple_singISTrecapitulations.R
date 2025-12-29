@@ -1,6 +1,6 @@
 test_that("Test multiple_singISTrecapitulations function", {
     testthat::skip_on_cran()
-    testthat::skip_if_not(interactive())
+    testthat::skip_on_bioc()
     file <- system.file("extdata", "example_superpathway_fit_model.rda", package = "singIST")
     load(file)
     file <- system.file("extdata", "example_superpathway_input.rda", package = "singIST")

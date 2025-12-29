@@ -15,17 +15,17 @@ diff_expressed(
 )
 }
 \arguments{
-\item{object}{A \link{mapping.organism-class} object. If a \code{Seurat} object
+\item{object}{A mapping organism list. If a \code{Seurat} object
 was provided, then \code{Idents(object)} assigned to variables with the conditions
 being tested is expected.}
 
 \item{condition_1}{A vector with the elements of the first factor to perform
 the hypothesis test. By default the mapped cell types
-\code{condition_1 = names(slot(object, "celltype_mapping"))}}
+\code{condition_1 = names(object$celltype_mapping)}}
 
 \item{condition_2}{A vector with the elements of the second factor to perform
 the hypothesis test with. By default the class of the organism
-\code{condition_2 = c(slot(object, "target_class"), slot(object, "base_class"))}}
+\verb{condition_2 = c(object$target_class), object$base_class)}}
 
 \item{logfc.treshold}{Sets the minimum FindMarkers log-fold change (logFC)
 cutoff for identifying differentially expressed genes (DEGs). By default
@@ -62,8 +62,8 @@ package = "singIST")
 load(file)
 data_organism <- example_mapping_organism
 data <- celltype_mapping(data_organism)
-slot(data, "counts")$test <- paste0(slot(data, "counts")$celltype_cluster,
-"_", slot(data, "counts")$class)
-SeuratObject::Idents(slot(data, "counts")) <- "test"
+data$counts$test <- paste0(data$counts$celltype_cluster, "_",
+data$counts$class)
+SeuratObject::Idents(data$counts) <- "test"
 diff_expressed(data)
 }

@@ -1,6 +1,6 @@
 test_that("gene_contrib works as expected", {
     testthat::skip_on_cran()
-    testthat::skip_if_not(interactive())
+    testthat::skip_on_bioc()
     file <- system.file("extdata", "example_superpathway_fit_model.rda", package = "singIST")
     load(file)
     file <- system.file("extdata", "example_mapping_organism.rda", package = "singIST")
@@ -11,7 +11,7 @@ test_that("gene_contrib works as expected", {
                                                 exact = FALSE)$singIST_samples
     original <- derive_contributions(model, singIST_samples)
     derived <- derive_contributions(model,
-                                    slot(model, "model_fit")$predictor_block)
+                                    model$model_fit$predictor_block)
     celltype <- celltype_recap(model, original$celltype_contribution,
                              derived$celltype_contribution)
     # Running the function

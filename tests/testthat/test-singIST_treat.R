@@ -1,6 +1,6 @@
 test_that("singIST_treat computes treated samples correctly", {
     testthat::skip_on_cran()
-    testthat::skip_if_not(interactive())
+    testthat::skip_on_bioc()
     file <- system.file("extdata", "example_mapping_organism.rda", package = "singIST")
     load(file)
     file <- system.file("extdata", "example_superpathway_fit_model.rda", package = "singIST")
@@ -9,9 +9,9 @@ test_that("singIST_treat computes treated samples correctly", {
     model_object <- example_superpathway_fit_model
     orthologs <- orthology_mapping(object, model_object, from_species = "hsapiens")
     data <- celltype_mapping(object)
-    slot(data, "counts")$test <- paste0(slot(data, "counts")$celltype_cluster,
-                                        "_", slot(data, "counts")$class)
-    SeuratObject::Idents(slot(data, "counts")) <- "test"
+    data$counts$test <- paste0(data$counts$celltype_cluster,
+                                        "_", data$counts$class)
+    SeuratObject::Idents(data$counts) <- "test"
     logFC <- diff_expressed(data, exact = FALSE)
     singIST_samples <- singIST_treat(object, model_object, orthologs, logFC)
     # Check if output contains the correct components

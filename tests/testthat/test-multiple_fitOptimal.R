@@ -1,6 +1,6 @@
 test_that("Test multiple_fitOptimal function", {
     testthat::skip_on_cran()
-    testthat::skip_if_not(interactive())
+    testthat::skip_on_bioc()
     file <- system.file("extdata", "example_superpathway_input.rda", package = "singIST")
     load(file)
     # Define example superpathway.input objects
@@ -9,7 +9,6 @@ test_that("Test multiple_fitOptimal function", {
     # Test when using default arguments
     result <- multiple_fitOptimal(models, exact = FALSE)
     expect_equal(length(result), 2)
-    expect_true(all(sapply(result, inherits, "superpathway.fit.model")))
     # Test when passing custom arguments
     result <- multiple_fitOptimal(models, type = c("jackknife", "subsampling"),
                                   exact = FALSE)

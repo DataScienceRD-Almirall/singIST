@@ -19,11 +19,7 @@ data@meta.data$donor <- SeuratObject::pbmc_small$letter.idents
 # Lognormalize counts and create data layer
 data <- Seurat::NormalizeData(data, normalization.method = "LogNormalize")
 # Initialize mapping.organism object
-example_mapping_organism <- new("mapping.organism",
-                                organism = "Mus musculus",
-                                target_class = "g1",
-                                base_class = "g2",
-                                celltype_mapping = list("Dendritic Cells" = c(0,2),
-                                                        "Keratinocytes" = c(1)),
-                                counts = data)
+example_mapping_organism <- create_mapping_organism("Mus musculus", "g1", "g2",
+                                                    list("Dendritic Cells" = c(0,2),
+                                                         "Keratinocytes" = c(1)), data)
 usethis::use_data(example_mapping_organism, overwrite = TRUE)

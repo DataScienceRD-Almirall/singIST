@@ -1,12 +1,12 @@
 test_that("celltype_mapping correctly updates celltype_cluster", {
     testthat::skip_on_cran()
-    testthat::skip_if_not(interactive())
+    testthat::skip_on_bioc()
     file <- system.file("extdata", "example_mapping_organism.rda", package = "singIST")
     load(file)
     object <- example_mapping_organism
     # Ensure original celltype_cluster is updated
     new_object <- celltype_mapping(object)
-    expect_true(all(names(new_object@celltype_mapping) %in%
-                    new_object@counts$celltype_cluster))
-    expect_false(any(is.na(new_object@counts$celltype_cluster)))
+    expect_true(all(names(new_object$celltype_mapping) %in%
+                    new_object$counts$celltype_cluster))
+    expect_false(any(is.na(new_object$counts$celltype_cluster)))
 })

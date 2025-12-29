@@ -7,7 +7,7 @@
 gene_contrib(model_object, data_original, data_singIST, cell_reference)
 }
 \arguments{
-\item{model_object}{A \link{superpathway.fit.model-class} object passed from
+\item{model_object}{A superpathway fit model list passed from
 \link{singISTrecapitulations}}
 
 \item{data_original}{A matrix with the gene contributions to superpathway's
@@ -37,14 +37,14 @@ file <- system.file("extdata", "example_mapping_organism.rda",
 package = "singIST")
 load(file)
 mapped <- example_mapping_organism
+\donttest{
 singIST_samples <- biological_link_function(mapped, model)$singIST_samples
 original <- derive_contributions(model, singIST_samples)
-derived <- derive_contributions(model,
-slot(model, "model_fit")$predictor_block)
+derived <- derive_contributions(model, model$model_fit$predictor_block)
 # Derive cell type reference
 cell <- celltype_recap(model, original$celltype_contribution,
 derived$celltype_contribution)
 # Compute gene contributions
 gene_contrib(model, original$gene_contribution, derived$gene_contribution,
-cell)
+cell)}
 }

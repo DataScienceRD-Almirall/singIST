@@ -1,6 +1,6 @@
 test_that("wilcox_CIP_GIP computes p-value correctly", {
     testthat::skip_on_cran()
-    testthat::skip_if_not(interactive())
+    testthat::skip_on_bioc()
     # Generate example distributions
     ref_distr <- rnorm(100, mean = 30, sd = 2)
     null_distr <- rnorm(100, mean = 0, sd = 1)

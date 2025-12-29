@@ -12,10 +12,10 @@ multiple_singISTrecapitulations(
 )
 }
 \arguments{
-\item{object}{A \link{mapping.organism-class} object}
+\item{object}{A mapping organism list}
 
 \item{model_object}{A list whose elements
-are \link{superpathway.fit.model-class}}
+are superpathway fit model list}
 
 \item{model_species}{A list of characters indicating the organism of each
 \code{model_object} element. By default \code{list("hsapiens")} which assumes the same
@@ -30,13 +30,13 @@ to the former.
 }
 \description{
 Use \link{singISTrecapitulations} for multiple
-\link{superpathway.input-class} objects against the same
-\link{mapping.organism-class} object. This wrapper is useful if one wants
+superpathway fit model list against the same
+mapping organism list. This wrapper is useful if one wants
 to assess multiple superpathways against the same
-\link{mapping.organism-class}
+mapping organism list.
 }
 \examples{
-file <- system.file("extdata", "example_superpathway_input.rda",
+\donttest{file <- system.file("extdata", "example_superpathway_input.rda",
 package = "singIST")
 load(file)
 data_model <- example_superpathway_input
@@ -49,5 +49,5 @@ package = "singIST")
 load(file)
 data_organism <- example_mapping_organism
 multiple_singISTrecapitulations(data_organism, multiple_model,
-model_species = list("hsapiens", "hsapiens"))
+model_species = list("hsapiens", "hsapiens"))}
 }

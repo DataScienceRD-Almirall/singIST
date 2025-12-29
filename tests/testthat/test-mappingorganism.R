@@ -1,6 +1,6 @@
 test_that("Check consistency of mapping.organism class slots", {
     testthat::skip_on_cran()
-    testthat::skip_if_not(interactive())
+    testthat::skip_on_bioc()
     organism <- "Mus musculus"
     target_class <- "g1"
     base_class <- "g2"
@@ -16,21 +16,13 @@ test_that("Check consistency of mapping.organism class slots", {
     colnames(slot(counts, "meta.data"))[7] <- "celltype_cluster"
 
     # Expect pass
-    expect_class(new("mapping.organism",
-                     organism = organism,
-                     target_class = target_class,
-                     base_class = base_class,
-                     celltype_mapping = celltype_mapping,
-                     counts = counts), "mapping.organism")
+    expect_list(create_mapping_organism(organism, target_class,
+                                        base_class, celltype_mapping, counts))
     # Expect error due to inexisting "class", "celltype_cluster" and "donor"
     # variables
     colnames(slot(counts, "meta.data"))[6] <- "group"
     colnames(slot(counts, "meta.data"))[7] <- "celltype"
     colnames(slot(counts, "meta.data"))[1] <- "orig.ident"
-    expect_error(new("mapping.organism",
-                        organism = organism,
-                        target_class = target_class,
-                        base_class = base_class,
-                        celltype_mapping = celltype_mapping,
-                        counts = counts))
+    expect_error(create_mapping_organism(organism, target_class,
+                                         base_class, celltype_mapping, counts))
 })

@@ -1,13 +1,13 @@
 test_that("derive_contributions computes contributions correctly", {
     testthat::skip_on_cran()
-    testthat::skip_if_not(interactive())
+    testthat::skip_on_bioc()
     file <- system.file("extdata", "example_superpathway_fit_model.rda", package = "singIST")
     load(file)
     model_object <- example_superpathway_fit_model
     file <- system.file("extdata", "example_mapping_organism.rda", package = "singIST")
     load(file)
     data <- biological_link_function(
-        example_mapping_organism,example_superpathway_fit_model,
+        example_mapping_organism, example_superpathway_fit_model,
         exact = FALSE)$singIST_samples
     # Call the function
     contributions_output <- derive_contributions(model_object, data)
@@ -22,7 +22,7 @@ test_that("derive_contributions computes contributions correctly", {
     # Check if celltype_contribution is a matrix
     expect_class(contributions_output$celltype_contribution, "matrix")
     expect_equal(nrow(contributions_output$celltype_contribution),
-            length(model_object@superpathway_input@superpathway_info@celltypes))
+            length(model_object$superpathway_input$superpathway_info$celltypes))
     # Check if gene_contribution is a list of matrices
     expect_type(contributions_output$gene_contribution, "list")
     expect_true(all(sapply(contributions_output$gene_contribution, is.matrix)))

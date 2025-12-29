@@ -1,6 +1,6 @@
 #' @title Derive superpathway recapitulation
 #'
-#' @param model_object A \link{superpathway.fit.model-class} object passed
+#' @param model_object A superpathway fit model list passed
 #' from \link{singISTrecapitulations}
 #' @param data_original A matrix with the superpathway's score as returned
 #' by \link{derive_contributions} for the non-singIST treated samples,
@@ -23,20 +23,20 @@
 #' package = "singIST")
 #' load(file)
 #' mapped <- example_mapping_organism
-#' singIST_samples <- biological_link_function(mapped, model)$singIST_samples
+#' \donttest{singIST_samples <- biological_link_function(mapped,
+#' model)$singIST_samples
 #' original <- derive_contributions(model, singIST_samples)
-#' derived <- derive_contributions(model,
-#' slot(model, "model_fit")$predictor_block)
+#' derived <- derive_contributions(model,model$model_fit$predictor_block)
 #' superpathway_recap(model, original$superpathway_score,
 #' derived$superpathway_score)
+#' }
 superpathway_recap <- function(model_object, data_original, data_singIST){
-    checkmate::assert_class(model_object, "superpathway.fit.model")
     # Identify indices of base class and target class samples
-    base_class <- model_object@superpathway_input@base_class
-    target_class <- model_object@superpathway_input@target_class
-    indices_base <- which(model_object@superpathway_input@sample_class ==
+    base_class <- model_object$superpathway_input$base_class
+    target_class <- model_object$superpathway_input$target_class
+    indices_base <- which(model_object$superpathway_input$sample_class ==
                             base_class)
-    indices_target <- which(model_object@superpathway_input@sample_class ==
+    indices_target <- which(model_object$superpathway_input$sample_class ==
                                 target_class)
     # Derive reference recapitulation
     Omega <- stats::median(data_original[indices_target]) -
@@ -51,16 +51,16 @@ superpathway_recap <- function(model_object, data_original, data_singIST){
     }else{
         recapitulation <- round(100*Omega_prime/Omega, 2)
     }
-    superpathway_info <- model_object@superpathway_input@superpathway_info
+    superpathway_info <- model_object$superpathway_input$superpathway_info
     output <- data.frame(
-        "pathway"= superpathway_info@pathway_info@standard_name,
+        "pathway"= superpathway_info$pathway_info$standard_name,
         "recapitulation" = recapitulation)
     return(output)
 }
 
 #' @title Derive cell type recapitulation
 #'
-#' @param model_object A \link{superpathway.fit.model-class} object passed
+#' @param model_object A superpathway fit model list passed
 #' from \link{singISTrecapitulations}
 #' @param data_original A matrix with the cell type contributions as returned
 #' by \link{derive_contributions} for the non-singIST treated samples,
@@ -84,23 +84,22 @@ superpathway_recap <- function(model_object, data_original, data_singIST){
 #' package = "singIST")
 #' load(file)
 #' mapped <- example_mapping_organism
+#' \donttest{
 #' singIST_samples <- biological_link_function(mapped, model)$singIST_samples
 #' original <- derive_contributions(model, singIST_samples)
-#' derived <- derive_contributions(model,
-#' slot(model, "model_fit")$predictor_block)
+#' derived <- derive_contributions(model, model$model_fit$predictor_block)
 #' celltype_recap(model, original$celltype_contribution,
-#' derived$celltype_contribution)
+#' derived$celltype_contribution)}
 celltype_recap <- function(model_object, data_original, data_singIST){
-    checkmate::assert_class(model_object, "superpathway.fit.model")
     # Identify indices of base class and target class samples
-    base_class <- model_object@superpathway_input@base_class
-    target_class <- model_object@superpathway_input@target_class
-    indices_base <- which(model_object@superpathway_input@sample_class ==
+    base_class <- model_object$superpathway_input$base_class
+    target_class <- model_object$superpathway_input$target_class
+    indices_base <- which(model_object$superpathway_input$sample_class ==
                             base_class)
-    indices_target <- which(model_object@superpathway_input@sample_class ==
+    indices_target <- which(model_object$superpathway_input$sample_class ==
                                 target_class)
-    superpathway_info <- model_object@superpathway_input@superpathway_info
-    pathway_name <- superpathway_info@pathway_info@standard_name
+    superpathway_info <- model_object$superpathway_input$superpathway_info
+    pathway_name <- superpathway_info$pathway_info$standard_name
     # Derive reference and predicted recapitulations
     recapitulation <- data.frame("pathway" = c(), "celltype" = c(),
                                     "recapitulation" = c(),
@@ -134,7 +133,7 @@ celltype_recap <- function(model_object, data_original, data_singIST){
 
 #' @title Derive gene contribution to cell type recapitulation
 #'
-#' @param model_object A \link{superpathway.fit.model-class} object passed from
+#' @param model_object A superpathway fit model list passed from
 #' \link{singISTrecapitulations}
 #' @param data_original A matrix with the gene contributions to superpathway's
 #' score as returned by \link{derive_contributions} for the non-singIST treated
@@ -158,28 +157,27 @@ celltype_recap <- function(model_object, data_original, data_singIST){
 #' package = "singIST")
 #' load(file)
 #' mapped <- example_mapping_organism
+#' \donttest{
 #' singIST_samples <- biological_link_function(mapped, model)$singIST_samples
 #' original <- derive_contributions(model, singIST_samples)
-#' derived <- derive_contributions(model,
-#' slot(model, "model_fit")$predictor_block)
+#' derived <- derive_contributions(model, model$model_fit$predictor_block)
 #' # Derive cell type reference
 #' cell <- celltype_recap(model, original$celltype_contribution,
 #' derived$celltype_contribution)
 #' # Compute gene contributions
 #' gene_contrib(model, original$gene_contribution, derived$gene_contribution,
-#' cell)
+#' cell)}
 gene_contrib <- function(model_object, data_original,
                         data_singIST, cell_reference){
-    checkmate::assert_class(model_object, "superpathway.fit.model")
     # Identify indices of base class
-    base_class <- model_object@superpathway_input@base_class
-    indices_base <- which(model_object@superpathway_input@sample_class ==
+    base_class <- model_object$superpathway_input$base_class
+    indices_base <- which(model_object$superpathway_input$sample_class ==
                             base_class)
-    superpathway_info <- model_object@superpathway_input@superpathway_info
-    pathway_name <- superpathway_info@pathway_info@standard_name
-    superpathway_info <- model_object@superpathway_input@superpathway_info
-    pathway_name <- superpathway_info@pathway_info@standard_name
-    celltypes <- model_object@superpathway_input@superpathway_info@celltypes
+    superpathway_info <- model_object$superpathway_input$superpathway_info
+    pathway_name <- superpathway_info$pathway_info$standard_name
+    superpathway_info <- model_object$superpathway_input$superpathway_info
+    pathway_name <- superpathway_info$pathway_info$standard_name
+    celltypes <- model_object$superpathway_input$superpathway_info$celltypes
     gene_contributions <- data.frame("pathway" = c(), "celltype" = c(),
                                         "gene" = c(), "contribution" = c())
     # Derive gene contributions to cell type recapitulation
@@ -217,9 +215,9 @@ gene_contrib <- function(model_object, data_original,
 #' (superpathway, cell type and gene scores), and their use to compute
 #' the predicted recapitulations as a fraction of the reference recapitulation.
 #'
-#' @param object A \link{mapping.organism-class} object for which to calculate
+#' @param object A mapping organism list for which to calculate
 #' the recapitulations against the fitted superpathway model
-#' @param model_object A \link{superpathway.fit.model-class} object used to
+#' @param model_object A superpathway fit model list used to
 #' calculate the recapitulations
 #' @param ... Other parameters to pass onto \link{biological_link_function}
 #' @import checkmate
@@ -248,22 +246,20 @@ gene_contrib <- function(model_object, data_original,
 #' package = "singIST")
 #' load(file)
 #' data_model <- example_superpathway_fit_model
-#' singISTrecapitulations(data_organism, data_model)
+#' \donttest{singISTrecapitulations(data_organism, data_model)}
 singISTrecapitulations <- function(object, model_object, ...){
-    checkmate::assert_class(object, "mapping.organism")
-    checkmate::assert_class(model_object, "superpathway.fit.model")
-    nopick <- which(!(names(object@celltype_mapping) %in%
-                model_object@superpathway_input@superpathway_info@celltypes))
+    nopick <- which(!(names(object$celltype_mapping) %in%
+                model_object$superpathway_input$superpathway_info$celltypes))
     # Check cell types modelled in model_object have the same order in object
-    check <- setdiff(nopick, seq(1, length(names(object@celltype_mapping))))
-    if(!all(model_object@superpathway_input@superpathway_info@celltypes ==
-            names(object@celltype_mapping)[check])){
+    check <- setdiff(nopick, seq(1, length(names(object$celltype_mapping))))
+    if(!all(model_object$superpathway_input$superpathway_info$celltypes ==
+            names(object$celltype_mapping)[check])){
         stop("Object and model_object cell types are not in same order")
     }
     # If cell type mapped is not in `model_object` set to void
-    object@celltype_mapping[nopick] <- NULL
+    object$celltype_mapping[nopick] <- NULL
     linkFunction <- biological_link_function(object, model_object, ...)
-    C <- model_object@model_fit$predictor_block
+    C <- model_object$model_fit$predictor_block
     C_prime <- linkFunction$singIST_samples
     # Derive contributions
     contributions_ref <- derive_contributions(model_object, C)
@@ -280,19 +276,19 @@ singISTrecapitulations <- function(object, model_object, ...){
         model_object, contributions_ref$gene_contribution,
         contributions_singIST$gene_contribution, celltype)
     # Compute observed one-to-one orthology coverage gene set per cell type
-    for(b in seq(1, length(object@celltype_mapping))){
-        length_set <- length(model_object@model_fit$observed_gene_sets[[b]])
+    for(b in seq(1, length(object$celltype_mapping))){
+        length_set <- length(model_object$model_fit$observed_gene_sets[[b]])
         set <- linkFunction$orthologs[[b]]$output_gene
-        observed_set <- sum(set %in% rownames(object@counts))
+        observed_set <- sum(set %in% rownames(object$counts))
         coverage <- observed_set/length_set
         # Add observed orthology coverage
         celltype[b, "orthology"] <- 100*coverage
     }
-    pval <- model_object@model_validation$pvalue_global_significance
+    pval <- model_object$model_validation$pvalue_global_significance
     superpathway[, "p_val"] <- pval
-    superpathway[, "target_organism"] <- object@target_class
-    celltype[, "target_organism"] <- object@target_class
-    gene[, "target_organism"] <- object@target_class
+    superpathway[, "target_organism"] <- object$target_class
+    celltype[, "target_organism"] <- object$target_class
+    gene[, "target_organism"] <- object$target_class
     celltype[, "reference"] <- NULL
     rownames(gene) <- NULL
     return(list("superpathway" = superpathway, "celltype" = celltype,

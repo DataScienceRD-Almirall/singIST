@@ -3,7 +3,7 @@
 #' @description
 #' Builds the predictor block and matrix response for its fit in asmbPLS-DA
 #'
-#' @param object \link{superpathway.input-class} object
+#' @param object A superpathway input list object
 #' @rdname matrixToBlock-method
 #'
 #' @returns A list containing the predictor block, response matrix, dimension of
@@ -18,18 +18,25 @@
 #' load(file)
 #' data <- example_superpathway_input
 #' matrixToBlock(data)
-matrixToBlock.superpathway.input <- function(object){
-    checkmate::assert_class(object, "superpathway.input")
-    matrix <- object@pseudobulk_lognorm
-    split_all <- strsplit(rownames(object@pseudobulk_lognorm), "_")
+matrixToBlock <- function(object){
+    check_superpathway_input(superpathway_info = object$superpathway_info,
+                             hyperparameters_info = object$hyperparameters_info,
+                             pseudobulk_lognorm = object$pseudobulk_lognorm,
+                             sample_id = object$sample_id,
+                             sample_class = object$sample_class,
+                             base_class = object$base_class,
+                             target_class = object$target_class
+                             )
+    matrix <- object$pseudobulk_lognorm
+    split_all <- strsplit(rownames(object$pseudobulk_lognorm), "_")
     all_samples <- vapply(split_all, `[`, 2, FUN.VALUE = "")
     matrix <- add_missing_psb_rows(mat=matrix,
-                                   celltypes=object@superpathway_info@celltypes,
+                                   celltypes=object$superpathway_info$celltypes,
                                    sample_ids = unique(all_samples))
     aux <-  base::do.call(base::rbind, base::strsplit(rownames(matrix),"_"))[,1]
-    keep <- aux %in% object@superpathway_info@celltypes
+    keep <- aux %in% object$superpathway_info$celltypes
     matrix <- matrix[keep, ]
-    gene_sets_celltype <- object@superpathway_info@gene_sets_celltype
+    gene_sets_celltype <- object$superpathway_info$gene_sets_celltype
     observed_gene_sets <- base::lapply(gene_sets_celltype, function(x)
         intersect(x, colnames(matrix)))
     block_dim <- vapply(observed_gene_sets, length, FUN.VALUE = numeric(1))
@@ -54,10 +61,10 @@ matrixToBlock.superpathway.input <- function(object){
         stop("Check that at least one gene exists in your pseudobulk_lognorm
               matrix for each cell-type gene sets.")
     }
-    categories_class <- base::factor(object@sample_class)
-    categories_class <- stats::relevel(categories_class,ref = object@base_class)
+    categories_class <- base::factor(object$sample_class)
+    categories_class <- stats::relevel(categories_class,ref = object$base_class)
     matrix_response <- stats::model.matrix(~ categories_class -1)
-    if(object@hyperparameters_info@outcome_type == "binary"){
+    if(object$hyperparameters_info$outcome_type == "binary"){
         matrix_response <- matrix_response[ , 2:ncol(matrix_response),
                                             drop = FALSE]
     }else{
@@ -137,13 +144,13 @@ Results_comparison_measure <- function(Y_predict,
 #' @param X.matrix Predictor block matrix from \code{matrixToBlock}
 #' @param Y.matrix Response matrix from \code{matrixToBlock}
 #' @param PLS_term An integer with the number of PLS components to use passed
-#' from \link{hyperparameters-class} obect
+#' from hyperparameter list
 #' @param X.dim A list with the observed gene set size for each cell type
 #' from \code{matrixToBlock}
 #' @param quantile.comb.table A matrix with the quantile comb table passed
-#' from \link{hyperparameters-class} object
+#' from hyperparameters list object
 #' @param outcome.type A character indicating `binary` or `multiclass` passed
-#' from \link{hyperparameters-class} object
+#' from hyperparameters list object
 #' @param Method A parameter passed from \code{fitOptimal}
 #' @param measure A parameter passed from \code{fitOptimal}
 #' @param parallel A parameter passed from \code{fitOptimal}
@@ -165,9 +172,8 @@ Results_comparison_measure <- function(Y_predict,
 #' X.matrix <- matrices$block_predictor
 #' Y.matrix <- matrices$matrix_response
 #' X.dim <- matrices$block_dim
-#' quantile.comb.table <- slot(slot(data, "hyperparameters_info"),
-#' "quantile_comb_table")
-#' outcome.type <- slot(slot(data, "hyperparameters_info"), "outcome_type")
+#' quantile.comb.table <- data$hyperparameters_info$quantile_comb_table
+#' outcome.type <- data$hyperparameters_info$outcome_type
 #' asmbPLSDA.cv.loo(X.matrix, Y.matrix, PLS_term = 1, X.dim,quantile.comb.table,
 #' Method = NULL, measure = "B_accuracy", parallel = TRUE,
 #' outcome.type = outcome.type, expected.measure.increase = 0.005,
@@ -259,13 +265,14 @@ asmbPLSDA.cv.loo <- function(X.matrix, Y.matrix, PLS_term = 1, X.dim,
 #' X.matrix <- matrices$block_predictor
 #' Y.matrix <- matrices$matrix_response
 #' X.dim <- matrices$block_dim
-#' quantile.comb.table <- slot(slot(data, "hyperparameters_info"), 
-#' "quantile_comb_table")
-#' outcome.type <- slot(slot(data, "hyperparameters_info"), "outcome_type")
-#' \donttest{asmbPLSDA.cv.kcv(X.matrix, Y.matrix, PLS_term = 1, X.dim,quantile.comb.table,
-#' Method = NULL, measure = "B_accuracy", parallel = TRUE,
-#' outcome.type = outcome.type, expected.measure.increase = 0.005,
-#' center = TRUE, scale = TRUE,maxiter = 100)}
+#' quantile.comb.table <- data$hyperparameters_info$quantile_comb_table
+#' quantile.comb.table <- rbind(quantile.comb.table, c(0.1, 0.2)) # Add 2 cases
+#' outcome.type <- data$hyperparameters_info$outcome_type
+#' asmbPLSDA.cv.kcv(X.matrix, Y.matrix, PLS_term = 1,
+#' X.dim,quantile.comb.table,Method = NULL, measure = "B_accuracy",
+#' parallel = TRUE, outcome.type = outcome.type,
+#' expected.measure.increase = 0.005, center = TRUE, scale = TRUE,
+#' maxiter = 100)
 asmbPLSDA.cv.kcv <- function(
         X.matrix, Y.matrix, PLS_term = 2, X.dim,
         quantile.comb.table, k = 4, ncv = 10,
@@ -317,10 +324,10 @@ asmbPLSDA.cv.kcv <- function(
 #' @title Compute Cell Importance Projection (CIP) and Gene Importance
 #' Projection (GIP)
 #' @description
-#' Computes CIP and GIP metrics from a \link{superpathway.fit.model-class}
-#' object for the target class
+#' Computes CIP and GIP metrics from a superpathway fit model list for the
+#' target class
 #'
-#' @param object A \link{superpathway.fit.model-class} object
+#' @param object A superpathway fit model list
 #'
 #' @returns
 #' A list with the CIP and GIP metrics for all cell types. The metrics are
@@ -334,24 +341,24 @@ asmbPLSDA.cv.kcv <- function(
 #' data <- example_superpathway_fit_model
 #' CIP_GIP(data)
 CIP_GIP <- function(object){
-    checkmate::assert_class(object, "superpathway.fit.model")
+    check_fit_model(object$superpathway_input, object$hyperparameters_fit,
+                    object$model_fit, object$model_validation)
     # Identify target class position
     class_position <- stringr::str_replace(
-        colnames(object@model_fit$response_matrix), ".*categories_class", "")
+        colnames(object$model_fit$response_matrix), ".*categories_class", "")
     target_class_position <- which(
-        class_position == object@superpathway_input@target_class)
-    # asmbPLSDA model
-    model <- object@model_fit$`asmbPLS-DA`
+        class_position == object$superpathway_input$target_class)
+    model <- object$model_fit$`asmbPLS-DA`
     # Loadings
     w_super <- model$X_super_weight^2
     q <- model$Y_weight[target_class_position, , drop = FALSE]
-    nblocks <- length(object@model_fit$observed_gene_sets)
+    nblocks <- length(object$model_fit$observed_gene_sets)
     # Compute CIP
     CIP <- (w_super %*% t(q))/sum(q)
-    rownames(CIP) <- object@superpathway_input@superpathway_info@celltypes
+    rownames(CIP) <- object$superpathway_input$superpathway_info$celltypes
     # Compute GIP
     GIP <- vector("list", nblocks)
-    names(GIP) <- object@superpathway_input@superpathway_info@celltypes
+    names(GIP) <- object$superpathway_input$superpathway_info$celltypes
     for(b in seq_len(nblocks)){
         w <- model$X_weight[[b]]^2
         GIP[[b]] <- (w %*% t(q))/sum(q)
@@ -385,7 +392,7 @@ wilcox_CIP_GIP <- function(ref_distr, null_distr, ...){
 #' @description
 #' Performs permutation testing for asmbPLS-DA to evaluate model validity.
 #'
-#' @param object A \link{superpathway.fit.model-class} object.
+#' @param object A superpathway fit model list.
 #' @param npermut Number of permutations (default: 100).
 #' @param nbObsPermut Number of samples to permute per iteration
 #' (default: NULL).
@@ -409,8 +416,8 @@ wilcox_CIP_GIP <- function(ref_distr, null_distr, ...){
 permut_asmbplsda <- function(object, npermut = 100, nbObsPermut = NULL,
                              Nc = 1, CV_error, measure = "B_accuracy",
                              Method = NULL, maxiter = 100) {
-    Y.matrix <- object@model_fit$`asmbPLS-DA`$Y_group
-    X.matrix <- object@model_fit$predictor_block
+    Y.matrix <- object$model_fit$`asmbPLS-DA`$Y_group
+    X.matrix <- object$model_fit$predictor_block
     nr <- nrow(Y.matrix)
     q <- ncol(Y.matrix)
     res <- initialize_results(npermut, q)
@@ -438,7 +445,7 @@ permut_asmbplsda <- function(object, npermut = 100, nbObsPermut = NULL,
 #' If `splits=NULL`, runs LOOCV‐based permutation. Otherwise treats `splits` as
 #' a list of train/validate splits (e.g. from make_splits_R()) and does a fixed
 #' splits K‐fold×repeats permutation test.
-#' @param object A \link{superpathway.fit.model-class} object
+#' @param object A superpathway fit model list
 #' @param npermut Number of permutations (default: 100)
 #' @param nbObsPermut Number of samples to permute per iteration
 #' (default: NULL).
@@ -456,8 +463,8 @@ permut_asmbplsda_kcv <- function(object, npermut = 100, splits  = NULL,
                                     measure = "B_accuracy", nbObsPermut = NULL,
                                     Nc = 1, Method  = NULL, maxiter = 100, 
                                     CV_error = NULL,...) {
-    X_blocks <- object@model_fit$predictor_block
-    Y_group  <- object@model_fit$`asmbPLS-DA`$Y_group
+    X_blocks <- object$model_fit$predictor_block
+    Y_group  <- object$model_fit$`asmbPLS-DA`$Y_group
     if (is.null(splits)) {
         return(permut_asmbplsda(object, npermut = npermut,
                                 nbObsPermut = nbObsPermut,
@@ -466,8 +473,8 @@ permut_asmbplsda_kcv <- function(object, npermut = 100, splits  = NULL,
     null_scores   <- numeric(npermut)
     for (i in seq_len(npermut)) {
         Yp <- Y_group[sample(nrow(Y_group)), , drop = FALSE]
-        folds <- make_splits_R(Yp, k = object@hyperparameters_fit@folds_CV, 
-                               ncv = object@hyperparameters_fit@repetition_CV)
+        folds <- make_splits_R(Yp, k = object$hyperparameters_fit$folds_CV, 
+                               ncv = object$hyperparameters_fit$repetition_CV)
         total_splits <- length(folds)
         fold_scores <- numeric(total_splits)
         for (j in seq_along(splits)) {
@@ -482,18 +489,18 @@ permut_asmbplsda_kcv <- function(object, npermut = 100, splits  = NULL,
                 next
             }
             fit_p  <- asmbPLS::asmbPLSDA.fit(X.matrix = X_tr,Y.matrix = Y_tr,
-                    PLS.comp = object@hyperparameters_fit@number_PLS,
-                    X.dim = lengths(object@model_fit$observed_gene_sets),
+                    PLS.comp = object$hyperparameters_fit$number_PLS,
+                    X.dim = lengths(object$model_fit$observed_gene_sets),
                     quantile.comb=
-                        object@hyperparameters_fit@quantile_comb_table,
-                    outcome.type = object@hyperparameters_fit@outcome_type,
+                        object$hyperparameters_fit$quantile_comb_table,
+                    outcome.type = object$hyperparameters_fit$outcome_type,
                     center = TRUE, scale = TRUE, maxiter = maxiter)
             pred <- asmbPLS::asmbPLSDA.predict(
-                fit_p, X_va, PLS.comp = object@hyperparameters_fit@number_PLS,
+                fit_p, X_va, PLS.comp = object$hyperparameters_fit$number_PLS,
                 method = Method)$Y_pred
             res  <- Results_comparison_measure(
                 as.numeric(pred), as.numeric(Y_va[,1]),
-                object@hyperparameters_fit@outcome_type)
+                object$hyperparameters_fit$outcome_type)
             fold_scores[j] <- res[get_measure_index(measure)]
         }
         null_scores[i] <- mean(fold_scores, na.rm = TRUE)
@@ -513,7 +520,7 @@ permut_asmbplsda_kcv <- function(object, npermut = 100, splits  = NULL,
 #' block of predictor matrices. Returns a pvalue of the Mann-Whitney Wilcoxon
 #' between the observed and null distribution for each CIP and GIP.
 #'
-#' @param object A \link{superpathway.fit.model-class} object
+#' @param object A superpathway fit model list
 #' @param npermut Number of permutations on response block matrices
 #' @param maxiter An integer indicating the maximum number of iterations.
 #' If `NULL` the default is 100.
@@ -545,11 +552,11 @@ CIP_GIP_test <- function(object, npermut = 100, maxiter = 100,
                         nsubsampling = 100, ...) {
     checkmate::assert_choice(type, choices = c("jackknife", "subsampling"))
     # Extract data from the object
-    K <- nrow(object@model_fit$`asmbPLS-DA`$Y_group)
-    M <- length(unique(object@superpathway_input@sample_class))
-    X.matrix <- object@model_fit$predictor_block
-    Y.matrix <- object@model_fit$response_matrix
-    X.dim <- lengths(object@model_fit$observed_gene_sets)
+    K <- nrow(object$model_fit$`asmbPLS-DA`$Y_group)
+    M <- length(unique(object$superpathway_input$sample_class))
+    X.matrix <- object$model_fit$predictor_block
+    Y.matrix <- object$model_fit$response_matrix
+    X.dim <- lengths(object$model_fit$observed_gene_sets)
     # Initialize result containers
     CIP_GIP_variability <- NULL_VAR_INF <- list()
     # Calculate CIP/GIP distributions based on resampling type
@@ -664,8 +671,7 @@ impute_split_mfa <- function(
 #' set. Gene whose variance is 0 are excluded from the imputation, if a gene
 #' has null variance and full of 0 values, the NA were imputed to 0.
 #'
-#' @param object A \link{superpathway.input-class} object to fit optimal
-#' asmbPLSDA.
+#' @param object A superpathway input list to fit optimal asmbPLSDA.
 #' @param parallel A boolean indicating whether to parallelize (`TRUE`)
 #' for LOOCV on quantile combination or not (`FALSE`). Note this option is only
 #' available for LOOCV and not KCV. Default is `FALSE`.
@@ -714,12 +720,13 @@ impute_split_mfa <- function(
 #' @param ... Other parameters to be passed onto \link{wilcox_CIP_GIP}, wilcox
 #' test of GIP statistical tests
 #' @import asmbPLS checkmate
-#' @rdname fitOptimal-method
-#'
+#' @rdname fitOptimal
+#' @export
+#' 
 #' @returns
-#' A \link{superpathway.fit.model-class} object with; a
-#' \link{superpathway.input-class} object used for CV and model fit;
-#' a \link{hyperparameters-class} object with the hyperparameters used to fit
+#' A superpathway fit model list object with; a
+#' superpathway input list object used for CV and model fit;
+#' a hyperparameters list object with the hyperparameters used to fit
 #' the optimal model (includes optimal quantiles and PLS components from the
 #' CV step); a list with the fitted model information including: predictor
 #' and response matrices, observed gene sets, from \code{matrixToBlock},
@@ -737,24 +744,22 @@ impute_split_mfa <- function(
 #' # optimal model
 #' fitOptimal(data, npermut = 50, type = "subsampling",
 #' nsubsampling = 10)
-fitOptimal.superpathway.input <- function(
+fitOptimal <- function(
         object, parallel = FALSE, measure = "B_accuracy", Method = NULL,
         expected_measure_increase = 0.005, maxiter = 100,
         global_significance_full = FALSE, CIP.GIP_significance_full = FALSE,
         npermut = 100, nbObsPermut = NULL, type = "jackknife",
         nsubsampling = 100, ...) {
-    output <- new("superpathway.fit.model", superpathway_input = object,
-                    hyperparameters_fit = object@hyperparameters_info,
-                    model_fit = list(), model_validation = list())
+    output <- create_fit_model(object,object$hyperparameters_info,list(),list())
     measure_selected <- get_measure_index(measure)
-    if (min(as.vector(base::table(object@sample_class))) <= 1) {
+    if (min(as.vector(base::table(object$sample_class))) <= 1) {
         stop("At least one class has 1 or fewer samples.")
     }
     model_block_matrices <- matrixToBlock(object)
-    nFC <- ifelse(is.null(object@hyperparameters_info@folds_CV), 5,
-                    object@hyperparameters_info@folds_CV)
-    if(!(min(as.vector(base::table(object@sample_class))) >= nFC)){
-        if(!(min(as.vector(base::table(object@sample_class)))>= as.integer(3))){
+    nFC <- ifelse(is.null(object$hyperparameters_info$folds_CV), 5,
+                    object$hyperparameters_info$folds_CV)
+    if(!(min(as.vector(base::table(object$sample_class))) >= nFC)){
+        if(!(min(as.vector(base::table(object$sample_class)))>= as.integer(3))){
             message("Cannot run KCV with initial Folds, running LOOCV instead")
             nFC <- as.integer(1)
         }else{
@@ -764,21 +769,21 @@ fitOptimal.superpathway.input <- function(
     }
     optimal_hyperparameters <- perform_cv(object, model_block_matrices, nFC,
         measure, parallel, expected_measure_increase, maxiter, Method)
-    output@hyperparameters_fit@number_PLS <- as.integer(
+    output$hyperparameters_fit$number_PLS <- as.integer(
         optimal_hyperparameters$optimal_nPLS)
-    output@hyperparameters_fit@quantile_comb_table <-
+    output$hyperparameters_fit$quantile_comb_table <-
         optimal_hyperparameters$quantile_table_CV
-    output@hyperparameters_fit@folds_CV <- as.integer(nFC)
+    output$hyperparameters_fit$folds_CV <- as.integer(nFC)
     model_block_matrices$block_predictor <-
         impute_X(model_block_matrices$block_predictor)
     optimal_fit <- asmbPLS::asmbPLSDA.fit(
         X.matrix = model_block_matrices$block_predictor,
         Y.matrix = model_block_matrices$matrix_response,
-        PLS.comp = output@hyperparameters_fit@number_PLS,
+        PLS.comp = output$hyperparameters_fit$number_PLS,
         X.dim = model_block_matrices$block_dim, center = TRUE, scale = TRUE,
-        quantile.comb = output@hyperparameters_fit@quantile_comb_table,
-        outcome.type = output@hyperparameters_fit@outcome_type)
-    output@model_fit <- list(
+        quantile.comb = output$hyperparameters_fit$quantile_comb_table,
+        outcome.type = output$hyperparameters_fit$outcome_type)
+    output$model_fit <- list(
         "predictor_block" = model_block_matrices$block_predictor,
         "response_matrix" = model_block_matrices$matrix_response,
         "observed_gene_sets" = model_block_matrices$observed_gene_sets,
