@@ -46,7 +46,7 @@ all genes belonging to the pathway Dendritic Cells in regulating Th1/Th2
 Development [BIOCARTA]
 - "OXA.rda" 
 
-```{r, echo = TRUE, message = FALSE, warning = FALSE}
+```{r}
 library(singIST)
 ```
 
@@ -542,12 +542,14 @@ $$\widehat{x}_{ij} = \mu_{j} + P_{j\cdot} t_i$$
 
 The imputation validation entries are defined as:
 
+$$
 \begin{align}
 \widehat{x}_{ij}  = \begin{cases}
 x_{ij}, & j \in O_i\\
 \widetilde{x}_{ij}, & j \notin O_i
 \end{cases} \quad i \in \mathcal{V}_k
 \end{align}
+$$
 
 This preserves the same latent space used for training-fold imputation and
 prevents leakage from validation into the imputation model. Imputation is
