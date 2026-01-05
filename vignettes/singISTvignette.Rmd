@@ -553,7 +553,7 @@ $$
 
 This preserves the same latent space used for training-fold imputation and
 prevents leakage from validation into the imputation model. Imputation is
-inteded for **partial missingness** (e.g., one missing block while other
+intended for **partial missingness** (e.g., one missing block while other
 blocks are observed). If missingness is extensive (e.g., many samples missing
 most blocks), model stability and interpretability may degrade; in that case
 consider restricting the set of modeled cell types and/or increasing sample
