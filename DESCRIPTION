@@ -1,6 +1,6 @@
 Package: singIST
 Title: comparative single-cell transcriptomics between disease models and a human condition
-Version: 0.99.82
+Version: 0.99.83
 Authors@R: 
     c(person(given = "Aitor", family ="Moruno-Cuenca", email = "morunoaitor@gmail.com", role = c("aut", "cre"), comment = c(ORCID = "0009-0009-8133-2552")),
     person(given = "Dr. Sergio", family = "Picart-Armada", email = "sergio.picartarmada@almirall.com", role = c("rev"), comment = c(ORCID = "0000-0002-6426-8204")),
@@ -16,14 +16,16 @@ Suggests:
     BiocStyle,
     knitr,
     qpdf,
-    utils
+    utils,
+    RcppAlgos,
+    glmGamPoi,
+    methods,
+    sp
 Config/testthat/edition: 3
 Imports: 
     msigdb,
     GSEABase,
-    methods,
     checkmate,
-    RcppAlgos,
     stats,
     asmbPLS,
     BiocParallel,
@@ -31,7 +33,6 @@ Imports:
     FactoMineR,
     Seurat,
     SeuratObject,
-    sp,
     biomaRt,
     data.table,
     purrr,
@@ -39,7 +40,6 @@ Imports:
     SummarizedExperiment,
     scran,
     scuttle,
-    glmGamPoi,
     missMDA,
     S4Vectors
 VignetteBuilder: knitr
