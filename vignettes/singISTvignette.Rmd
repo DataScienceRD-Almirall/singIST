@@ -47,6 +47,7 @@ Development [BIOCARTA]
 - "OXA.rda" 
 
 ```{r}
+set.seed(003)
 library(singIST)
 ```
 
