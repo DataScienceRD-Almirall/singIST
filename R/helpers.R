@@ -1437,7 +1437,7 @@ compute_validation_metrics <- function(
 #' must be either Ensembl, Entrez or Gene Symbols.
 #'
 #' @param gene_set A vector with the genes to assess
-#' @param mart A `Mart` object from `biomaRt::useMart()`
+#' @param mart A `Mart` object from `biomaRt::useEnsembl()`
 #'
 #' @name helpers
 #' @rdname helpers
@@ -1448,7 +1448,7 @@ compute_validation_metrics <- function(
 #' @examples
 #' library(biomaRt)
 #' gene_set <- c("IL13", "IL4", "IL5", "IL21")
-#' mart <- biomaRt::useMart(biomart = "ensembl",
+#' mart <- biomaRt::useEnsembl(biomart = "genes", 
 #' dataset = "hsapiens_gene_ensembl")
 #' detect_gene_type(gene_set, mart)
 detect_gene_type <- function(gene_set, mart){
@@ -1499,8 +1499,8 @@ detect_gene_type <- function(gene_set, mart){
 #' @examples
 #' annotation <- "external_gene_name"
 #' gene_set <- c("IL13", "IL4", "IL5")
-#' mart <- biomaRt::useMart(biomart = "ensembl", dataset = paste0("hsapiens",
-#' "_gene_ensembl"))
+#' mart <- biomaRt::useEnsembl(biomart = "genes",
+#' dataset = "hsapiens_gene_ensembl")
 #' retrieve_one2one_orthologs(annotation, gene_set, mart, "hsapiens",
 #' "mmusculus")
 retrieve_one2one_orthologs <- function(annotation, gene_set, mart,
