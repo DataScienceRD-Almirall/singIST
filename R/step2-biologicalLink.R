@@ -132,6 +132,37 @@ diff_expressed <- function(object, condition_1 = c(), condition_2 = c(),
     return(output)
 }
 
+#' Connect to an Ensembl BioMart dataset with retries and mirror fallback
+#'
+#' Uses the modern biomaRt::useEnsembl() interface (the legacy useMart()
+#' endpoint is no longer reliably served by Ensembl) and falls back across
+#' the official Ensembl mirrors with exponential backoff.
+#' @param dataset character, e.g. "hsapiens_gene_ensembl"
+#' @param retries integer, attempts per mirror
+#' @param mirrors character, mirrors to try in order
+#' @return a Mart object
+#' @keywords internal
+.connect_ensembl <- function(dataset, retries = 2,
+                             mirrors = c("www", "useast", "asia")) {
+    last_err <- NULL
+    for (m in mirrors) {
+        for (i in seq_len(retries)) {
+            mart <- tryCatch(
+                biomaRt::useEnsembl(biomart = "genes", dataset = dataset,
+                                    mirror = if (m == "www") NULL else m),
+                error = function(e) { last_err <<- e; NULL }
+            )
+            if (!is.null(mart)) return(mart)
+            Sys.sleep(2^(i - 1))
+        }
+    }
+    stop("Unable to connect to Ensembl (tried mirrors: ",
+         paste(mirrors, collapse = ", "), ", ", retries,
+         " attempts each). Ensembl services may be temporarily ",
+         "unavailable; please retry later. Last error: ",
+         conditionMessage(last_err), call. = FALSE)
+}
+
 #' @title Orthology mapping
 #' @description
 #' Performs the one-to-one orthology mapping between the mapped disease model
@@ -180,10 +211,8 @@ orthology_mapping <- function(object, model_object, from_species,
                            object$base_class, object$celltype_mapping,
                            object$counts)
     # Connect to Ensembl
-    mart_from <- biomaRt::useMart(biomart = "ENSEMBL_MART_ENSEMBL",
-                                dataset = paste0(from_species, "_gene_ensembl"))
-    mart_to <- biomaRt::useMart(biomart = "ENSEMBL_MART_ENSEMBL",
-                                dataset = paste0(to_species, "_gene_ensembl"))
+    mart_from <- .connect_ensembl(paste0(from_species, "_gene_ensembl"))
+    mart_to <- .connect_ensembl(paste0(to_species, "_gene_ensembl"))
     if(is.null(annotation_to_species)){
         genes_mapped <- rownames(object$counts)
         annotation_to_species <- detect_gene_type(genes_mapped, mart_to)
