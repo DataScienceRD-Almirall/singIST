@@ -12,6 +12,9 @@ Second review round minor points
 ## Version 1.1.0 (2026-04-29)
 Release in Bioconductor
 
+## Version 1.2.0 (2026-08-17)
+Update Biomart ENSEMBL orthology retrieval
+
 ## Version 1.1.1 (2026-08-04)
 Removed large data file (data/OXA.rda, ~229MB) from git history 
 to comply with GitHub's 100MB file size limit ahead of Bioconductor's 
