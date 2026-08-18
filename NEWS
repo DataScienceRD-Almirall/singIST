@@ -1,22 +1,18 @@
 # NEWS file for singIST
 
-## Version 0.99.1 (2025-06-18)
-Initial submision to Bioconductor
-
-## Version 0.99.7 (2025-12-12)
-First review round
-
-## Version 0.99.82 (2026-01-05)
-Second review round minor points
+## Version 1.1.1 (2026-08-18)
+Updated biomaRt calls from deprecated useMart() to useEnsembl() with
+mirror fallback. Removed .Rhistory from repository. Fixed merge conflict
+in DESCRIPTION file.
 
 ## Version 1.1.0 (2026-04-29)
 Release in Bioconductor
 
-## Version 1.2.0 (2026-08-17)
-Update Biomart ENSEMBL orthology retrieval
+## Version 0.99.82 (2026-01-05)
+Second review round minor points
 
-## Version 1.1.1 (2026-08-04)
-Removed large data file (data/OXA.rda, ~229MB) from git history 
-to comply with GitHub's 100MB file size limit ahead of Bioconductor's 
-migration to GitHub-hosted repositories. Data now hosted in inst/extdata 
-in reduced form; git history cleaned accordingly.
+## Version 0.99.7 (2025-12-12)
+First review round
+
+## Version 0.99.1 (2025-06-18)
+Initial submission to Bioconductor
