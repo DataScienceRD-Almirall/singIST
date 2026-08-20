@@ -9,7 +9,8 @@ orthology_mapping(
   model_object,
   from_species,
   to_species = "mmusculus",
-  annotation_to_species = "external_gene_name"
+  annotation_to_species = "external_gene_name",
+  orthology_cache = NULL
 )
 }
 \arguments{
@@ -28,6 +29,16 @@ annotation used for the \code{to_species}. Note this should match with the gene
 names in \code{object$counts}. By default \code{external_gene_name}. If \code{NULL}
 the \code{annotation_to_species} is inferred with \link{detect_gene_type}, note
 this might take time.}
+
+\item{orthology_cache}{An optional \code{data.frame} with a precomputed
+one-to-one orthology mapping, used instead of querying Ensembl BioMart.
+It must contain at least the columns \code{input_gene} (gene identifier in the
+reference organism of \code{model_object}, e.g. human gene symbol) and
+\code{output_gene} (gene identifier in the mapped organism, matching the gene
+names in \code{object$counts}). This makes the workflow reproducible offline
+and robust to Ensembl service interruptions. An example human-to-mouse
+cache is shipped in \code{system.file("extdata", "example_orthology_mapping.rda", package = "singIST")}. By default
+\code{orthology_cache = NULL} and Ensembl BioMart is queried.}
 }
 \value{
 A list with the gene sets per cell type with the one-to-one orthology

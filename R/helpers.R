@@ -41,12 +41,12 @@ add_missing_psb_rows <- function(mat, celltypes, sample_ids) {
 #' @rdname helpers
 #' @export
 update_block <- function(celltype, observed_gene_sets,
-                            block_predictor = block_predictor,
-                            matrix = matrix){
+                         block_predictor = block_predictor,
+                         matrix = matrix){
     matching_rows <- base::grep(paste0("^", celltype, "_"),
                                 rownames(matrix), value = TRUE)
     filtered_matrix <- matrix[matching_rows,
-                                observed_gene_sets, drop = FALSE]
+                              observed_gene_sets, drop = FALSE]
     rownames(filtered_matrix) <- base::gsub(paste0("^", celltype, "_"),
                                             "", matching_rows)
     colnames(filtered_matrix) <- paste0(celltype, "*", observed_gene_sets)
@@ -369,8 +369,8 @@ impute_X <- function(X) {
         X.dim.new <- update_group_sizes(X.dim, clean$keep_cols)
         imp_tr <- fit_mfa_imputer(clean$X_clean, X.dim.new, ncp = 2)
         X_imp <- restore_removed_columns(
-                    as.matrix(imp_tr$imputed), X,
-                    clean$keep_cols)
+            as.matrix(imp_tr$imputed), X,
+            clean$keep_cols)
         return(X_imp)
     }
 }
@@ -446,9 +446,9 @@ eval_split_combo_R <- function(X.matrix, Y.matrix, split, qc_mat, i,
         center = center, scale = scale, maxiter = maxiter
     )
     pred <- asmbPLS::asmbPLSDA.predict(fit, E_va, PLS.comp = i,
-                                        method = Method)$Y_pred
+                                       method = Method)$Y_pred
     res  <- Results_comparison_measure(as.numeric(pred), as.numeric(F_va[,1]),
-                                        outcome.type)
+                                       outcome.type)
     res[metrics]
 }
 
@@ -483,44 +483,44 @@ eval_split_combo_R <- function(X.matrix, Y.matrix, split, qc_mat, i,
 #' @export
 quantile_computation <-
     function(j, ..., results_CV_summary_n, F_matrix_validation_bind,
-                X.matrix, Y.matrix, PLS_term = 1, X.dim, quantile.comb.table,
-                outcome.type = c("binary", "multiclass"), quantile_table_CV, K,
-                n_quantile_comb, Method = NULL, measure = "B_accuracy",
-                expected.measure.increase = 0.005, center = TRUE, scale = TRUE,
-                maxiter = 100){
-            validation_index <- j
-            aux <- seq_len(K)
-            training_index <- aux[aux != j]
-            E_matrix_validation <- X.matrix[validation_index, , drop = FALSE]
-            F_matrix_validation <- Y.matrix[validation_index, , drop = FALSE]
-            E_matrix_training <- X.matrix[training_index, , drop = FALSE]
-            F_matrix_training <- Y.matrix[training_index, , drop = FALSE]
-            # calculate overall/balanced accuracy using different quantile
-            # combinations
-            for (l in seq_len(n_quantile_comb)) {
-                quantile_table_CV[PLS_term, seq_len(length(X.dim))] <-
-                    quantile.comb.table[l, seq_len(length(X.dim))]
-                quantile_temp <-
-                    quantile_table_CV[seq_len(PLS_term), seq_len(length(X.dim)),
-                                        drop = FALSE]
-                asmbPLSDA_fit_results <-
-                    asmbPLS::asmbPLSDA.fit(
-                        E_matrix_training,
-                        F_matrix_training, PLS_term, X.dim,
-                        quantile_temp, outcome.type, center, scale, maxiter)
-                asmbPLSDA_predict_results <-
-                    asmbPLS::asmbPLSDA.predict(
-                        asmbPLSDA_fit_results, E_matrix_validation,
-                        PLS_term, Method)
-                Y_pred <- as.numeric(asmbPLSDA_predict_results["Y_pred"])
-                results_CV_summary_n[l, j] <- Y_pred
-                F_matrix_validation_bind[l, j] <- F_matrix_validation
-            }
-            return(list("results_CV_summary_n" = results_CV_summary_n,
-                        "F_matrix_validation_bind" = F_matrix_validation_bind,
-                        "obs" = j)
-            )
-}
+             X.matrix, Y.matrix, PLS_term = 1, X.dim, quantile.comb.table,
+             outcome.type = c("binary", "multiclass"), quantile_table_CV, K,
+             n_quantile_comb, Method = NULL, measure = "B_accuracy",
+             expected.measure.increase = 0.005, center = TRUE, scale = TRUE,
+             maxiter = 100){
+        validation_index <- j
+        aux <- seq_len(K)
+        training_index <- aux[aux != j]
+        E_matrix_validation <- X.matrix[validation_index, , drop = FALSE]
+        F_matrix_validation <- Y.matrix[validation_index, , drop = FALSE]
+        E_matrix_training <- X.matrix[training_index, , drop = FALSE]
+        F_matrix_training <- Y.matrix[training_index, , drop = FALSE]
+        # calculate overall/balanced accuracy using different quantile
+        # combinations
+        for (l in seq_len(n_quantile_comb)) {
+            quantile_table_CV[PLS_term, seq_len(length(X.dim))] <-
+                quantile.comb.table[l, seq_len(length(X.dim))]
+            quantile_temp <-
+                quantile_table_CV[seq_len(PLS_term), seq_len(length(X.dim)),
+                                  drop = FALSE]
+            asmbPLSDA_fit_results <-
+                asmbPLS::asmbPLSDA.fit(
+                    E_matrix_training,
+                    F_matrix_training, PLS_term, X.dim,
+                    quantile_temp, outcome.type, center, scale, maxiter)
+            asmbPLSDA_predict_results <-
+                asmbPLS::asmbPLSDA.predict(
+                    asmbPLSDA_fit_results, E_matrix_validation,
+                    PLS_term, Method)
+            Y_pred <- as.numeric(asmbPLSDA_predict_results["Y_pred"])
+            results_CV_summary_n[l, j] <- Y_pred
+            F_matrix_validation_bind[l, j] <- F_matrix_validation
+        }
+        return(list("results_CV_summary_n" = results_CV_summary_n,
+                    "F_matrix_validation_bind" = F_matrix_validation_bind,
+                    "obs" = j)
+        )
+    }
 
 #' @title Evaluate Quantile Combinations
 #'
@@ -578,29 +578,29 @@ quantile_computation <-
 #'                                          Method = NULL)
 #' print(result)
 evaluate_quantile_combinations <- function(j, results_CV_summary_n,
-                                            F_matrix_validation_bind,
-                                            E_matrix_training,
-                                            F_matrix_training,
-                                            E_matrix_validation,
-                                            F_matrix_validation,
-                                            quantile_table_CV, i, X.dim,
-                                            quantile.comb.table, outcome.type,
-                                            center, scale, maxiter, Method) {
-        for(l in seq_len(nrow(quantile.comb.table))){
-            quantile_table_CV[i, seq_len(length(X.dim))] <-
-                quantile.comb.table[l, seq_len(length(X.dim))]
-            quantile_temp <- quantile_table_CV[
-                seq_len(i), seq_len(length(X.dim)), drop = FALSE]
-            fit_results <- asmbPLS::asmbPLSDA.fit(
-                E_matrix_training, F_matrix_training, i, X.dim, quantile_temp,
-                outcome.type, center, scale,maxiter)
-            predict_results <- asmbPLS::asmbPLSDA.predict(fit_results,
-                                                            E_matrix_validation,
-                                                            i, Method)
-            Y_pred <- as.numeric(predict_results["Y_pred"])
-            results_CV_summary_n[l, j] <- Y_pred
-            F_matrix_validation_bind[l, j] <- F_matrix_validation
-        }
+                                           F_matrix_validation_bind,
+                                           E_matrix_training,
+                                           F_matrix_training,
+                                           E_matrix_validation,
+                                           F_matrix_validation,
+                                           quantile_table_CV, i, X.dim,
+                                           quantile.comb.table, outcome.type,
+                                           center, scale, maxiter, Method) {
+    for(l in seq_len(nrow(quantile.comb.table))){
+        quantile_table_CV[i, seq_len(length(X.dim))] <-
+            quantile.comb.table[l, seq_len(length(X.dim))]
+        quantile_temp <- quantile_table_CV[
+            seq_len(i), seq_len(length(X.dim)), drop = FALSE]
+        fit_results <- asmbPLS::asmbPLSDA.fit(
+            E_matrix_training, F_matrix_training, i, X.dim, quantile_temp,
+            outcome.type, center, scale,maxiter)
+        predict_results <- asmbPLS::asmbPLSDA.predict(fit_results,
+                                                      E_matrix_validation,
+                                                      i, Method)
+        Y_pred <- as.numeric(predict_results["Y_pred"])
+        results_CV_summary_n[l, j] <- Y_pred
+        F_matrix_validation_bind[l, j] <- F_matrix_validation
+    }
     return(list("results_CV_summary_n" = results_CV_summary_n,
                 "F_matrix_validation_bind" = F_matrix_validation_bind))
 }
@@ -703,14 +703,14 @@ execute_parallel_cv <- function(K, results_CV_summary_n,
 #' A vector with the performance measure of each quantile combination
 #' @export
 performance_measures <- function(n_quantile_comb, results_CV_summary_n,
-                                    F_matrix_validation_bind, outcome.type,
-                                    measure_selected){
+                                 F_matrix_validation_bind, outcome.type,
+                                 measure_selected){
     measure_acc <- c()
     for(l in seq_len(n_quantile_comb)){
         Y_pred <- as.vector(results_CV_summary_n[l, ])
         F_matrix_validation <- as.vector(F_matrix_validation_bind[l, ])
         measure_new <- Results_comparison_measure(Y_pred, F_matrix_validation,
-                                                    outcome.type)
+                                                  outcome.type)
         measure_acc <- c(measure_acc, measure_new[measure_selected])
     }
     return(measure_acc)
@@ -740,14 +740,14 @@ performance_measures <- function(n_quantile_comb, results_CV_summary_n,
 #' Optimal quantile table for each PLS with all its performance measures
 #' @export
 compute_final_measures <- function(K, X.matrix, Y.matrix, i, X.dim,
-                                    quantile_table_CV, outcome.type,
-                                    center, scale, maxiter, Method){
+                                   quantile_table_CV, outcome.type,
+                                   center, scale, maxiter, Method){
     Y_pred_bind <- matrix()
     F_matrix_validation_bind <- matrix()
     for(j in seq_len(K)){
         train_val <- get_train_val_sets(X.matrix, Y.matrix, j)
         quantile_temp <- quantile_table_CV[seq_len(i), seq_len(length(X.dim)),
-                                            drop = FALSE]
+                                           drop = FALSE]
         # Fit model using the training set
         asmbPLSDA_fit_results <- asmbPLS::asmbPLSDA.fit(
             train_val$E_matrix_training, train_val$F_matrix_training, i, X.dim,
@@ -758,7 +758,7 @@ compute_final_measures <- function(K, X.matrix, Y.matrix, i, X.dim,
         rownames(Y_pred) <- NULL
         Y_pred_bind <- rbind(Y_pred_bind, Y_pred)
         F_matrix_validation_bind <- rbind(F_matrix_validation_bind,
-                                            train_val$F_matrix_validation)
+                                          train_val$F_matrix_validation)
     }
     # Avoid the first row which is always NA
     Y_pred_bind <- Y_pred_bind[2:nrow(Y_pred_bind), , drop = FALSE]
@@ -766,7 +766,7 @@ compute_final_measures <- function(K, X.matrix, Y.matrix, i, X.dim,
         2:nrow(F_matrix_validation_bind), , drop = FALSE]
     # Compute the performance metrics for the validation and training sets
     measure <- Results_comparison_measure(Y_pred_bind, F_matrix_validation_bind,
-                                            outcome.type)
+                                          outcome.type)
     quantile_table_CV[i, (length(X.dim)+1):ncol(quantile_table_CV)] <- measure
     # Update colnames of optimal quantile table including blocks
     colnames(quantile_table_CV)[(length(X.dim)+1):ncol(quantile_table_CV)] <-
@@ -793,7 +793,7 @@ compute_final_measures <- function(K, X.matrix, Y.matrix, i, X.dim,
 #'
 #' @export
 select_optimal_PLS <- function(PLS_term, quantile_table_CV, X.dim,
-                                measure_selected, expected.measure.increase){
+                               measure_selected, expected.measure.increase){
     optimal_nPLS <- 1
     if(PLS_term > 1){
         for(i in seq_len(PLS_term-1)){
@@ -845,15 +845,15 @@ execute_sequential_cv <- function(
     for (j in seq_len(K)) {
         train_val <- get_train_val_sets(X.matrix, Y.matrix, j)
         evaluation_quantiles <- evaluate_quantile_combinations(
-                    j, results_CV_summary_n, F_matrix_validation_bind,
-                    train_val$E_matrix_training,
-                    train_val$F_matrix_training,
-                    train_val$E_matrix_validation,
-                    train_val$F_matrix_validation,
-                    quantile_table_CV, PLS_term, X.dim,
-                    quantile.comb.table, outcome.type, center, scale, maxiter,
-                    Method
-                    )
+            j, results_CV_summary_n, F_matrix_validation_bind,
+            train_val$E_matrix_training,
+            train_val$F_matrix_training,
+            train_val$E_matrix_validation,
+            train_val$F_matrix_validation,
+            quantile_table_CV, PLS_term, X.dim,
+            quantile.comb.table, outcome.type, center, scale, maxiter,
+            Method
+        )
         results_CV_summary_n[ , j] <-
             evaluation_quantiles$results_CV_summary_n[, j]
         F_matrix_validation_bind[ , j] <-
@@ -887,7 +887,7 @@ initialize_results <- function(npermut, q) {
         prct.Ychange.values = data.frame(
             dimlabP,
             matrix(NA,ncol = q + 1,
-            nrow = npermut + 1))
+                   nrow = npermut + 1))
     )
     return(res)
 }
@@ -1009,7 +1009,7 @@ fit_permuted_model <- function(object, X_train, Y_train, maxiter) {
 #' Res list including the performance measure of the permuted model
 #' @export
 evaluate_performance <- function(res, Modelpermut, X_train, X_val,
-                                Y.matrix, s, measure, j, nr, Method, object) {
+                                 Y.matrix, s, measure, j, nr, Method, object) {
     Yperm_pred <- numeric(nr)
     Yperm_pred[s] <- asmbPLS::asmbPLSDA.predict(
         Modelpermut, X_val, object$hyperparameters_fit$number_PLS,
@@ -1305,7 +1305,7 @@ calculate_pvalues <- function(variability, null_dist, test_func, ...) {
 #' @returns A list containing the optimal hyperparameters and associated
 #' quantile table.
 perform_cv <- function(object, model_block_matrices, nFC, measure, parallel,
-                        expected_measure_increase, maxiter, Method) {
+                       expected_measure_increase, maxiter, Method) {
     if (nFC == 1) {
         message("Running LOOCV")
         return(asmbPLSDA.cv.loo(
@@ -1388,8 +1388,8 @@ compute_validation_metrics <- function(
         splits <- optimal_hyperparameters$splits
     }
     output_global_significance <- permut_asmbplsda_kcv(output, npermut= npermut,
-        splits = splits, nbObsPermut = nbObsPermut, Nc = Nc,CV_error = CV_error,
-        measure = measure, Method = Method, maxiter = maxiter)
+                                                       splits = splits, nbObsPermut = nbObsPermut, Nc = Nc,CV_error = CV_error,
+                                                       measure = measure, Method = Method, maxiter = maxiter)
     if (global_significance_full) {
         output$model_validation$`global_significance` <-
             output_global_significance
@@ -1411,20 +1411,20 @@ compute_validation_metrics <- function(
     }
     CIP_GIP_adj_pval <- lapply(
         seq_along(output$model_fit$observed_gene_sets),function(j) {
-        lambdas <- optimal_hyperparameters$quantile_table_CV[
-            seq_len(optimal_hyperparameters$optimal_nPLS),
-            seq_len(length(output$model_fit$observed_gene_sets)), drop = FALSE]
-        prod_lambdas <- apply(lambdas, 2, function(x) prod(x, na.rm = TRUE))
-        m_0 <- ifelse(floor(
-            prod_lambdas * lengths(output$model_fit$observed_gene_sets)) == 0,
-            1, floor(prod_lambdas *
-                        lengths(output$model_fit$observed_gene_sets)))
-        pval <- output_CIP_GIP_significance$`GIP_pvalue`[[j]][, 1]
-        adj_pval <- ifelse(pval * m_0[j] < 1, pval*m_0[j], 1) 
-        output_adjpval <- data.frame("adj_p_val" = adj_pval)
-        rownames(output_adjpval) <- rownames(
-            output_CIP_GIP_significance$`GIP_pvalue`[[j]])
-        return(output_adjpval)
+            lambdas <- optimal_hyperparameters$quantile_table_CV[
+                seq_len(optimal_hyperparameters$optimal_nPLS),
+                seq_len(length(output$model_fit$observed_gene_sets)), drop = FALSE]
+            prod_lambdas <- apply(lambdas, 2, function(x) prod(x, na.rm = TRUE))
+            m_0 <- ifelse(floor(
+                prod_lambdas * lengths(output$model_fit$observed_gene_sets)) == 0,
+                1, floor(prod_lambdas *
+                             lengths(output$model_fit$observed_gene_sets)))
+            pval <- output_CIP_GIP_significance$`GIP_pvalue`[[j]][, 1]
+            adj_pval <- ifelse(pval * m_0[j] < 1, pval*m_0[j], 1) 
+            output_adjpval <- data.frame("adj_p_val" = adj_pval)
+            rownames(output_adjpval) <- rownames(
+                output_CIP_GIP_significance$`GIP_pvalue`[[j]])
+            return(output_adjpval)
         })
     output$model_validation$`adjpvalue_GIP_significance` <- CIP_GIP_adj_pval
     return(output)
@@ -1446,15 +1446,20 @@ compute_validation_metrics <- function(
 #' @import checkmate biomaRt
 #' @export
 #' @examples
+#' \dontrun{
 #' library(biomaRt)
 #' gene_set <- c("IL13", "IL4", "IL5", "IL21")
-#' mart <- biomaRt::useEnsembl(biomart = "genes", 
+#' mart <- biomaRt::useEnsembl(biomart = "genes",
 #' dataset = "hsapiens_gene_ensembl")
 #' detect_gene_type(gene_set, mart)
+#' }
+#' ## This helper requires a live Ensembl connection. For a fully offline
+#' ## workflow, call orthology_mapping() with the shipped cache instead
+#' ## (see ?orthology_mapping, argument orthology_cache).
 detect_gene_type <- function(gene_set, mart){
     checkmate::assert_class(mart, "Mart")
     possible_filters <- c("ensembl_gene_id", "entrezgene_id",
-                            "external_gene_name")
+                          "external_gene_name")
     # Extract organism and if that organism is hsapiens add hgnc_symbol
     # to the possible filters vector
     dataset_name <- base::attributes(mart)$dataset
@@ -1497,14 +1502,19 @@ detect_gene_type <- function(gene_set, mart){
 #' from_species and to_species with only one to one orthologs
 #' @export
 #' @examples
+#' \dontrun{
 #' annotation <- "external_gene_name"
 #' gene_set <- c("IL13", "IL4", "IL5")
 #' mart <- biomaRt::useEnsembl(biomart = "genes",
 #' dataset = "hsapiens_gene_ensembl")
 #' retrieve_one2one_orthologs(annotation, gene_set, mart, "hsapiens",
 #' "mmusculus")
+#' }
+#' ## This helper requires a live Ensembl connection. For a fully offline
+#' ## workflow, call orthology_mapping() with the shipped cache instead
+#' ## (see ?orthology_mapping, argument orthology_cache).
 retrieve_one2one_orthologs <- function(annotation, gene_set, mart,
-                                        from_species, to_species){
+                                       from_species, to_species){
     # Convert input genes to Ensembl IDs (required for ortholog retrieval)
     gene_conversion <- biomaRt::getBM(
         attributes = c(annotation, "ensembl_gene_id"),
@@ -1517,26 +1527,26 @@ retrieve_one2one_orthologs <- function(annotation, gene_set, mart,
     # Retrieve orthologs using Ensembl IDs
     orthologs <- biomaRt::getBM(
         attributes = c("ensembl_gene_id",
-                        paste0(to_species, "_homolog_ensembl_gene"),
-                        paste0(to_species, "_homolog_orthology_type")),
+                       paste0(to_species, "_homolog_ensembl_gene"),
+                       paste0(to_species, "_homolog_orthology_type")),
         filters = "ensembl_gene_id",
         values = gene_conversion$ensembl_gene_id,
         mart = mart
     )
     data.table::setDT(orthologs)
     data.table::setnames(orthologs,
-                        old =c("ensembl_gene_id",
+                         old =c("ensembl_gene_id",
                                 paste0(to_species, "_homolog_ensembl_gene"),
                                 paste0(to_species, "_homolog_orthology_type")),
-                        new = c("from_ensembl", "ortholog", "orthology_type"))
+                         new = c("from_ensembl", "ortholog", "orthology_type"))
     # Merge back with original input genes
     final_orthologs <- base::merge(gene_conversion, orthologs,
-                                    by.x = "ensembl_gene_id",
-                                    by.y = "from_ensembl",
-                                    all.x = TRUE)
+                                   by.x = "ensembl_gene_id",
+                                   by.y = "from_ensembl",
+                                   all.x = TRUE)
     # Filter for one-to-one orthologs only
     final_orthologs <- final_orthologs[final_orthologs$orthology_type ==
-                                        "ortholog_one2one", ]
+                                           "ortholog_one2one", ]
     return(final_orthologs)
 }
 
@@ -1570,8 +1580,8 @@ FCtoExpression <- function(model_object, b, samples, predictor_block, FC){
     # Check condition C = min{x + r*mu} >= 0
     sum <- min_col + mu_per_r
     check_negativity_condition <-  apply(sum, 2,
-                                            FUN = function(x)
-                                            return(ifelse(x >= 0, TRUE, FALSE))
+                                         FUN = function(x)
+                                             return(ifelse(x >= 0, TRUE, FALSE))
     )
     # Translate FC onto gene expression
     for(i in seq(1, ncol(mu))){

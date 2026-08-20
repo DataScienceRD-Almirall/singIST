@@ -642,17 +642,27 @@ CV_error <- 0.32
 compute_pvalue(null_errors, CV_error)
 null_errors <- c(0.3, 0.4, 0.35, 0.33)
 compute_IC95(null_errors)
+\dontrun{
 library(biomaRt)
 gene_set <- c("IL13", "IL4", "IL5", "IL21")
-mart <- biomaRt::useMart(biomart = "ensembl",
+mart <- biomaRt::useEnsembl(biomart = "genes",
 dataset = "hsapiens_gene_ensembl")
 detect_gene_type(gene_set, mart)
+}
+## This helper requires a live Ensembl connection. For a fully offline
+## workflow, call orthology_mapping() with the shipped cache instead
+## (see ?orthology_mapping, argument orthology_cache).
+\dontrun{
 annotation <- "external_gene_name"
 gene_set <- c("IL13", "IL4", "IL5")
-mart <- biomaRt::useMart(biomart = "ensembl", dataset = paste0("hsapiens",
-"_gene_ensembl"))
+mart <- biomaRt::useEnsembl(biomart = "genes",
+dataset = "hsapiens_gene_ensembl")
 retrieve_one2one_orthologs(annotation, gene_set, mart, "hsapiens",
 "mmusculus")
+}
+## This helper requires a live Ensembl connection. For a fully offline
+## workflow, call orthology_mapping() with the shipped cache instead
+## (see ?orthology_mapping, argument orthology_cache).
 X.dim <- c(30,40,60)
 j <- 2
 get_indices(j, X.dim)

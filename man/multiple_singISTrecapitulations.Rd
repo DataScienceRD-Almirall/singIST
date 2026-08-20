@@ -8,6 +8,7 @@ multiple_singISTrecapitulations(
   object,
   model_object = list(),
   model_species = list("hsapiens"),
+  orthology_cache = NULL,
   ...
 )
 }
@@ -20,6 +21,13 @@ are superpathway fit model list}
 \item{model_species}{A list of characters indicating the organism of each
 \code{model_object} element. By default \code{list("hsapiens")} which assumes the same
 organism across all elements of \code{model_object} parameter}
+
+\item{orthology_cache}{An optional \code{data.frame} with a precomputed
+one-to-one orthology mapping, forwarded to \link{singISTrecapitulations}
+for every superpathway in \code{model_object}. When provided, no Ensembl
+BioMart queries are performed, making the workflow reproducible offline.
+See \link{orthology_mapping} for the required format. By default
+\code{orthology_cache = NULL}.}
 
 \item{...}{Other parameters to pass onto \link{biological_link_function}}
 }

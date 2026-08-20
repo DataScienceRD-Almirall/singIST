@@ -1,18 +1,39 @@
 # NEWS file for singIST
 
-## Version 1.1.1 (2026-08-18)
-Updated biomaRt calls from deprecated useMart() to useEnsembl() with
-mirror fallback. Removed .Rhistory from repository. Fixed merge conflict
-in DESCRIPTION file.
-
-## Version 1.1.0 (2026-04-29)
-Release in Bioconductor
-
-## Version 0.99.82 (2026-01-05)
-Second review round minor points
+## Version 0.99.1 (2025-06-18)
+Initial submission to Bioconductor
 
 ## Version 0.99.7 (2025-12-12)
 First review round
 
-## Version 0.99.1 (2025-06-18)
-Initial submission to Bioconductor
+## Version 0.99.82 (2026-01-05)
+Second review round minor points
+
+## Version 1.0.0 (2026-04-29)
+Released in Bioconductor 3.23
+
+## Version 1.1.0 (2026-04-29)
+devel branch (Bioconductor 3.24) opened
+
+## Version 1.1.1 (2026-08-04)
+Removed large data file (data/OXA.rda, ~229MB) from git history to comply
+with GitHub's 100MB file size limit ahead of Bioconductor's migration to
+GitHub-hosted repositories. Data now hosted in inst/extdata in reduced form;
+git history cleaned accordingly.
+Migrated BioMart orthology retrieval to biomaRt::useEnsembl() with automatic
+mirror fallback (www, useast, asia) and retries with exponential backoff
+(.connect_ensembl).
+
+## Version 1.1.2 (2026-08-20)
+Reviewer 2, second review round:
+* Wrapped every BioMart step in informative error handling (.biomart_step)
+  reporting which step and dataset failed, with remediation guidance.
+* Added orthology_cache argument to orthology_mapping(),
+  singISTrecapitulations(), and multiple_singISTrecapitulations() to skip
+  live Ensembl queries when a cached mapping is supplied.
+* Shipped example_orthology_mapping.rda (human->mouse 1:1 orthologs, 17066
+  pairs) in inst/extdata for offline vignette reproducibility.
+* Wrapped Ensembl-dependent examples in \dontrun{} so R CMD check passes
+  without network access.
+* Vignette: added version/reproducibility section, dynamic version chunk,
+  automatic offline fallback to shipped orthology cache, and sessionInfo().

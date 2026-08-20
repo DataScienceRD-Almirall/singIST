@@ -26,13 +26,13 @@ celltype_mapping <- function(object){
     output <- object
     # Avoid spaces as FindMarkers/findMarkers does not identify them
     names(output$celltype_mapping) <- gsub(" ", "_",
-                                            names(output$celltype_mapping))
+                                           names(output$celltype_mapping))
     # Rename cell types based on cell type mapping
     output$counts$celltype_cluster <- base::unlist(
         base::lapply(output$counts$celltype_cluster, function(x){
             var_name <- names(output$celltype_mapping)[
                 vapply(output$celltype_mapping, function(vals) x %in% vals,
-                        FUN.VALUE = logical(1))]
+                       FUN.VALUE = logical(1))]
             if(length(var_name) > 0) var_name else NA
         }
         )
@@ -156,11 +156,50 @@ diff_expressed <- function(object, condition_1 = c(), condition_2 = c(),
             Sys.sleep(2^(i - 1))
         }
     }
-    stop("Unable to connect to Ensembl (tried mirrors: ",
-         paste(mirrors, collapse = ", "), ", ", retries,
-         " attempts each). Ensembl services may be temporarily ",
-         "unavailable; please retry later. Last error: ",
+    stop("Unable to connect to Ensembl BioMart (dataset '", dataset,
+         "'; tried mirrors: ", paste(mirrors, collapse = ", "), ", ",
+         retries, " attempts each).\nEnsembl services may be temporarily ",
+         "unavailable or under migration. You can: (1) retry later; ",
+         "(2) connect to an Ensembl archive release, e.g. ",
+         "biomaRt::useEnsembl(biomart = \"genes\", dataset = \"", dataset,
+         "\", host = \"https://sep2025.archive.ensembl.org\"); or (iii) ",
+         "provide a precomputed orthology mapping through the ",
+         "`orthology_cache` argument of `orthology_mapping()` / ",
+         "`biological_link_function()` / `singISTrecapitulations()` / ",
+         "`multiple_singISTrecapitulations()` (an example cache for ",
+         "human-to-mouse symbol mapping is shipped in ",
+         "system.file(\"extdata\", \"example_orthology_mapping.rda\", ",
+         "package = \"singIST\")).\nLast error: ",
          conditionMessage(last_err), call. = FALSE)
+}
+
+#' Run a BioMart step with an informative error message
+#'
+#' Wraps an expression that queries Ensembl BioMart so that, on failure,
+#' the error states exactly which step and dataset failed and what the
+#' user can do about it.
+#' @param step character, description of the step being performed
+#' @param expr expression to evaluate
+#' @return the value of `expr` if it succeeds
+#' @keywords internal
+.biomart_step <- function(step, expr) {
+    tryCatch(
+        expr,
+        error = function(e) {
+            stop("Ensembl BioMart request failed while ", step, ".\n",
+                 "This is an external service issue, not a problem with ",
+                 "your data. You can: (1) retry later; (2) let singIST ",
+                 "fall back to the official Ensembl mirrors (done ",
+                 "automatically on connection); (3) use an Ensembl ",
+                 "archive release host, e.g. ",
+                 "\"https://sep2025.archive.ensembl.org\"; or (4) provide ",
+                 "a precomputed orthology mapping via the `orthology_cache` ",
+                 "argument (an example is shipped in ",
+                 "system.file(\"extdata\", \"example_orthology_mapping.rda\", ",
+                 "package = \"singIST\")).\nOriginal error: ",
+                 conditionMessage(e), call. = FALSE)
+        }
+    )
 }
 
 #' @title Orthology mapping
@@ -180,6 +219,16 @@ diff_expressed <- function(object, condition_1 = c(), condition_2 = c(),
 #' names in `object$counts`. By default `external_gene_name`. If `NULL`
 #' the `annotation_to_species` is inferred with \link{detect_gene_type}, note
 #' this might take time.
+#' @param orthology_cache An optional `data.frame` with a precomputed
+#' one-to-one orthology mapping, used instead of querying Ensembl BioMart.
+#' It must contain at least the columns `input_gene` (gene identifier in the
+#' reference organism of `model_object`, e.g. human gene symbol) and
+#' `output_gene` (gene identifier in the mapped organism, matching the gene
+#' names in `object$counts`). This makes the workflow reproducible offline
+#' and robust to Ensembl service interruptions. An example human-to-mouse
+#' cache is shipped in `system.file("extdata",
+#' "example_orthology_mapping.rda", package = "singIST")`. By default
+#' `orthology_cache = NULL` and Ensembl BioMart is queried.
 #' @import biomaRt data.table
 #' @returns
 #' A list with the gene sets per cell type with the one-to-one orthology
@@ -202,45 +251,96 @@ diff_expressed <- function(object, condition_1 = c(), condition_2 = c(),
 #' # by default "external_gene_name" this is faster
 #' orthology_mapping(data_organism, data_model, "hsapiens")}
 orthology_mapping <- function(object, model_object, from_species,
-                                to_species = "mmusculus",
-                                annotation_to_species = "external_gene_name"){
+                              to_species = "mmusculus",
+                              annotation_to_species = "external_gene_name",
+                              orthology_cache = NULL){
     check_fit_model(model_object$superpathway_input,
                     model_object$hyperparameters_fit, model_object$model_fit,
                     model_object$model_validation)
     check_mapping_organism(object$organism, object$target_class,
                            object$base_class, object$celltype_mapping,
                            object$counts)
+    # Case with precomputed orthology mapping: no Ensembl BioMart queries
+    if(!is.null(orthology_cache)){
+        checkmate::assert_data_frame(orthology_cache)
+        missing_cols <- setdiff(c("input_gene", "output_gene"),
+                                colnames(orthology_cache))
+        if(length(missing_cols) > 0){
+            stop("`orthology_cache` must contain columns 'input_gene' and ",
+                 "'output_gene'. Missing: ",
+                 paste(missing_cols, collapse = ", "), call. = FALSE)
+        }
+        message("Using the provided `orthology_cache`; Ensembl BioMart ",
+                "queries are skipped.")
+        gene_set_orthologs <- lapply(
+            seq_along(model_object$model_fit$observed_gene_sets),
+            function(i){
+                gene_set <- model_object$model_fit$observed_gene_sets[[i]]
+                hits <- orthology_cache[
+                    orthology_cache$input_gene %in% gene_set, ,
+                    drop = FALSE]
+                uncovered <- setdiff(gene_set, hits$input_gene)
+                if(length(uncovered) > 0){
+                    warning("`orthology_cache` provides no one-to-one ",
+                            "ortholog for ", length(uncovered), " of ",
+                            length(gene_set), " genes of gene set ", i,
+                            " (e.g. ", paste(utils::head(uncovered, 3),
+                                             collapse = ", "), "). These genes are excluded ",
+                            "from the mapping, as they would be if no ",
+                            "one-to-one ortholog were found in Ensembl.",
+                            call. = FALSE)
+                }
+                return(data.table::data.table(
+                    "output_gene" = hits$output_gene,
+                    "input_gene" = hits$input_gene))
+            })
+        return(gene_set_orthologs)
+    }
     # Connect to Ensembl
     mart_from <- .connect_ensembl(paste0(from_species, "_gene_ensembl"))
     mart_to <- .connect_ensembl(paste0(to_species, "_gene_ensembl"))
     if(is.null(annotation_to_species)){
         genes_mapped <- rownames(object$counts)
-        annotation_to_species <- detect_gene_type(genes_mapped, mart_to)
+        annotation_to_species <- .biomart_step(
+            paste0("detecting the gene identifier type of the mapping ",
+                   "organism (dataset '", to_species, "_gene_ensembl')"),
+            detect_gene_type(genes_mapped, mart_to))
     }
     gene_sets <- unique(unlist(model_object$model_fit$observed_gene_sets))
-    annotation_ref <- detect_gene_type(gene_sets, mart_from)
+    annotation_ref <- .biomart_step(
+        paste0("detecting the gene identifier type of the reference ",
+               "organism (dataset '", from_species, "_gene_ensembl')"),
+        detect_gene_type(gene_sets, mart_from))
     # Retrieve ortholog for each observed gene set in the reference species
     gene_set_orthologs <- lapply(
         seq_along(model_object$model_fit$observed_gene_sets),
         function(i, annotation_from = annotation_ref){
             gene_set <- model_object$model_fit$observed_gene_sets[[i]]
-            orthologs <- retrieve_one2one_orthologs(
-                annotation = annotation_from, gene_set = gene_set,
-                mart = mart_from, from_species = from_species,
-                to_species = to_species)
-            target_gene_symbols <- biomaRt::getBM(
-                attributes = c("ensembl_gene_id", annotation_to_species),
-                filters = "ensembl_gene_id", values = orthologs$ortholog,
-                mart = mart_to)
+            orthologs <- .biomart_step(
+                paste0("retrieving one-to-one '", to_species,
+                       "' orthologs for gene set ", i, " (dataset '",
+                       from_species, "_gene_ensembl')"),
+                retrieve_one2one_orthologs(
+                    annotation = annotation_from, gene_set = gene_set,
+                    mart = mart_from, from_species = from_species,
+                    to_species = to_species))
+            target_gene_symbols <- .biomart_step(
+                paste0("mapping Ensembl IDs to '", annotation_to_species,
+                       "' for gene set ", i, " (dataset '", to_species,
+                       "_gene_ensembl')"),
+                biomaRt::getBM(
+                    attributes = c("ensembl_gene_id", annotation_to_species),
+                    filters = "ensembl_gene_id", values = orthologs$ortholog,
+                    mart = mart_to))
             data.table::setDT(target_gene_symbols)
             data.table::setnames(target_gene_symbols,
-                                new = c("ensembl_gene_id", "output_gene"))
+                                 new = c("ensembl_gene_id", "output_gene"))
             final_orthologs <- base::merge(
                 orthologs, target_gene_symbols, by.x ="ortholog",
                 by.y = "ensembl_gene_id", all.x = TRUE)
             return(final_orthologs[, c("output_gene", "input_gene")])
         })
-        return(gene_set_orthologs)
+    return(gene_set_orthologs)
 }
 
 #' @title Derive singIST treated samples
@@ -281,7 +381,7 @@ orthology_mapping <- function(object, model_object, from_species,
 #' \donttest{singIST_treat(data_organism, data_model, orthologs, logFC)}
 singIST_treat <- function(object, model_object, orthologs, logFC){
     samples <- which(model_object$superpathway_input$sample_class ==
-                        model_object$superpathway_input$base_class)
+                         model_object$superpathway_input$base_class)
     predictor_block <- model_object$model_fit$predictor_block
     cells <- as.vector(which(lengths(object$celltype_mapping) > 0))
     names(logFC) <- names(object$celltype_mapping)[cells]
@@ -293,13 +393,13 @@ singIST_treat <- function(object, model_object, orthologs, logFC){
         if(length(genes) == 0){
             FC[[c]] <- data.frame()
             next
-            }
+        }
         FC_aux <- logFC[[c]][rownames(logFC[[c]]) %in% genes, , drop = FALSE]
         significant_genes <- FC_aux[, "p_val_adj"] <= 0.05
         if(nrow(FC_aux) == 0){
             FC[[c]] <- data.frame()
             next
-            }
+        }
         if(sum(significant_genes, na.rm = TRUE) == 0){
             indices_match <- match(rownames(FC_aux), orthologs[[b]]$output_gene)
             FC_aux[!significant_genes, "avg_log2FC"] <-
@@ -307,7 +407,7 @@ singIST_treat <- function(object, model_object, orthologs, logFC){
             rownames(FC_aux) <- paste0(
                 c, "*", orthologs[[b]][indices_match, ]$input_gene)
             predictor_block <- FCtoExpression(model_object, b, samples,
-                                             predictor_block, FC_aux)
+                                              predictor_block, FC_aux)
             FC_aux <- FC_aux[, c("avg_log2FC", "pct.1", "pct.2", "p_val_adj")]
             colnames(FC_aux)[1] <- "r_g^b"
             FC[[c]] <- FC_aux
@@ -317,9 +417,9 @@ singIST_treat <- function(object, model_object, orthologs, logFC){
             rep(0, sum(!significant_genes, na.rm = TRUE))
         indices_match <- match(rownames(FC_aux), orthologs[[b]]$output_gene)
         rownames(FC_aux) <- paste0(c, "*",
-                                    orthologs[[b]][indices_match, ]$input_gene)
+                                   orthologs[[b]][indices_match, ]$input_gene)
         predictor_block <- FCtoExpression(model_object, b, samples,
-                                            predictor_block, FC_aux)
+                                          predictor_block, FC_aux)
         FC_aux <- FC_aux[, c("avg_log2FC", "pct.1", "pct.2", "p_val_adj")]
         colnames(FC_aux)[1] <- "r_g^b"
         FC[[c]] <- FC_aux
@@ -352,6 +452,11 @@ singIST_treat <- function(object, model_object, orthologs, logFC){
 #' comparable to log2FC computed in asmbPLS-DA model. log2FC should be reported
 #' as descriptive point estimates of mean difference of log2 normalized
 #' expression values.
+#' @param orthology_cache An optional `data.frame` with a precomputed
+#' one-to-one orthology mapping, forwarded to \link{orthology_mapping}. When
+#' provided, no Ensembl BioMart queries are performed, making the workflow
+#' reproducible offline. See \link{orthology_mapping} for the required
+#' format. By default `orthology_cache = NULL`.
 #' @param ... Other parameters to pass onto \link{diff_expressed}
 #' @import checkmate SeuratObject
 #' @returns
@@ -371,7 +476,8 @@ singIST_treat <- function(object, model_object, orthologs, logFC){
 #' \donttest{biological_link_function(data_organism, data_model)}
 biological_link_function <- function(
         object, model_object, object_gene_identifiers = "external_gene_name",
-        model_species = "hsapiens", FC_list = NULL, ...){
+        model_species = "hsapiens", FC_list = NULL, orthology_cache = NULL,
+        ...){
     check_fit_model(model_object$superpathway_input,
                     model_object$hyperparameters_fit, model_object$model_fit,
                     model_object$model_validation)
@@ -382,7 +488,7 @@ biological_link_function <- function(
     message("Cell type mapping...")
     object <- celltype_mapping(object)
     object$counts$test <- paste0(object$counts$celltype_cluster, "_",
-                                    object$counts$class)
+                                 object$counts$class)
     if(inherits(object$counts,"Seurat")){SeuratObject::Idents(object$counts)<-"test"}
     if(is.null(FC_list)){
         message("Computing log Fold Changes...")
@@ -391,33 +497,33 @@ biological_link_function <- function(
         checkmate::assert_list(
             FC_list, len = length(names(object$celltype_mapping)))
         checkmate::assert_true(all(names(FC_list) == 
-                            gsub("_", " ", names(object$celltype_mapping))))
+                                       gsub("_", " ", names(object$celltype_mapping))))
         for(i in seq_along(FC_list)){
             checkmate::assert_true(all(colnames(FC_list[[i]]) == c("p_val",
-                                    "avg_log2FC","pct.1","pct.2","p_val_adj")))
+                                                                   "avg_log2FC","pct.1","pct.2","p_val_adj")))
             checkmate::assert_true(all(FC_list[[i]]$p_val_adj <= 1))
         }
         logFC <- FC_list
     }
     message("Orthology mapping...")
     to_species <- paste0(tolower(substr(object$organism,1,1)),
-                            tolower(sub(".* ", "", object$organism)))
+                         tolower(sub(".* ", "", object$organism)))
     # Remove "_" from cell type name once diff_expressed is executed
     names(object$celltype_mapping) <- gsub("_", " ",
-                                            names(object$celltype_mapping))
+                                           names(object$celltype_mapping))
     if(to_species != model_species){
         orthologs <- orthology_mapping(
             object, model_object, to_species = to_species,
-            annotation_to_species = object_gene_identifiers, 
-            from_species = model_species)
+            annotation_to_species = object_gene_identifiers,
+            from_species = model_species, orthology_cache = orthology_cache)
     }else{ # Case where no orthology mapping should be applied 
         orthologs <-lapply(seq_along(model_object$model_fit$observed_gene_sets),
-                        function(i){
-                        sets <- model_object$model_fit$observed_gene_sets[[i]]
-                        aux <- data.table("input_gene" = sets,
-                                            "output_gene" = sets)
-                        aux
-                        })
+                           function(i){
+                               sets <- model_object$model_fit$observed_gene_sets[[i]]
+                               aux <- data.table("input_gene" = sets,
+                                                 "output_gene" = sets)
+                               aux
+                           })
     }
     # singIST treated samples
     message("Deriving singIST treated samples...")
@@ -425,6 +531,6 @@ biological_link_function <- function(
     # Set names
     names(orthologs) <- names(object$celltype_mapping)
     return(list("orthologs" = orthologs,
-            "singIST_samples" = singIST_samples$singIST_samples,
-            "FC" = singIST_samples$FC))
+                "singIST_samples" = singIST_samples$singIST_samples,
+                "FC" = singIST_samples$FC))
 }
