@@ -10,6 +10,7 @@ biological_link_function(
   object_gene_identifiers = "external_gene_name",
   model_species = "hsapiens",
   FC_list = NULL,
+  orthology_cache = NULL,
   ...
 )
 }
@@ -37,6 +38,12 @@ Rownames should contain the gene names. Note that log2FC provided should be
 comparable to log2FC computed in asmbPLS-DA model. log2FC should be reported
 as descriptive point estimates of mean difference of log2 normalized
 expression values.}
+
+\item{orthology_cache}{An optional \code{data.frame} with a precomputed
+one-to-one orthology mapping, forwarded to \link{orthology_mapping}. When
+provided, no Ensembl BioMart queries are performed, making the workflow
+reproducible offline. See \link{orthology_mapping} for the required
+format. By default \code{orthology_cache = NULL}.}
 
 \item{...}{Other parameters to pass onto \link{diff_expressed}}
 }

@@ -51,6 +51,42 @@ set.seed(003)
 library(singIST)
 ```
 
+# Version information and reproducibility
+
+This vignette is distributed in two places, both generated from the **same
+source file** (`vignettes/singISTvignette.Rmd`) of the corresponding package
+release:
+
+- The **Bioconductor rendered HTML** (package landing page), built by the
+Bioconductor build system from the released package tarball.
+- The **GitHub repository source** (`vignettes/singISTvignette.Rmd` in
+`DataScienceRD-Almirall/singIST`), which reflects the latest development
+state.
+
+Because the Bioconductor HTML is rebuilt on the Bioconductor build schedule,
+it can lag behind the GitHub source by one build cycle (typically 1-2 days
+after a new version is accepted). **Follow the vignette that matches your
+installed package version**; the versions used to render this document are:
+
+```{r, echo = TRUE, message = FALSE, warning = FALSE}
+version_info <- data.frame(
+    field = c("singIST version", "R version"),
+    value = c(as.character(utils::packageVersion("singIST")),
+              R.version.string))
+if (requireNamespace("BiocManager", quietly = TRUE)) {
+    version_info <- rbind(version_info, data.frame(
+        field = "Bioconductor version",
+        value = as.character(BiocManager::version())))
+}
+version_info
+```
+
+The GitHub source of this vignette corresponds to the installed singIST version (see the version table above).
+If your installed version differs, check the
+vignette shipped with your installation via
+`vignette("singISTvignette", package = "singIST")` or the matching GitHub
+release tag.
+
 # Inputs of singIST
 
 The method is defined around three inputs:
@@ -476,19 +512,98 @@ but other cases can also be considered by specifying the parameters
 `object_gene_identifiers = "external_gene_name"`.
 
 ```{r, echo = TRUE, message = FALSE, warning = FALSE}
-# Compute singIST recapitulations for all fitted superpathways
-recapitulations_multiple <- multiple_singISTrecapitulations(oxa_org,
-                                                            superpathways_fit)
+# Compute singIST recapitulations for all fitted superpathways.
+# This step queries Ensembl BioMart for one-to-one orthologs. If Ensembl is
+# temporarily unavailable, we fall back to the precomputed orthology mapping
+# shipped with the package so that the vignette remains fully reproducible
+# offline (see section "Offline reproducibility" below).
+recapitulations_multiple <- tryCatch(
+    multiple_singISTrecapitulations(oxa_org, superpathways_fit),
+    error = function(e) {
+        message("Live Ensembl BioMart query failed: ", conditionMessage(e),
+                "Falling back to the cached orthology mapping shipped ",
+                "with singIST.")
+        load(system.file("extdata", "example_orthology_mapping.rda",
+                         package = "singIST"))
+        multiple_singISTrecapitulations(
+            oxa_org, superpathways_fit,
+            orthology_cache = example_orthology_mapping)
+    }
+)
 ```
 
-In many workflows you will want the outputs in a standarized format that is
+In many workflows you will want the outputs in a standardized format that is
 convenient for downstream plotting and reporting. The helper function
 `render_multiple_outputs()` reshapes the recapitulation objects
-accordingly. It makes a list that is ready-to-plot. 
+accordingly. It makes a list that is ready to plot. 
 
 ```{r, echo = TRUE, message = FALSE, warning = FALSE}
 final_output <- render_multiple_outputs(objects= list(recapitulations_multiple))
 ```
+
+# Offline reproducibility
+
+The only step of the singIST workflow that requires an external service is
+the **one-to-one orthology mapping** performed by `orthology_mapping()`,
+which queries Ensembl BioMart. Ensembl occasionally experiences service
+interruptions or platform migrations: when that happens, older package
+versions failed with opaque errors such as `HTTP 404 Not Found`.
+
+From this version of singIST onwards:
+
+1. **Informative error messages.** If an Ensembl BioMart request fails, the
+error states exactly which step and dataset failed (connection, ortholog
+retrieval, or identifier mapping) and what actions you can take: retry
+later, let the automatic mirror fallback (`www`, `useast`, `asia`) handle
+transient failures, connect to an Ensembl archive release host, or provide
+a precomputed mapping.
+2. **Cached orthology mappings.** All recapitulation functions
+`singISTrecapitulations()` and `multiple_singISTrecapitulations()` accept
+an `orthology_cache` argument. When provided, no Ensembl queries are
+performed and the workflow runs fully offline. The cache is a `data.frame`
+with at least the columns `input_gene` (reference organism identifier,
+e.g. human gene symbol) and `output_gene` (mapped organism identifier,
+matching the gene names of the disease model object).
+
+An example human-to-mouse cache (17,066 one-to-one orthologous gene pairs,
+gene symbols and Ensembl IDs) is shipped with the package:
+
+```{r, echo = TRUE, message = FALSE, warning = FALSE}
+# Load the cached one-to-one orthology mapping shipped with singIST
+load(system.file("extdata", "example_orthology_mapping.rda",
+                 package = "singIST"))
+head(example_orthology_mapping)
+
+# Run the recapitulation step fully offline
+recapitulations_offline <- multiple_singISTrecapitulations(
+    oxa_org, superpathways_fit,
+    orthology_cache = example_orthology_mapping)
+```
+
+To build a cache for your own organism pair, query Ensembl BioMart once
+while the service is available and save the result:
+
+```{r, eval = FALSE}
+# Example: build your own human-to-mouse one-to-one orthology cache
+mart_hs <- biomaRt::useEnsembl(biomart = "genes",
+                               dataset = "hsapiens_gene_ensembl")
+my_cache <- biomaRt::getBM(
+    attributes = c("external_gene_name", "ensembl_gene_id",
+                   "mmusculus_homolog_associated_gene_name",
+                   "mmusculus_homolog_ensembl_gene",
+                   "mmusculus_homolog_orthology_type"),
+    mart = mart_hs)
+my_cache <- my_cache[my_cache$mmusculus_homolog_orthology_type ==
+                         "ortholog_one2one", ]
+colnames(my_cache) <- c("input_gene", "input_ensembl", "output_gene",
+                        "output_ensembl", "orthology_type")
+save(my_cache, file = "my_orthology_cache.rda")
+```
+
+Genes of a superpathway gene set without a one-to-one ortholog in the cache
+are excluded from the mapping (with a warning reporting how many), exactly
+as they would be if no one-to-one ortholog were found in Ensembl, so
+orthology coverage statistics remain correct.
 
 # Appendix: Missing value handling in human pseudobulk matrices
 
@@ -565,5 +680,7 @@ size.
 ```{r}
 utils::sessionInfo()
 ```
+
+
 
 

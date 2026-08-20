@@ -116,7 +116,7 @@ multiple_fitOptimal <- function(
         CIP.GIP_significance_full = c(FALSE), npermut = c(100),
         nbObsPermut = c(NULL), type = c("jackknife"),
         nsubsampling = c(100), Method = c(NULL), ...
-        ){
+){
     # Check that multiple objects are provided in the proper format
     nobjects <- length(object)
     checkmate::assert_list(object, any.missing = FALSE, all.missing = FALSE)
@@ -147,13 +147,13 @@ multiple_fitOptimal <- function(
         model[[l]] <- fitOptimal(
             object = object[[l]], parallel = parallel[[l]],
             measure = measure[[l]], expected_measure_increase =
-            expected_measure_increase[[l]], maxiter = maxiter[[l]],
+                expected_measure_increase[[l]], maxiter = maxiter[[l]],
             global_significance_full= global_significance_full[[l]],
             CIP.GIP_significance_full = CIP.GIP_significance_full[[l]],
             npermut = npermut[[l]], nbObsPermut = nbObsPermut[[l]],
             type = type[[l]], nsubsampling = nsubsampling[[l]],
             Method = Method[[l]], ...
-            )
+        )
     }
     return(model)
 }
@@ -173,6 +173,12 @@ multiple_fitOptimal <- function(
 #' @param model_species A list of characters indicating the organism of each
 #' `model_object` element. By default `list("hsapiens")` which assumes the same
 #' organism across all elements of `model_object` parameter
+#' @param orthology_cache An optional `data.frame` with a precomputed
+#' one-to-one orthology mapping, forwarded to \link{singISTrecapitulations}
+#' for every superpathway in `model_object`. When provided, no Ensembl
+#' BioMart queries are performed, making the workflow reproducible offline.
+#' See \link{orthology_mapping} for the required format. By default
+#' `orthology_cache = NULL`.
 #' @param ...  Other parameters to pass onto \link{biological_link_function}
 #'
 #' @import checkmate
@@ -197,11 +203,12 @@ multiple_fitOptimal <- function(
 #' multiple_singISTrecapitulations(data_organism, multiple_model,
 #' model_species = list("hsapiens", "hsapiens"))}
 multiple_singISTrecapitulations <- function(
-        object, model_object = list(), model_species = list("hsapiens"), ...){
+        object, model_object = list(), model_species = list("hsapiens"),
+        orthology_cache = NULL, ...){
     # Check that multiple objects are provided in the proper format
     nmodels <- length(model_object)
     checkmate::assert_list(model_object, any.missing = FALSE,
-                            all.missing = FALSE)
+                           all.missing = FALSE)
     checkmate::assert_true(nmodels > 1)
     for(element in model_object){
         checkmate::assert_list(element)
@@ -217,7 +224,8 @@ multiple_singISTrecapitulations <- function(
         pathway <- model_object[[i]]$superpathway_input$superpathway_info
         message("Executing superpathway ", pathway$pathway_info$standard_name)
         aux <- singISTrecapitulations(
-            object, model_object[[i]], model_species = model_species[[i]], ...)
+            object, model_object[[i]], model_species = model_species[[i]],
+            orthology_cache = orthology_cache, ...)
         aux_superpathway[[i]] <- aux$superpathway
         aux_celltype[[i]] <- aux$celltype
         aux_gene[[i]] <- aux$gene
@@ -258,12 +266,12 @@ render_multiple_outputs <- function(objects = list()){
     checkmate::assert_true(length(objects) >= 1)
     superpathways <- do.call(rbind, lapply(seq_along(objects), function(i){
         objects[[i]]$superpathway
-        })
-        )
+    })
+    )
     celltypes <- do.call(rbind, lapply(seq_along(objects), function(i){
         objects[[i]]$celltype
-        })
-        )
+    })
+    )
     genes <- do.call(rbind, lapply(seq_along(objects), function(i){
         orthologs <- purrr::pmap_int(
             objects[[i]]$gene[, c("gene", "pathway", "celltype")],
@@ -276,8 +284,8 @@ render_multiple_outputs <- function(objects = list()){
             })
         objects[[i]]$gene$orthology <- orthologs
         objects[[i]]$gene
-        })
-        )
+    })
+    )
     fc <- do.call(rbind, lapply(seq_along(objects), function(i){# For each model
         all <- do.call(
             rbind,
@@ -287,18 +295,18 @@ render_multiple_outputs <- function(objects = list()){
                 celltype_name <- sub("\\*.*$", "", clean_name)
                 gene_name <- sub("^.*\\*", "", clean_name)
                 pathway_name_col <- data.frame("pathway" = rep(names(data)[j],
-                                                                nrow(combined)))
+                                                               nrow(combined)))
                 result <- cbind(pathway_name_col, "celltype" = celltype_name,
                                 "gene" = gene_name, combined)
                 rownames(result) <- NULL
                 return(result)
             }))
         all <- cbind(all, "target_organism" =
-                        rep(unique(objects[[i]]$superpathway$target_organism),
-                            nrow(all)))
+                         rep(unique(objects[[i]]$superpathway$target_organism),
+                             nrow(all)))
         all
     }))
     output <- list("superpathway" = superpathways, "celltype" = celltypes,
-                    "gene" = genes, "FC" = fc)
+                   "gene" = genes, "FC" = fc)
     return(output)
 }

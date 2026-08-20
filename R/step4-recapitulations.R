@@ -35,15 +35,15 @@ superpathway_recap <- function(model_object, data_original, data_singIST){
     base_class <- model_object$superpathway_input$base_class
     target_class <- model_object$superpathway_input$target_class
     indices_base <- which(model_object$superpathway_input$sample_class ==
-                            base_class)
+                              base_class)
     indices_target <- which(model_object$superpathway_input$sample_class ==
                                 target_class)
     # Derive reference recapitulation
     Omega <- stats::median(data_original[indices_target]) -
-                stats::median(data_original[indices_base])
+        stats::median(data_original[indices_base])
     # Derive predicted recapitulation
     Omega_prime <- stats::median(data_singIST[indices_base]) -
-                    stats::median(data_original[indices_base])
+        stats::median(data_original[indices_base])
     # Compute predicted recapitulation as a fraction of reference recapitulation
     if(abs(Omega) < .Machine$double.eps){
         message("Reference recapitulation is 0")
@@ -95,37 +95,37 @@ celltype_recap <- function(model_object, data_original, data_singIST){
     base_class <- model_object$superpathway_input$base_class
     target_class <- model_object$superpathway_input$target_class
     indices_base <- which(model_object$superpathway_input$sample_class ==
-                            base_class)
+                              base_class)
     indices_target <- which(model_object$superpathway_input$sample_class ==
                                 target_class)
     superpathway_info <- model_object$superpathway_input$superpathway_info
     pathway_name <- superpathway_info$pathway_info$standard_name
     # Derive reference and predicted recapitulations
     recapitulation <- data.frame("pathway" = c(), "celltype" = c(),
-                                    "recapitulation" = c(),
-                                    "reference" = c())
+                                 "recapitulation" = c(),
+                                 "reference" = c())
     for(b in seq(1, nrow(data_original))){
         # Reference recapitulation
         Gamma <- stats::median(data_original[b, indices_target])-
-                    stats::median(data_original[b, indices_base])
+            stats::median(data_original[b, indices_base])
         # Predicted recapitulation
         Gamma_prime <- stats::median(data_singIST[b, indices_base]) -
-                        stats::median(data_original[b, indices_base])
+            stats::median(data_original[b, indices_base])
         # Predicted recapitulation as a fraction of reference recapitulation
         if(abs(Gamma) < .Machine$double.eps){
             message("Reference recapitulation is 0")
             recapitulation <-
                 rbind(recapitulation,
-                        data.frame("pathway" = pathway_name,
-                        "celltype" = rownames(data_original)[b],
-                        "recapitulation" = NULL,
-                        "reference" = Gamma))
+                      data.frame("pathway" = pathway_name,
+                                 "celltype" = rownames(data_original)[b],
+                                 "recapitulation" = NULL,
+                                 "reference" = Gamma))
         }else{
             recapitulation <- rbind(
                 recapitulation,data.frame("pathway" = pathway_name,
-                "celltype" = rownames(data_original)[b],
-                "recapitulation" = 100*Gamma_prime/Gamma,
-                "reference" = Gamma))
+                                          "celltype" = rownames(data_original)[b],
+                                          "recapitulation" = 100*Gamma_prime/Gamma,
+                                          "reference" = Gamma))
         }
     }
     return(recapitulation)
@@ -168,18 +168,18 @@ celltype_recap <- function(model_object, data_original, data_singIST){
 #' gene_contrib(model, original$gene_contribution, derived$gene_contribution,
 #' cell)}
 gene_contrib <- function(model_object, data_original,
-                        data_singIST, cell_reference){
+                         data_singIST, cell_reference){
     # Identify indices of base class
     base_class <- model_object$superpathway_input$base_class
     indices_base <- which(model_object$superpathway_input$sample_class ==
-                            base_class)
+                              base_class)
     superpathway_info <- model_object$superpathway_input$superpathway_info
     pathway_name <- superpathway_info$pathway_info$standard_name
     superpathway_info <- model_object$superpathway_input$superpathway_info
     pathway_name <- superpathway_info$pathway_info$standard_name
     celltypes <- model_object$superpathway_input$superpathway_info$celltypes
     gene_contributions <- data.frame("pathway" = c(), "celltype" = c(),
-                                        "gene" = c(), "contribution" = c())
+                                     "gene" = c(), "contribution" = c())
     # Derive gene contributions to cell type recapitulation
     b_num <- 1
     for(b in celltypes){
@@ -219,6 +219,12 @@ gene_contrib <- function(model_object, data_original,
 #' the recapitulations against the fitted superpathway model
 #' @param model_object A superpathway fit model list used to
 #' calculate the recapitulations
+#' @param orthology_cache An optional `data.frame` with a precomputed
+#' one-to-one orthology mapping, forwarded to
+#' \link{biological_link_function}. When provided, no Ensembl BioMart queries
+#' are performed, making the workflow reproducible offline. See
+#' \link{orthology_mapping} for the required format. By default
+#' `orthology_cache = NULL`.
 #' @param ... Other parameters to pass onto \link{biological_link_function}
 #' @import checkmate
 #'
@@ -247,9 +253,10 @@ gene_contrib <- function(model_object, data_original,
 #' load(file)
 #' data_model <- example_superpathway_fit_model
 #' \donttest{singISTrecapitulations(data_organism, data_model)}
-singISTrecapitulations <- function(object, model_object, ...){
+singISTrecapitulations <- function(object, model_object,
+                                   orthology_cache = NULL, ...){
     nopick <- which(!(names(object$celltype_mapping) %in%
-                model_object$superpathway_input$superpathway_info$celltypes))
+                          model_object$superpathway_input$superpathway_info$celltypes))
     # Check cell types modelled in model_object have the same order in object
     check <- setdiff(nopick, seq(1, length(names(object$celltype_mapping))))
     if(!all(model_object$superpathway_input$superpathway_info$celltypes ==
@@ -258,7 +265,9 @@ singISTrecapitulations <- function(object, model_object, ...){
     }
     # If cell type mapped is not in `model_object` set to void
     object$celltype_mapping[nopick] <- NULL
-    linkFunction <- biological_link_function(object, model_object, ...)
+    linkFunction <- biological_link_function(object, model_object,
+                                             orthology_cache = orthology_cache,
+                                             ...)
     C <- model_object$model_fit$predictor_block
     C_prime <- linkFunction$singIST_samples
     # Derive contributions
@@ -267,7 +276,7 @@ singISTrecapitulations <- function(object, model_object, ...){
     superpathway <- superpathway_recap(
         model_object, contributions_ref$superpathway_score,
         contributions_singIST$superpathway_score
-        )
+    )
     celltype <- celltype_recap(
         model_object, contributions_ref$celltype_contribution,
         contributions_singIST$celltype_contribution

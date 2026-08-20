@@ -4,7 +4,7 @@
 \alias{singISTrecapitulations}
 \title{Compute singIST recapitulations}
 \usage{
-singISTrecapitulations(object, model_object, ...)
+singISTrecapitulations(object, model_object, orthology_cache = NULL, ...)
 }
 \arguments{
 \item{object}{A mapping organism list for which to calculate
@@ -12,6 +12,13 @@ the recapitulations against the fitted superpathway model}
 
 \item{model_object}{A superpathway fit model list used to
 calculate the recapitulations}
+
+\item{orthology_cache}{An optional \code{data.frame} with a precomputed
+one-to-one orthology mapping, forwarded to
+\link{biological_link_function}. When provided, no Ensembl BioMart queries
+are performed, making the workflow reproducible offline. See
+\link{orthology_mapping} for the required format. By default
+\code{orthology_cache = NULL}.}
 
 \item{...}{Other parameters to pass onto \link{biological_link_function}}
 }

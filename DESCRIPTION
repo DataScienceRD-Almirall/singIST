@@ -1,11 +1,7 @@
 Package: singIST
 Title: comparative single-cell transcriptomics between disease models and a human condition
-<<<<<<< HEAD
-Version: 1.0.0
-=======
-Version: 1.2.0
->>>>>>> master
-Authors@R: 
+Version: 1.0.2
+Authors@R:
     c(person(given = "Aitor", family ="Moruno-Cuenca", email = "morunoaitor@gmail.com", role = c("aut", "cre"), comment = c(ORCID = "0009-0009-8133-2552")),
     person(given = "Dr. Sergio", family = "Picart-Armada", email = "sergio.picartarmada@almirall.com", role = c("rev"), comment = c(ORCID = "0000-0002-6426-8204")),
     person(given = "Dr. Alexandre", family = "Perera-Lluna", email = "alexandre.perera@upc.edu", role = c("ths"), comment = c(ORCID = "0000-0001-6427-851X")),
@@ -14,8 +10,7 @@ Description: Provides with toolkits to implement a full singIST analysis with ps
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
-Suggests: 
+Suggests:
     testthat (>= 3.0.0),
     BiocStyle,
     knitr,
@@ -26,7 +21,7 @@ Suggests:
     methods,
     sp
 Config/testthat/edition: 3
-Imports: 
+Imports:
     msigdb,
     GSEABase,
     checkmate,
@@ -47,9 +42,10 @@ Imports:
     missMDA,
     S4Vectors
 VignetteBuilder: knitr
-Depends: 
+Depends:
     R (>= 4.6.0)
 LazyData: false
 biocViews: SingleCell, Classification, Transcriptomics
 URL: https://github.com/DataScienceRD-Almirall/singIST
 BugReports: https://github.com/DataScienceRD-Almirall/singIST/issues
+Config/roxygen2/version: 8.1.0
